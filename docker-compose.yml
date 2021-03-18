@@ -1,0 +1,46 @@
+version: "3.7"
+
+services:
+
+  db:
+    image: mysql:5.7
+    command: --lower_case_table_names=1
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: farming_db
+      MYSQL_USER: tp
+      MYSQL_PASSWORD: tp
+    restart: always
+    volumes:
+      - "./database/farming_db/:/var/lib/mysql" #로컬
+      - db_data:/var/lib/mysql/data #도커
+    ports:
+      - "3306:3306"
+    container_name: farming_mysql
+    networks:
+      - backend-network
+
+  springboot:
+    image: farming:0.0.1
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/farming/tmp:rw
+    restart: always
+    depends_on:
+      - db
+    environment:
+      SPRINGBOOT_DB_USER: tp
+      SPRINGBOOT_DB_PASSWORD: tp
+      SPRINGBOOT_DB_NAME: farming_db
+    networks:
+      - backend-network
+      - frontend-network
+
+volumes:
+  db_data:
+
+
+networks:
+  backend-network:
+  frontend-network:
