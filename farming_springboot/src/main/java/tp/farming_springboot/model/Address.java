@@ -1,6 +1,4 @@
 package tp.farming_springboot.model;
-import org.hibernate.annotations.Table;
-
 import javax.persistence.*;
 
 //주소 입장에서는 한명의 유저에게 해당하므로 다대일관계
