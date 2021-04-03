@@ -1,6 +1,6 @@
 package tp.farming_springboot.domain.user.model;
 
-public enum Role {
+public enum ERole {
     ROLE_USER,
     ROLE_ADMIN
 }

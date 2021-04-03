@@ -2,19 +2,22 @@ package tp.farming_springboot.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import tp.farming_springboot.model.User;
-import tp.farming_springboot.repository.UserRepository;
+import tp.farming_springboot.domain.user.model.User;
+import tp.farming_springboot.domain.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @EnableAutoConfiguration
-@RequestMapping(value = "/users")
+@RequestMapping(value = "/")
 public class UserController {
     @Autowired
     UserRepository userRepository;
+
 
     //연습용 매핑해서 바로 확인용
     @GetMapping("/") // 데이터 조회

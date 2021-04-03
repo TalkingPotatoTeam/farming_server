@@ -1,4 +1,4 @@
-package tp.farming_springboot.model;
+package tp.farming_springboot.domain.product;
 import javax.persistence.*;
 @Entity
 public class Products {/*

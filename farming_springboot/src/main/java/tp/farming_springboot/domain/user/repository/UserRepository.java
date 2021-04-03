@@ -1,4 +1,4 @@
-package tp.farming_springboot.domain.user;
+package tp.farming_springboot.domain.user.repository;
 import tp.farming_springboot.domain.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
