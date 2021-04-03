@@ -1,4 +1,7 @@
 package tp.farming_springboot.model;
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,9 +14,9 @@ public class User {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Getter @Setter private Long id;
     @Column(name = "phone_num",nullable=false,length=15)
-    private String phone;
+    @Getter @Setter private String phone;
     @OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name="user_id")
     private List<Address> addresses = new ArrayList<Address>();
@@ -21,22 +24,6 @@ public class User {
     public User(){}
 
     public User(String phone) {
-        this.phone = phone;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
         this.phone = phone;
     }
 

@@ -1,4 +1,7 @@
 package tp.farming_springboot.model;
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
 
 //주소 입장에서는 한명의 유저에게 해당하므로 다대일관계
@@ -9,32 +12,8 @@ public class Address {
     @Id
     @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private Long user_id;
-    private String content;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(Long user_id) {
-        this.user_id = user_id;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
+    @Getter @Setter private Long id;
+    @Getter @Setter private Long user_id;
+    @Getter @Setter private String content;
 
 }
