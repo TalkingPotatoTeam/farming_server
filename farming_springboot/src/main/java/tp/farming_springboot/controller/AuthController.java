@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tp.farming_springboot.config.security.user.JwtUtils;
+import tp.farming_springboot.config.security.JwtUtils;
 import tp.farming_springboot.config.security.user.UserDetailsImpl;
 import tp.farming_springboot.domain.user.repository.RoleRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;

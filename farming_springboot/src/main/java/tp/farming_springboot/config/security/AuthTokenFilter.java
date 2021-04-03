@@ -1,4 +1,4 @@
-package tp.farming_springboot.config.security.user;
+package tp.farming_springboot.config.security;
 
 import java.io.IOException;
 
@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tp.farming_springboot.config.security.user.UserDetailsServiceImpl;
 
 public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired

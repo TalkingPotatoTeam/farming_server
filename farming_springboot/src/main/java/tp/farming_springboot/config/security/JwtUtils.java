@@ -1,4 +1,4 @@
-package tp.farming_springboot.config.security.user;
+package tp.farming_springboot.config.security;
 
 import java.util.Date;
 
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 
 import io.jsonwebtoken.*;
+import tp.farming_springboot.config.security.user.UserDetailsImpl;
 
 @Component
 public class JwtUtils {

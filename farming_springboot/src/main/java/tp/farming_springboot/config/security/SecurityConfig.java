@@ -13,8 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import tp.farming_springboot.config.security.user.JwtAuthEntryPoint;
-import tp.farming_springboot.config.security.user.AuthTokenFilter;
 import tp.farming_springboot.config.security.user.UserDetailsServiceImpl;
 
 @Configuration
