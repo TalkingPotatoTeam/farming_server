@@ -1,4 +1,4 @@
-package tp.farming_springboot.model;
+package tp.farming_springboot.domain.user;
 import lombok.Getter;
 import lombok.Setter;
 
