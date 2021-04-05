@@ -9,6 +9,8 @@ import java.util.*;
 
 //유저는 많은 주소를 가질 수 있기 때문에 유저 입장에서는 주소와 일대다 관계
 //유저만 주소 엔티티를 참조 할 수 있게 만듬 - 단방향 관계
+
+//유저랑 역할은 다대다 관계
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

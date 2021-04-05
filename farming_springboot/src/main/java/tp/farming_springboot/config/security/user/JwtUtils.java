@@ -1,4 +1,4 @@
-package tp.farming_springboot.config.security;
+package tp.farming_springboot.config.security.user;
 
 import java.util.Date;
 
@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 
 import io.jsonwebtoken.*;
-import tp.farming_springboot.config.security.user.UserDetailsImpl;
 
 @Component
 public class JwtUtils {
@@ -32,6 +31,7 @@ public class JwtUtils {
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
+
     }
 
     public String getUserNameFromJwtToken(String token) {

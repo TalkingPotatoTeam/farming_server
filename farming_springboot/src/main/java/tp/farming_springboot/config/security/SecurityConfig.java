@@ -13,7 +13,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import tp.farming_springboot.config.security.user.AuthTokenFilter;
+import tp.farming_springboot.config.security.user.JwtAuthEntryPoint;
 import tp.farming_springboot.config.security.user.UserDetailsServiceImpl;
+import tp.farming_springboot.domain.user.model.ERole;
+import tp.farming_springboot.domain.user.repository.RoleRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -24,7 +28,8 @@ import tp.farming_springboot.config.security.user.UserDetailsServiceImpl;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     UserDetailsServiceImpl userDetailsService;
-
+    @Autowired
+    RoleRepository roleRepository;
     @Autowired
     private JwtAuthEntryPoint unauthorizedHandler;
 
@@ -56,6 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests().antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/test/**").permitAll()
+                .antMatchers("/api/**").hasAnyRole(ERole.ROLE_USER.toString())//범위 지정해야댐
                 .anyRequest().authenticated();
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -18,10 +18,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tp.farming_springboot.config.security.JwtUtils;
+import tp.farming_springboot.config.security.user.JwtUtils;
 import tp.farming_springboot.config.security.user.UserDetailsImpl;
+import tp.farming_springboot.domain.user.model.ERole;
+import tp.farming_springboot.domain.user.model.Role;
+import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.RoleRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
+
 
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -99,12 +103,6 @@ public class AuthController {
                         roles.add(adminRole);
 
                         break;
-                    case "mod":
-                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(modRole);
-
-                        break;
                     default:
                         Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
@@ -118,4 +116,5 @@ public class AuthController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
 }

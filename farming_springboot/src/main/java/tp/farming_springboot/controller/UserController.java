@@ -25,7 +25,7 @@ public class UserController {
         return "Main Page";
     }
 
-    @GetMapping("/post")
+    @GetMapping("/allusers")
     public List<User> getAllUser(){
         return userRepository.findAll();
     }

@@ -1,4 +1,4 @@
-package tp.farming_springboot.config.security;
+package tp.farming_springboot.config.security.user;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
