@@ -11,10 +11,19 @@ version = '0.0.1'
 sourceCompatibility = '1.8'
 
 jib{ //https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin
+    to {
+        image='farmingserver/dockerservice'
+        tags=['0.4']
+        auth {
+            username = 'youhoseong'
+            password = 'dream0329!@'
+        }
+    }
     container{
         creationTime = 'USE_CURRENT_TIMESTAMP'
         volumes = ['/build/tmp']
     }
+
 }
 
 configurations {
