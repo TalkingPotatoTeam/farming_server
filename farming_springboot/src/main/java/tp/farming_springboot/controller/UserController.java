@@ -90,7 +90,7 @@ public class UserController {
         return user.get();
     }
 
-    @PutMapping("/create") //데이터 삽입 //핸드폰번호가 이미 있는거 또 생성할려고하면 오류 뜸
+    @PutMapping("/create") //데이터 삽입
     public User createUser(@RequestBody User user){
 
         //현주소를 유저의 주소록에 저장
