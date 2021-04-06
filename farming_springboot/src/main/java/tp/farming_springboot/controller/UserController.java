@@ -2,8 +2,15 @@ package tp.farming_springboot.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import tp.farming_springboot.config.JwtUtils;
+import tp.farming_springboot.config.UserDetailsImpl;
 import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.ERole;
 import tp.farming_springboot.domain.user.model.Role;
@@ -13,6 +20,7 @@ import tp.farming_springboot.domain.user.repository.RoleRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @EnableAutoConfiguration
@@ -24,6 +32,12 @@ public class UserController {
     AddressRepository addressRepository;
     @Autowired
     RoleRepository roleRepository;
+    @Autowired
+    JwtUtils jwtUtils;
+    @Autowired
+    AuthenticationManager authenticationManager;
+    @Autowired
+    PasswordEncoder encoder;
 
 
     @GetMapping("/") // 데이터 조회
@@ -41,6 +55,16 @@ public class UserController {
         Long userID = Long.parseLong(id);
         Optional<User> user = userRepository.findById((userID));
         return user.get();
+    }
+
+    @GetMapping("/init")
+    public void init (){
+        Role roleUser = new Role();
+        Role roleAdmin = new Role();
+        roleUser.setName(ERole.ROLE_USER);
+        roleRepository.save(roleUser);
+        roleAdmin.setName(ERole.ROLE_ADMIN);
+        roleRepository.save(roleAdmin);
     }
 
     @PostMapping("/update/{id}") //데이터 수정
@@ -68,7 +92,7 @@ public class UserController {
 
     @PutMapping("/create") //데이터 삽입 //핸드폰번호가 이미 있는거 또 생성할려고하면 오류 뜸
     public User createUser(@RequestBody User user){
-        User newUser = userRepository.save(user);
+
         //현주소를 유저의 주소록에 저장
         Address newAddress = new Address();
         newAddress.setUser_id(user.getId());
@@ -76,17 +100,12 @@ public class UserController {
         addressRepository.save(newAddress);
         user.addAddress(newAddress);
 
-        /*
-        try{
-        Role ru = new Role();
-        ru.setName(ERole.ROLE_USER);
-        roleRepository.save(ru);}catch(Exception e){}*/
 
         //유저 롤 추가
         Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
         user.addRole(userRole);
-
+        User newUser = userRepository.save(user);
         return newUser;
     }
 
@@ -97,5 +116,46 @@ public class UserController {
         return "Deleted user";
     }
 
+    @PostMapping("/signin")
+    public String authenticateUser( @RequestBody User user) {
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getPhone(), user.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return "Logged in! token : "+jwt;
+
+    }
+
+    @PostMapping("/signup")
+    public String registerUser(@RequestBody User newuser) {
+    //public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+        if (userRepository.existsByPhone(newuser.getPhone())) {
+            return "Phone number is already taken";
+                   // .badRequest()
+                    //.body(new MessageResponse("Error: Phone number is already taken!"));
+        }
+        newuser.setPassword(encoder.encode(newuser.getPassword()));
+        createUser(newuser);
+        /*
+        // Create new user's account
+        User user = new User(newuser.getPhone(),newuser.getPhone(), newuser.getAddress());
+
+
+        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+        user.addRole(userRole);
+
+        userRepository.save(user);*/
+
+        return "User registered!";
+    }
 
 }

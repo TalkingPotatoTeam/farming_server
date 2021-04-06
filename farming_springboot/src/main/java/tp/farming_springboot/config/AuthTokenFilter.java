@@ -37,7 +37,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDE_URL =
             Collections.unmodifiableList(
                     Arrays.asList(
-                            "/api/member",
+                            "/api/",
                             "/authenticate"
                     ));
 
@@ -49,8 +49,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
-                //UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UserDetails userDetails = userRepository.loadUserByUsername(username);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                //UserDetails userDetails = userRepository.loadUserByUsername(username);
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

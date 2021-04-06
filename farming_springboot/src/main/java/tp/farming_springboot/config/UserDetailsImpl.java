@@ -32,7 +32,7 @@ public class UserDetailsImpl implements UserDetails{
         this.id = id;
         this.phone = phone;
         this.address = address;
-        //this.password = password;
+        this.password = password;
         this.authorities = authorities;
     }
 

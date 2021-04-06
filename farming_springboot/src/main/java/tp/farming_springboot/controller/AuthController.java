@@ -1,6 +1,21 @@
 package tp.farming_springboot.controller;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+import tp.farming_springboot.config.JwtUtils;
+import tp.farming_springboot.config.UserDetailsImpl;
+import tp.farming_springboot.domain.user.repository.RoleRepository;
+import tp.farming_springboot.domain.user.repository.UserRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 /*
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController

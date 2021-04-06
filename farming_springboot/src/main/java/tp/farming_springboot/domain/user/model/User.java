@@ -26,7 +26,7 @@ public class User  {
     @Getter @Setter
     private Long id;
 
-    @Column(length = 30, nullable = true)
+    @Column(length = 100, nullable = true)
     @Getter @Setter
     private String password; //password = phone ??????
 
