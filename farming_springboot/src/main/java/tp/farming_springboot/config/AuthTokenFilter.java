@@ -1,6 +1,9 @@
-package tp.farming_springboot.config.security.user;
+package tp.farming_springboot.config;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -16,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tp.farming_springboot.domain.user.repository.UserRepository;
 
 public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
@@ -24,7 +28,18 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+
+    //exclude 할 url 지정
+    private static final List<String> EXCLUDE_URL =
+            Collections.unmodifiableList(
+                    Arrays.asList(
+                            "/api/member",
+                            "/authenticate"
+                    ));
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -34,7 +49,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                //UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UserDetails userDetails = userRepository.loadUserByUsername(username);
+
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -46,6 +63,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return EXCLUDE_URL.stream().anyMatch(exclude -> exclude.equalsIgnoreCase(request.getServletPath()));
     }
 
     private String parseJwt(HttpServletRequest request) {

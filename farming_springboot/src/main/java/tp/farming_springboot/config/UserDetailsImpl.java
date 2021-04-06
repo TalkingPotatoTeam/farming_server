@@ -1,4 +1,4 @@
-package tp.farming_springboot.config.security.user;
+package tp.farming_springboot.config;
 
 
 import java.util.Collection;

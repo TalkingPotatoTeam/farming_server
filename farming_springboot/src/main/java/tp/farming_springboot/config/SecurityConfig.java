@@ -1,7 +1,8 @@
-package tp.farming_springboot.config.security;
+package tp.farming_springboot.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -11,11 +12,11 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import tp.farming_springboot.config.security.user.AuthTokenFilter;
-import tp.farming_springboot.config.security.user.JwtAuthEntryPoint;
-import tp.farming_springboot.config.security.user.UserDetailsServiceImpl;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import tp.farming_springboot.config.AuthTokenFilter;
+import tp.farming_springboot.config.JwtAuthEntryPoint;
+import tp.farming_springboot.config.UserDetailsServiceImpl;
 import tp.farming_springboot.domain.user.model.ERole;
 import tp.farming_springboot.domain.user.repository.RoleRepository;
 
@@ -26,10 +27,9 @@ import tp.farming_springboot.domain.user.repository.RoleRepository;
         // jsr250Enabled = true,
         prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
     @Autowired
     UserDetailsServiceImpl userDetailsService;
-    @Autowired
-    RoleRepository roleRepository;
     @Autowired
     private JwtAuthEntryPoint unauthorizedHandler;
 
@@ -56,14 +56,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
+       http.cors().and().csrf().disable()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeRequests().antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/api/test/**").permitAll()
-                .antMatchers("/api/**").hasAnyRole(ERole.ROLE_USER.toString())//범위 지정해야댐
-                .anyRequest().authenticated();
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and() //세션 사용 안함
+                .authorizeRequests()
+                .antMatchers("/api/**").permitAll()
+                .antMatchers(HttpMethod.POST,"/api/test/**").permitAll()
+                .antMatchers(HttpMethod.PUT,"/api/test/**").permitAll()
+                .antMatchers(HttpMethod.GET,"/api/test/**").permitAll()
+                //.antMatchers("/api/user/**").hasAnyRole(ERole.ROLE_USER.toString())//roleuser 권한이 있는 사용자를 요구
+                .anyRequest().authenticated();//그외 모든 리퀘는 인증필요
 
-        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        //http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }

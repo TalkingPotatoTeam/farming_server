@@ -11,26 +11,30 @@ import java.util.*;
 //유저만 주소 엔티티를 참조 할 수 있게 만듬 - 단방향 관계
 
 //유저랑 역할은 다대다 관계
+//유저 name을 유저 전화번호로 쓸 예정 로그인 할때 아이디로 지정하려고..
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name="users")
+@Table(name="users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "phone")
+        })
 public class User  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter @Setter
     private Long id;
 
-    @Column(length = 30, nullable = false)
+    @Column(length = 30, nullable = true)
     @Getter @Setter
-    private String password; //password = phone ??
+    private String password; //password = phone ??????
 
-    @Column(nullable=false,length=15)
+    @Column(length=15, nullable=false)
     @Getter @Setter
     private String phone;
 
-    @Column(nullable=false,length=15)
+    @Column(length=15, nullable=false)
     @Getter @Setter
     private String address; //현재 주소
 
@@ -46,13 +50,23 @@ public class User  {
     @Getter @Setter
     private List<Address> addresses = new ArrayList<Address>(); //여러 주소 가질 수 있음
 
-
+    public User (String password, String phone, String address ){//생성자
+        this.password=password;
+        this.phone=phone;
+        this.address=address; //현재 주소
+    }
 
     public void addAddress(Address address) {
         if( addresses == null){
             addresses = new ArrayList<Address>();
         }
         addresses.add(address);
+    }
+    public void addRole(Role role) {
+        if( roles == null){
+            roles = new HashSet<Role>();
+        }
+        roles.add(role);
     }
 
 }

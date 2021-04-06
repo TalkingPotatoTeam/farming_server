@@ -9,7 +9,10 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "roles")
+@Table(name="roles",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "name")
+        })
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
