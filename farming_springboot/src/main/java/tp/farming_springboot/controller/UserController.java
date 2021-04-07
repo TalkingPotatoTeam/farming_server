@@ -66,6 +66,11 @@ public class UserController {
         roleAdmin.setName(ERole.ROLE_ADMIN);
         roleRepository.save(roleAdmin);
     }
+    @GetMapping("/{phone}")
+    public Long getUserId (@PathVariable String phone){
+        Optional<User> user = userRepository.findByPhone(phone);
+        return user.get().getId();
+    }
 
     @PostMapping("/update/{id}") //데이터 수정
     public User updateUser(@PathVariable String id, @RequestBody User newUser ){
@@ -125,10 +130,11 @@ public class UserController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
+        /*
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
 
         return "Logged in! token : "+jwt;
 
@@ -144,16 +150,6 @@ public class UserController {
         }
         newuser.setPassword(encoder.encode(newuser.getPassword()));
         createUser(newuser);
-        /*
-        // Create new user's account
-        User user = new User(newuser.getPhone(),newuser.getPhone(), newuser.getAddress());
-
-
-        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-        user.addRole(userRole);
-
-        userRepository.save(user);*/
 
         return "User registered!";
     }

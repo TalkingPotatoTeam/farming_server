@@ -13,12 +13,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import tp.farming_springboot.config.AuthTokenFilter;
-import tp.farming_springboot.config.JwtAuthEntryPoint;
-import tp.farming_springboot.config.UserDetailsServiceImpl;
-import tp.farming_springboot.domain.user.model.ERole;
-import tp.farming_springboot.domain.user.repository.RoleRepository;
 
 @Configuration
 @EnableWebSecurity
