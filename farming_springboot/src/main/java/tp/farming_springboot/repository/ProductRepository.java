@@ -4,5 +4,5 @@ import org.springframework.data.repository.CrudRepository;
 import tp.farming_springboot.domain.Product;
 
 public interface ProductRepository extends CrudRepository<Product, Long> {
-
+    public Iterable<Product> findByUserId(Long id);
 }

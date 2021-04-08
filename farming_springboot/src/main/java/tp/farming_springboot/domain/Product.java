@@ -1,6 +1,8 @@
 package tp.farming_springboot.domain;
 
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
@@ -8,7 +10,6 @@ import javax.persistence.*;
 
 // db 테이블과 클래스이름을 동일하게 하지 않으면, @Table annotation 사용해야 함.
 // db 접속 using terminal
-//
 
 
 @Entity
@@ -20,6 +21,8 @@ public class Product {
     }
 
     @Id
+    @Getter
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -32,6 +35,8 @@ public class Product {
     }
 
     @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name ="user_id")
+    // JoinColumn => 참조하는 (객체 이름_필드이름)
     private User user;
 
     /*@OneToOne
