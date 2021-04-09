@@ -21,7 +21,7 @@ import tp.farming_springboot.domain.user.repository.UserRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@CrossOrigin
 @RestController
 @EnableAutoConfiguration
 @RequestMapping(value = "/api/test/user/")
@@ -66,9 +66,17 @@ public class UserController {
         roleAdmin.setName(ERole.ROLE_ADMIN);
         roleRepository.save(roleAdmin);
     }
-    @GetMapping("/{phone}")
+
+    @GetMapping("/phone/{phone}")
     public Long getUserId (@PathVariable String phone){
         Optional<User> user = userRepository.findByPhone(phone);
+        return user.get().getId();
+    }
+
+    @PostMapping("/phone/")
+    public Long getUserIdByRequest (@RequestBody User usr){
+        Optional<User> user = userRepository.findByPhone(usr.getPhone());
+        //return phone.();
         return user.get().getId();
     }
 
@@ -122,21 +130,25 @@ public class UserController {
     }
 
     @PostMapping("/signin")
-    public String authenticateUser( @RequestBody User user) {
+    public String authenticateUser( @RequestBody User logger) {
+        if (userRepository.existsByPhone(logger.getPhone())) {
+            Optional<User> user = userRepository.findByPhone(logger.getPhone());
+            //user = userRepository.findByPhone(phone).get();
+            // .badRequest()
+            //.body(new MessageResponse("Error: Phone number is already taken!"));
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getPhone(), user.getPassword()));
+            //Optional<User> user = userRepository.findByPhone(phone);
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.get().getPhone(), user.get().getPhone()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtils.generateJwtToken(authentication);
 
-        /*
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());*/
-
-        return "Logged in! token : "+jwt;
+            return "Logged in! token : "+jwt;
+        }
+        else{
+            return "Phone number does not exist in db";
+        }
 
     }
 
@@ -148,6 +160,7 @@ public class UserController {
                    // .badRequest()
                     //.body(new MessageResponse("Error: Phone number is already taken!"));
         }
+        newuser.setPassword(newuser.getPhone());
         newuser.setPassword(encoder.encode(newuser.getPassword()));
         createUser(newuser);
 

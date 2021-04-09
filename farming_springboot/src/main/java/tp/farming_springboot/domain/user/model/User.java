@@ -50,8 +50,8 @@ public class User  {
     @Getter @Setter
     private List<Address> addresses = new ArrayList<Address>(); //여러 주소 가질 수 있음
 
-    public User (String password, String phone, String address ){//생성자
-        this.password=password;
+    public User (String phone, String address ){//생성자
+        this.password=phone;
         this.phone=phone;
         this.address=address; //현재 주소
     }
