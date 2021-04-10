@@ -130,14 +130,9 @@ public class UserController {
     }
 
     @PostMapping("/signin")
-    public String authenticateUser( @RequestBody User logger) {
+    public String authenticateUser(@RequestBody UserDto.UserLoginDto logger) {
         if (userRepository.existsByPhone(logger.getPhone())) {
             Optional<User> user = userRepository.findByPhone(logger.getPhone());
-            //user = userRepository.findByPhone(phone).get();
-            // .badRequest()
-            //.body(new MessageResponse("Error: Phone number is already taken!"));
-
-            //Optional<User> user = userRepository.findByPhone(phone);
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.get().getPhone(), user.get().getPhone()));
 
@@ -149,12 +144,10 @@ public class UserController {
         else{
             return "Phone number does not exist in db";
         }
-
     }
 
     @PostMapping("/signup")
     public String registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
-    //public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByPhone(newUser.getPhone())) {
             return "Phone number is already taken";
         }

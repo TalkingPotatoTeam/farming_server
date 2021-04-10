@@ -9,4 +9,8 @@ public class UserDto {
         private String phone;
         private String address;
     }
+    @Getter
+    public static class UserLoginDto{
+        private String phone;
+    }
 }
