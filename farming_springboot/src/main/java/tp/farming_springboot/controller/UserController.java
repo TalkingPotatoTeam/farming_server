@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import tp.farming_springboot.config.JwtUtils;
 import tp.farming_springboot.config.UserDetailsImpl;
+import tp.farming_springboot.domain.user.dto.UserDto;
 import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.ERole;
 import tp.farming_springboot.domain.user.model.Role;
@@ -103,22 +104,21 @@ public class UserController {
         return user.get();
     }
 
-    @PutMapping("/create") //데이터 삽입
-    public User createUser(@RequestBody User user){
-
+    public User createUser(@RequestBody UserDto.UserRegisterDto user){
+        User newUser = new User(user.getPhone(),user.getAddress());
+        //번호로 비밀번호 생성
+        newUser.setPassword(encoder.encode(newUser.getPhone()));
         //현주소를 유저의 주소록에 저장
         Address newAddress = new Address();
-        newAddress.setUser_id(user.getId());
-        newAddress.setContent(user.getAddress());
+        newAddress.setUser_id(newUser.getId());
+        newAddress.setContent(newUser.getAddress());
         addressRepository.save(newAddress);
-        user.addAddress(newAddress);
-
-
+        newUser.addAddress(newAddress);
         //유저 롤 추가
         Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-        user.addRole(userRole);
-        User newUser = userRepository.save(user);
+        newUser.addRole(userRole);
+        userRepository.save(newUser);
         return newUser;
     }
 
@@ -153,18 +153,12 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public String registerUser(@RequestBody User newuser) {
+    public String registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
     //public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByPhone(newuser.getPhone())) {
+        if (userRepository.existsByPhone(newUser.getPhone())) {
             return "Phone number is already taken";
-                   // .badRequest()
-                    //.body(new MessageResponse("Error: Phone number is already taken!"));
         }
-        newuser.setPassword(newuser.getPhone());
-        newuser.setPassword(encoder.encode(newuser.getPassword()));
-        createUser(newuser);
-
+        createUser(newUser);
         return "User registered!";
     }
-
 }
