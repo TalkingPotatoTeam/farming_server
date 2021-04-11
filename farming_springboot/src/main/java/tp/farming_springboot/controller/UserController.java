@@ -104,7 +104,7 @@ public class UserController {
         return user.get();
     }
 
-    public User createUser(@RequestBody UserDto.UserRegisterDto user){
+    private User createUser(@RequestBody UserDto.UserRegisterDto user){
         User newUser = new User(user.getPhone(),user.getAddress());
         //번호로 비밀번호 생성
         newUser.setPassword(encoder.encode(newUser.getPhone()));
@@ -133,17 +133,31 @@ public class UserController {
     public String authenticateUser(@RequestBody UserDto.UserLoginDto logger) {
         if (userRepository.existsByPhone(logger.getPhone())) {
             Optional<User> user = userRepository.findByPhone(logger.getPhone());
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.get().getPhone(), user.get().getPhone()));
+            try {
+                Authentication authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(user.get().getPhone(), user.get().getPhone()));
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                String jwt = jwtUtils.generateJwtToken(authentication);
 
-            return "Logged in! token : "+jwt;
+                return "Logged in! token : " + jwt;
+            } catch (Exception ex) {
+                if (ex.getMessage().contains("io.jsonwebtoken.ExpiredJwtException")) {
+                    System.out.println("dkdkdkddk");
+                    // Refresh Token
+                    //refreshToken();
+                    // try again with refresh token
+                    //response = getData();
+                } else {
+                    System.out.println("aaaaaaaaaa");
+                    System.out.println(ex);
+                }
+            }
         }
-        else{
+        else {
             return "Phone number does not exist in db";
         }
+        return null;
     }
 
     @PostMapping("/signup")
