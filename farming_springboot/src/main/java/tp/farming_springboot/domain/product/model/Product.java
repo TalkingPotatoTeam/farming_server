@@ -1,9 +1,10 @@
-package tp.farming_springboot.domain;
+package tp.farming_springboot.domain.product.model;
 
 
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import tp.farming_springboot.domain.user.model.User;
 
 import javax.persistence.*;
 

@@ -2,13 +2,11 @@ package tp.farming_springboot.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import tp.farming_springboot.domain.Product;
-import tp.farming_springboot.domain.User;
-import tp.farming_springboot.repository.ProductRepository;
+import tp.farming_springboot.domain.product.model.Product;
+import tp.farming_springboot.domain.user.model.User;
+import tp.farming_springboot.domain.product.repository.ProductRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -31,7 +29,7 @@ public class ProductController {
 
         // find user object by user id
         // post request로 데이터베이스에 저장되는 것 확인하였음(완성x)
-        return prodRepo.save(new Product(new User(username)));
+        return prodRepo.save(new Product(new User()));
     }
 
     // prodRepo의 findall return type => *Iterable*

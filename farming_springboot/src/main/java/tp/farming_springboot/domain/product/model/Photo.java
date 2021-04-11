@@ -1,4 +1,4 @@
-package tp.farming_springboot.domain;
+package tp.farming_springboot.domain.product.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
