@@ -22,7 +22,7 @@ services:
   springboot:
     image: farming_springboot:0.0.1
     ports:
-      - "8080:8080"
+      - "5050:5050"
     volumes:
       - .:/farming/tmp:rw
     restart: always
