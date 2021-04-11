@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import tp.farming_springboot.domain.user.model.User;
 
 import javax.persistence.*;
+import java.util.Optional;
 
 
 // db 테이블과 클래스이름을 동일하게 하지 않으면, @Table annotation 사용해야 함.
@@ -17,8 +18,9 @@ import javax.persistence.*;
 public class Product {
 
     @Autowired
-    public Product(User user) {
-        this.user = user;
+    public Product(Optional<User> user, String content) {
+        this.user = user.get();
+        this.content = content;
     }
 
     @Id
@@ -27,24 +29,16 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name ="user_id")
     // JoinColumn => 참조하는 (객체 이름_필드이름)
     private User user;
-
+    private String content;
     /*@OneToOne
     private Long category_id;
 
     private String price;
-    private String content;
+
     private String uploaded_time;
     private boolean certified;
     private String address;

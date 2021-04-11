@@ -58,6 +58,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,"/api/test/**").permitAll()
                 .antMatchers(HttpMethod.PUT,"/api/test/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/api/test/**").permitAll()
+                .antMatchers("/**").permitAll()
+                .antMatchers(HttpMethod.POST,"/**").permitAll()
+                .antMatchers(HttpMethod.PUT,"/**").permitAll()
+                .antMatchers(HttpMethod.GET,"/**").permitAll()
                 //.antMatchers("/api/user/**").hasAnyRole(ERole.ROLE_USER.toString())//roleuser 권한이 있는 사용자를 요구
                 .anyRequest().authenticated();//그외 모든 리퀘는 인증필요
 
