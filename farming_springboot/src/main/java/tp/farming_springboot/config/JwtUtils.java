@@ -43,9 +43,9 @@ public class JwtUtils {
     }
 
     // Request의 Header에서 token 값을 가져옵니다. "X-AUTH-TOKEN" : "TOKEN값'
-    public String resolveToken(HttpServletRequest request) {
-        return request.getHeader("X-AUTH-TOKEN");
-    }
+    //public String resolveToken(HttpServletRequest request) {
+    //    return request.getHeader("X-AUTH-TOKEN");
+    //}
     public boolean validateJwtToken(String authToken){
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);

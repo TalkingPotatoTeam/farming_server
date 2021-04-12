@@ -60,6 +60,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+            else {
+                System.out.println("Cannot set the Security Context");
+            }
         }
         catch (ExpiredJwtException ex) {
             request.setAttribute("exception", ex);
@@ -75,9 +78,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         } catch (BadCredentialsException ex) {
             request.setAttribute("exception", ex);
             System.out.println("Bad Credentials Exception caught!");
+            throw ex;
         } catch (Exception ex) {
             logger.error("user authentication erorror: {}", ex);
             System.out.println(ex);
+            throw ex;
         }
         filterChain.doFilter(request, response);
     }

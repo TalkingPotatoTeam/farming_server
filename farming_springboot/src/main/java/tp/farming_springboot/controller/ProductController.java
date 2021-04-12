@@ -2,11 +2,14 @@ package tp.farming_springboot.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
+import tp.farming_springboot.domain.user.repository.UserRepository;
 
+import java.security.Principal;
 import java.util.Optional;
 
 @RestController
@@ -14,7 +17,8 @@ import java.util.Optional;
 public class ProductController {
 
     private ProductRepository prodRepo;
-
+    @Autowired
+    UserRepository userRepository;
     @Autowired
     public ProductController(ProductRepository prodRepo) {
         this.prodRepo = prodRepo;
