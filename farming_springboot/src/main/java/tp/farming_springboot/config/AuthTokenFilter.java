@@ -65,15 +65,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             }
         }
         catch (ExpiredJwtException ex) {
-            request.setAttribute("exception", ex);
             System.out.println("Expired Exception caught!");
-            //String isRefreshToken = request.getHeader("isRefreshToken");
-            //String requestURL = request.getRequestURL().toString();
+            String isRefreshToken = request.getHeader("isRefreshToken");
+            String requestURL = request.getRequestURL().toString();
             // allow for Refresh Token creation if following conditions are true.
-            //if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
-            // allowForRefreshToken(ex, request);
-            //} else
-              //  request.setAttribute("exception", ex);
+            if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
+             allowForRefreshToken(ex, request);
+            } else
+                request.setAttribute("exception", ex);
 
         } catch (BadCredentialsException ex) {
             request.setAttribute("exception", ex);
@@ -86,6 +85,22 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
+
+    private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
+        System.out.println("allowing for refresh tokens");
+        // create a UsernamePasswordAuthenticationToken with null values.
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                null, null, null);
+        // After setting the Authentication in the context, we specify
+        // that the current user is authenticated. So it passes the
+        // Spring Security Configurations successfully.
+        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        // Set the claims so that in controller we will be using it to create
+        // new JWT
+        request.setAttribute("claims", ex.getClaims());
+
+    }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         return EXCLUDE_URL.stream().anyMatch(exclude -> exclude.equalsIgnoreCase(request.getServletPath()));
