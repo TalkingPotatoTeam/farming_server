@@ -55,11 +55,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and() //세션 사용 안함
                 .authorizeRequests()
-                .antMatchers("/api/**").permitAll()
-                //.antMatchers("/**").permitAll()
-                .antMatchers(HttpMethod.POST,"/api/test/**").permitAll()
-                .antMatchers(HttpMethod.PUT,"/api/test/**").permitAll()
-                .antMatchers(HttpMethod.GET,"/api/test/**").permitAll()
+                .antMatchers("/api/test/user/signup").permitAll() //가입페이지만 누구나 접근가능
+                //.antMatchers("/**").permitAll() //테스트용
                 //.antMatchers("/api/user/**").hasAnyRole(ERole.ROLE_USER.toString())//roleuser 권한이 있는 사용자를 요구
                 .anyRequest().authenticated();//그외 모든 리퀘는 인증필요
 

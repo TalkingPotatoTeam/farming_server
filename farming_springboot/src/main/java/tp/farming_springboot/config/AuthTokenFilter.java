@@ -40,7 +40,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDE_URL =
             Collections.unmodifiableList(
                     Arrays.asList(
-                            "/api/",
+                            //"/api/",
                             "/authenticate"
                     ));
 
