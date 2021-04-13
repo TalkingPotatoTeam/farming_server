@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -52,11 +53,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                //UserDetails userDetails = userRepository.loadUserByUsername(username);
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
@@ -66,14 +65,20 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         }
         catch (ExpiredJwtException ex) {
             System.out.println("Expired Exception caught!");
-            String isRefreshToken = request.getHeader("isRefreshToken");
+            String refresh = request.getHeader("isRefreshToken");
             String requestURL = request.getRequestURL().toString();
             // allow for Refresh Token creation if following conditions are true.
-            if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
-             allowForRefreshToken(ex, request);
+            if (refresh != null && jwtUtils.validateJwtRefresh(refresh)) {
+                allowForRefreshToken(ex, request);
+                //근데 요청을 보낼때마다 리프레시토큰 보내는건 이상함
+                String username = jwtUtils.getUserNameFromJwtRefreshToken(refresh);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             } else
                 request.setAttribute("exception", ex);
-
         } catch (BadCredentialsException ex) {
             request.setAttribute("exception", ex);
             System.out.println("Bad Credentials Exception caught!");

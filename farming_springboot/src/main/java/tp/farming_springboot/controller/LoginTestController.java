@@ -30,7 +30,9 @@ public class LoginTestController {
     @GetMapping("/user1")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public String currentUserName(Principal principal) {
+        System.out.println("a");
         Optional<User> user = userRepository.findByPhone(principal.getName());
+        System.out.println("b");
         return user.get().getId().toString() + user.get().getPhone() + user.get().getAddress();
     }
 

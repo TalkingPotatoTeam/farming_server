@@ -28,6 +28,9 @@ public class JwtUtils {
     @Value("${jwtRefreshExpirationMs}")
     private int jwtRefreshExpirationMs;
 
+    @Value("${jwtRefreshSecret}")
+    private String jwtRefreshSecret;
+
     public String generateJwtToken(Authentication authentication) {
 
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
@@ -40,7 +43,7 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String doGenerateRefreshToken(Map<String, Object> claims, String subject) {
+    public String doGenerateAccessToken(Map<String, Object> claims, String subject) {
 
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
@@ -54,8 +57,8 @@ public class JwtUtils {
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtRefreshExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                //.setExpiration(new Date((new Date()).getTime() + jwtRefreshExpirationMs)) // 평생감
+                .signWith(SignatureAlgorithm.HS512, jwtRefreshSecret)
                 .compact();
     }
 
@@ -64,10 +67,23 @@ public class JwtUtils {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
+    //토큰에서 회원 정보 추출
+    public String getUserNameFromJwtRefreshToken(String token) {
+        return Jwts.parser().setSigningKey(jwtRefreshSecret).parseClaimsJws(token).getBody().getSubject();
+    }
+
     // Request의 Header에서 token 값을 가져옵니다. "X-AUTH-TOKEN" : "TOKEN값'
     //public String resolveToken(HttpServletRequest request) {
     //    return request.getHeader("X-AUTH-TOKEN");
     //}
+    public boolean validateJwtRefresh(String authToken){
+        try {
+            Jwts.parser().setSigningKey(jwtRefreshSecret).parseClaimsJws(authToken);
+            return true;
+        } catch (Exception ex) {
+            throw ex;
+        }
+    }
     public boolean validateJwtToken(String authToken){
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
