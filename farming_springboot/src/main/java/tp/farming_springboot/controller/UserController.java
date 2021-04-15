@@ -3,7 +3,10 @@ package tp.farming_springboot.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import net.nurigo.java_sdk.api.Message;
+import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.apache.tomcat.util.http.parser.Authorization;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpEntity;
@@ -161,11 +164,45 @@ public class UserController {
         }
     }
 
+    private void sendMsg(String randomKey){
+        String api_key = "NCSI7GU7YFBWB6R7"; //사이트에서 발급 받은 API KEY
+        String api_secret = "UTYWP9RRXCZO1WJCLYW5XG9CAE5NE5TE"; //사이트에서 발급 받은API SECRET KEY
+        Message coolsms = new Message(api_key, api_secret);
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("to", "01073408629");
+        params.put("from", "01073408629"); //사전에 사이트에서 번호를 인증하고 등록하여야 함
+        params.put("type", "SMS"); params.put("text", "파밍 인증번호는 "+randomKey+" 입니다. >____< 888");//메시지 내용
+        //params.put("app_version", "test app 1.2");
+        try {
+            JSONObject obj = (JSONObject) coolsms.send(params);
+            System.out.println(obj.toString()); //전송 결과 출력
+        }
+        catch (CoolsmsException e)
+        {
+            System.out.println(e.getMessage());
+            System.out.println(e.getCode());
+        }
+    }
+
+    @PostMapping("/requestSignup")
+    public String requestSignup(@RequestBody UserDto.UserRegisterDto newUser){
+        if (userRepository.existsByPhone(newUser.getPhone())) {
+            return "Phone number is already taken";
+        }
+        else{
+            int verify = (int)(Math.random() * 9999 + 1);
+            sendMsg(String.valueOf(verify));
+        }
+        return "본인인증 문자 전송됨!";
+    }
+
     @PostMapping("/signup")
     public String registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
         if (userRepository.existsByPhone(newUser.getPhone())) {
             return "Phone number is already taken";
         }
+        int verify = (int)(Math.random() * 9999 + 1);
+        sendMsg(String.valueOf(verify));
         createUser(newUser);
         return "User registered!";
     }
