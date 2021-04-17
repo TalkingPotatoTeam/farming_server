@@ -31,6 +31,7 @@ import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.AddressRepository;
 import tp.farming_springboot.domain.user.repository.RoleRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
+import tp.farming_springboot.domain.user.service.OtpService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -52,6 +53,8 @@ public class UserController {
     AuthenticationManager authenticationManager;
     @Autowired
     PasswordEncoder encoder;
+    @Autowired
+    OtpService otpService;
 
 
     @GetMapping("/") // 데이터 조회
@@ -164,14 +167,14 @@ public class UserController {
         }
     }
 
-    private void sendMsg(String randomKey){
+    private void sendMsg(String randomKey, String sendNum){
         String api_key = "NCSI7GU7YFBWB6R7"; //사이트에서 발급 받은 API KEY
         String api_secret = "UTYWP9RRXCZO1WJCLYW5XG9CAE5NE5TE"; //사이트에서 발급 받은API SECRET KEY
         Message coolsms = new Message(api_key, api_secret);
         HashMap<String, String> params = new HashMap<String, String>();
-        params.put("to", "01073408629");
+        params.put("to", sendNum);
         params.put("from", "01073408629"); //사전에 사이트에서 번호를 인증하고 등록하여야 함
-        params.put("type", "SMS"); params.put("text", "파밍 인증번호는 "+randomKey+" 입니다. >____< 888");//메시지 내용
+        params.put("type", "SMS"); params.put("text", "파밍 인증번호는 "+randomKey+" 입니다.");//메시지 내용
         //params.put("app_version", "test app 1.2");
         try {
             JSONObject obj = (JSONObject) coolsms.send(params);
@@ -183,28 +186,42 @@ public class UserController {
             System.out.println(e.getCode());
         }
     }
-
+    //회원가입 요청 otp 문자보내줌
     @PostMapping("/requestSignup")
     public String requestSignup(@RequestBody UserDto.UserRegisterDto newUser){
         if (userRepository.existsByPhone(newUser.getPhone())) {
             return "Phone number is already taken";
         }
         else{
-            int verify = (int)(Math.random() * 9999 + 1);
-            sendMsg(String.valueOf(verify));
+            int otp = otpService.generateOTP(newUser.getPhone());
+            sendMsg(String.valueOf(otp),newUser.getPhone());
         }
         return "본인인증 문자 전송됨!";
     }
-
+    //회원가입 otp 확인하고 유저 만듬
     @PostMapping("/signup")
     public String registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
-        if (userRepository.existsByPhone(newUser.getPhone())) {
-            return "Phone number is already taken";
+        int otp = newUser.getOtp();
+        if (otp >= 0) {
+            int serverOtp = otpService.getOtp(newUser.getPhone());
+            System.out.println("system otp : " + serverOtp);
+            if (serverOtp > 0) {
+                if (otp == serverOtp) {
+                    otpService.clearOTP(newUser.getPhone());
+                    createUser(newUser);
+                    return ("User registered!");
+                }
+                else {
+                    return "invalid otp!";
+                }
+            }
+            else {
+                return "otp has expired!";
+            }
         }
-        int verify = (int)(Math.random() * 9999 + 1);
-        sendMsg(String.valueOf(verify));
-        createUser(newUser);
-        return "User registered!";
+        else {
+            return "FAIL";
+        }
     }
 
     //만료된 토큰 + 리프레시 토큰 받고 새로운 access 토큰 발급해줌
