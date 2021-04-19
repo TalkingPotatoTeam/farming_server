@@ -107,7 +107,7 @@ public class UserController {
         return user.get();
     }
 
-    @PostMapping("/newAddress/{id}") //주소만 추가
+    @PostMapping("/add-address/{id}") //주소만 추가
     public User updateUser(@PathVariable String id, @RequestBody String newAddressString ){
         Long userID = Long.parseLong(id);
         Optional<User> user = userRepository.findById(userID);
@@ -187,7 +187,7 @@ public class UserController {
         }
     }
     //회원가입 요청 otp 문자보내줌
-    @PostMapping("/requestSignup")
+    @PostMapping("/request-signup")
     public String requestSignup(@RequestBody UserDto.UserRegisterDto newUser){
         if (userRepository.existsByPhone(newUser.getPhone())) {
             return "Phone number is already taken";
@@ -225,7 +225,7 @@ public class UserController {
     }
 
     //만료된 토큰 + 리프레시 토큰 받고 새로운 access 토큰 발급해줌
-    @GetMapping(value = "/newAccessToken")
+    @GetMapping(value = "/new-access-token")
     public ResponseEntity<?> newAccessToken(HttpServletRequest request) {
         // From the HttpRequest get the claims
         Claims claims = (Claims) request.getAttribute("claims");
