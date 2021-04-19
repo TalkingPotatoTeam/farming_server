@@ -22,16 +22,16 @@ services:
   springboot:
     image: farming_springboot:0.0.1
     ports:
-      - "5050:5050"
+      - "8080:8080"
     volumes:
       - .:/farming/tmp:rw
     restart: always
     depends_on:
       - db
     environment:
-      SPRINGBOOT_DB_USER: tp
-      SPRINGBOOT_DB_PASSWORD: tp
-      SPRINGBOOT_DB_NAME: farming_db
+      SPRING_DATASOURCE_USERNAME: tp
+      SPRING_DATASOURCE_PASSWORD: tp
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/farming_db?useSSL=false
     networks:
       - backend-network
       - frontend-network
@@ -42,4 +42,5 @@ volumes:
 
 networks:
   backend-network:
+    driver: bridge
   frontend-network:
