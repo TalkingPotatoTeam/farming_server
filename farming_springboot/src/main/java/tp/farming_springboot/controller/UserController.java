@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @CrossOrigin
 @RestController
 @EnableAutoConfiguration
-@RequestMapping(value = "/api/test/user/")
+@RequestMapping(value = "/user")
 public class UserController {
     @Autowired
     UserRepository userRepository;
@@ -57,7 +57,7 @@ public class UserController {
     OtpService otpService;
 
 
-    @GetMapping("/") // 데이터 조회
+    @GetMapping("/main") // 데이터 조회
     public String hello(){
         return "Main Page for Testing Users";
     }
@@ -145,8 +145,8 @@ public class UserController {
         return "Deleted user";
     }
 
-    @PostMapping("/signin") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급
-    public ResponseEntity<?> loginUser(@RequestBody UserDto.UserLoginDto logger){
+    @PostMapping("/tokens") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급
+    public ResponseEntity<?> authenticate(@RequestBody UserDto.UserLoginDto logger){
         try{
             if (userRepository.existsByPhone(logger.getPhone())) {
                 Optional<User> user = userRepository.findByPhone(logger.getPhone());
@@ -156,7 +156,7 @@ public class UserController {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 String access = jwtUtils.generateJwtToken(authentication);
                 String refresh = jwtUtils.generateJwtRefreshToken(authentication);
-                return ResponseEntity.ok(access + "                " + refresh);//형태 미정
+                return ResponseEntity.ok("ACCESS "+ access + " REFRESH " + refresh);//형태 미정
             }
             else{
                 return new ResponseEntity<>("Phone number does not exist in db",HttpStatus.BAD_REQUEST);
@@ -188,19 +188,19 @@ public class UserController {
     }
     //회원가입 요청 otp 문자보내줌
     @PostMapping("/request-signup")
-    public String requestSignup(@RequestBody UserDto.UserRegisterDto newUser){
+    public ResponseEntity<?> requestSignup(@RequestBody UserDto.UserRegisterDto newUser){
         if (userRepository.existsByPhone(newUser.getPhone())) {
-            return "Phone number is already taken";
+            return ResponseEntity.badRequest().body("Phone Number is already taken");
         }
         else{
             int otp = otpService.generateOTP(newUser.getPhone());
             sendMsg(String.valueOf(otp),newUser.getPhone());
         }
-        return "본인인증 문자 전송됨!";
+        return ResponseEntity.ok("본인인증번호 문자로 전송됨");
     }
     //회원가입 otp 확인하고 유저 만듬
     @PostMapping("/signup")
-    public String registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
+    public ResponseEntity<?> registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
         int otp = newUser.getOtp();
         if (otp >= 0) {
             int serverOtp = otpService.getOtp(newUser.getPhone());
@@ -209,18 +209,18 @@ public class UserController {
                 if (otp == serverOtp) {
                     otpService.clearOTP(newUser.getPhone());
                     createUser(newUser);
-                    return ("User registered!");
+                    return ResponseEntity.ok("User Registered!");
                 }
                 else {
-                    return "invalid otp!";
+                    return ResponseEntity.badRequest().body("Invalid Otp!");
                 }
             }
             else {
-                return "otp has expired!";
+                return ResponseEntity.badRequest().body("Otp has expired!");
             }
         }
         else {
-            return "FAIL";
+            return ResponseEntity.badRequest().body("FAIL");
         }
     }
 
