@@ -8,6 +8,7 @@ public class UserDto {
     public static class UserRegisterDto{
         private String phone;
         private String address;
+        private int otp;
     }
     @Getter
     public static class UserLoginDto{

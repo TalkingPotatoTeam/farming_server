@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -39,7 +40,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDE_URL =
             Collections.unmodifiableList(
                     Arrays.asList(
-                            "/api/",
+                            //"/api/",
                             "/authenticate"
                     ));
 
@@ -52,35 +53,59 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                //UserDetails userDetails = userRepository.loadUserByUsername(username);
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+            else {
+                System.out.println("Cannot set the Security Context");
+            }
         }
         catch (ExpiredJwtException ex) {
-            request.setAttribute("exception", ex);
             System.out.println("Expired Exception caught!");
-            //String isRefreshToken = request.getHeader("isRefreshToken");
-            //String requestURL = request.getRequestURL().toString();
+            String refresh = request.getHeader("isRefreshToken");
+            String requestURL = request.getRequestURL().toString();
             // allow for Refresh Token creation if following conditions are true.
-            //if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
-            // allowForRefreshToken(ex, request);
-            //} else
-              //  request.setAttribute("exception", ex);
+            if (refresh != null && jwtUtils.validateJwtRefresh(refresh)) {
+                allowForRefreshToken(ex, request);
+                //근데 요청을 보낼때마다 리프레시토큰 보내는건 이상함
+                String username = jwtUtils.getUserNameFromJwtRefreshToken(refresh);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
 
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else
+                request.setAttribute("exception", ex);
         } catch (BadCredentialsException ex) {
             request.setAttribute("exception", ex);
             System.out.println("Bad Credentials Exception caught!");
+            throw ex;
         } catch (Exception ex) {
             logger.error("user authentication erorror: {}", ex);
             System.out.println(ex);
+            throw ex;
         }
         filterChain.doFilter(request, response);
     }
+
+    private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
+        System.out.println("allowing for refresh tokens");
+        // create a UsernamePasswordAuthenticationToken with null values.
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                null, null, null);
+        // After setting the Authentication in the context, we specify
+        // that the current user is authenticated. So it passes the
+        // Spring Security Configurations successfully.
+        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        // Set the claims so that in controller we will be using it to create
+        // new JWT
+        request.setAttribute("claims", ex.getClaims());
+
+    }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         return EXCLUDE_URL.stream().anyMatch(exclude -> exclude.equalsIgnoreCase(request.getServletPath()));

@@ -1,4 +1,4 @@
-package tp.farming_springboot.domain.user;
+package tp.farming_springboot.domain.user.service;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

@@ -1,6 +1,9 @@
 package tp.farming_springboot.controller;
 
 
+import net.nurigo.java_sdk.api.Message;
+import net.nurigo.java_sdk.exceptions.CoolsmsException;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -14,11 +17,12 @@ import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.UserRepository;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/")
+//@RequestMapping("/api/")
 public class LoginTestController {
     @Autowired
     UserRepository userRepository;
@@ -30,7 +34,9 @@ public class LoginTestController {
     @GetMapping("/user1")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public String currentUserName(Principal principal) {
+        System.out.println("a");
         Optional<User> user = userRepository.findByPhone(principal.getName());
+        System.out.println("b");
         return user.get().getId().toString() + user.get().getPhone() + user.get().getAddress();
     }
 
@@ -47,4 +53,8 @@ public class LoginTestController {
     public String adminAccess() {
         return "Admin Board.";
     }
+
+
+
+
 }
