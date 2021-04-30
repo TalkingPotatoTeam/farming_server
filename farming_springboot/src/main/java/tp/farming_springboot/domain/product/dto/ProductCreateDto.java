@@ -1,7 +1,5 @@
 package tp.farming_springboot.domain.product.dto;
 
-
-import jdk.nashorn.internal.objects.annotations.Constructor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

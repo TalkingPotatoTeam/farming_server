@@ -1,6 +1,8 @@
 package tp.farming_springboot.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import net.nurigo.java_sdk.api.Message;
@@ -145,8 +147,8 @@ public class UserController {
         return "Deleted user";
     }
 
-    @PostMapping("/tokens") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급
-    public ResponseEntity<?> authenticate(@RequestBody UserDto.UserLoginDto logger){
+    @GetMapping("/tokens") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급
+    public ResponseEntity<?> authenticate(@RequestBody UserDto.UserAuthDto logger){
         try{
             if (userRepository.existsByPhone(logger.getPhone())) {
                 Optional<User> user = userRepository.findByPhone(logger.getPhone());
@@ -156,14 +158,20 @@ public class UserController {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 String access = jwtUtils.generateJwtToken(authentication);
                 String refresh = jwtUtils.generateJwtRefreshToken(authentication);
-                return ResponseEntity.ok("ACCESS "+ access + " REFRESH " + refresh);//형태 미정
+
+                List<JSONObject> entities = new ArrayList<JSONObject>();
+                JSONObject entity = new JSONObject();
+                entity.put("access", access);
+                entity.put("refresh", refresh);
+                entities.add(entity);
+                return new ResponseEntity<Object>(entities, HttpStatus.OK);
             }
             else{
                 return new ResponseEntity<>("Phone number does not exist in db",HttpStatus.BAD_REQUEST);
             }
         }catch(Exception e){
             System.out.println(e);
-            return new ResponseEntity<>("?",HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("",HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -188,7 +196,7 @@ public class UserController {
     }
     //회원가입 요청 otp 문자보내줌
     @PostMapping("/request-signup")
-    public ResponseEntity<?> requestSignup(@RequestBody UserDto.UserRegisterDto newUser){
+    public ResponseEntity<?> requestSignup(@RequestBody UserDto.UserRequestOtpDto newUser){
         if (userRepository.existsByPhone(newUser.getPhone())) {
             return ResponseEntity.badRequest().body("Phone Number is already taken");
         }
