@@ -31,9 +31,10 @@ public class User  {
     @Getter @Setter
     private String phone;
 
-    @Column(length=15, nullable=false)
+
+    @OneToOne(fetch=FetchType.EAGER, cascade =CascadeType.ALL)
     @Getter @Setter
-    private String address; //현재 주소
+    private Address current; //현재 주소
 
     @ManyToMany(fetch = FetchType.LAZY)
     @Getter @Setter
@@ -47,10 +48,9 @@ public class User  {
     @Getter @Setter
     private List<Address> addresses = new ArrayList<Address>(); //여러 주소 가질 수 있음
 
-    public User (String phone, String address ){//생성자
+    public User (String phone ){//생성자
         this.password=phone;
         this.phone=phone;
-        this.address=address; //현재 주소
     }
 
     public void addAddress(Address address) {
@@ -59,6 +59,10 @@ public class User  {
         }
         addresses.add(address);
     }
+    public void deleteAddress(Address address){
+        addresses.remove(address);
+    }
+
     public void addRole(Role role) {
         if( roles == null){
             roles = new HashSet<Role>();
