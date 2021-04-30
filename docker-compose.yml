@@ -4,7 +4,7 @@ services:
 
   db:
     image: mysql:5.7
-    command: ["--lower_case_table_names=1","--ignore-db-dir=lost+found"]
+    command: ["--lower_case_table_names=1","--ignore-db-dir=lost+found","--character-set-server=utf8mb4"]
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: farming_db
