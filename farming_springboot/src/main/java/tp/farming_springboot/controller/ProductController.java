@@ -10,8 +10,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import tp.farming_springboot.domain.product.dto.PhotoFileDto;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
+import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.model.Product;
+import tp.farming_springboot.domain.product.service.FileService;
+import tp.farming_springboot.domain.product.util.MD5Generator;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
@@ -20,9 +25,11 @@ import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.ResponseEntity;
 import tp.farming_springboot.response.StatusEnum;
 
+import java.io.File;
 import java.nio.charset.Charset;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -34,17 +41,50 @@ public class ProductController {
     private UserRepository userRepository;
 
     @Autowired
-    public ProductController(ProductRepository prodRepo) {
+    private FileService fileService;
+    @Autowired
+    public ProductController(ProductRepository prodRepo, FileService fileService) {
         this.prodRepo = prodRepo;
+        this.fileService = fileService;
     }
-
 
     @PostMapping
     @ResponseBody
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public Product create(Principal principal, @RequestBody ProductCreateDto prodDto) {
-        System.out.println(principal.getName());
+    public Product create(Principal principal, @RequestPart ProductCreateDto prodDto, @RequestPart (value="PhotoFile") MultipartFile files) {
+    /*
+        try {
+            String origFilename = files.getOriginalFilename();
+            String filename = new MD5Generator(origFilename).toString();
 
+            String savePath = System.getProperty("user.dir") + "/files";
+            if (!new File(savePath).exists()) {
+                try{
+                    new File(savePath).mkdir();
+                }
+                catch(Exception e){
+                    e.getStackTrace();
+                }
+            }
+            String filePath = savePath + "/" + filename;
+            files.transferTo(new File(filePath));
+
+            PhotoFileDto fileDto = new PhotoFileDto();
+            fileDto.setOrigFilename(origFilename);
+            fileDto.setFilename(filename);
+            fileDto.setFilePath(filePath);
+
+            PhotoFile photofile = fileService.saveFile(fileDto);
+
+            //prodDto.setPhotoFile((List<PhotoFile>)photofile);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+
+        System.out.println(principal.getName());
+*/
         Optional<User> user = userRepository.findByPhone(principal.getName());
 
         return prodRepo.save(new Product(user, prodDto));
@@ -66,12 +106,12 @@ public class ProductController {
         return prodRepo.findById(id);
     }
 
-    @GetMapping("/byUser/{id}")
+    @GetMapping("/user/{id}")
     public Iterable<Product> findByUserId(@PathVariable Long id) {
         return prodRepo.findByUserId(id);
     }
 
-    @GetMapping("/byLoggedUser")
+    @GetMapping("/current-user")
     public Iterable<Product> findByLoggedUserId(Principal principal) {
 
         Optional<User> user = userRepository.findByPhone(principal.getName());

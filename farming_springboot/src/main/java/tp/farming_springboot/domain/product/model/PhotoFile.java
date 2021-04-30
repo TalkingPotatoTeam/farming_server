@@ -1,15 +1,21 @@
 package tp.farming_springboot.domain.product.model;
 
 import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import tp.farming_springboot.domain.user.model.User;
 
 import javax.persistence.*;
 
+
+@Getter
 @Entity
 public class PhotoFile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
 
     @Column(nullable = false)
     private String origFilename;
