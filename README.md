@@ -8,6 +8,12 @@ docker-compose start // 서비스 시작
 docker-compose stop //서비스 중지
 docker-compose down //도커컴포즈 컨테이너 네트워크 볼륨 중지 및 제거
 ```
+#### 도커 푸시
+```
+docker images
+docker tag [이미지이름] [내이름]/[이미지이름]
+docker push [내이름/이미지이름]
+```
 #### db 접속
 
 ``` 
