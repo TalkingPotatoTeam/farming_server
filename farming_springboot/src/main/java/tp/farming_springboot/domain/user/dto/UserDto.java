@@ -18,4 +18,8 @@ public class UserDto {
     public static class UserAuthDto{
         private String phone;
     }
+    @Getter
+    public static class UserNewAddressDto{
+        private String address;
+    }
 }

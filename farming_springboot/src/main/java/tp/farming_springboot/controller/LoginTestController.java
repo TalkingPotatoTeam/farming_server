@@ -41,7 +41,7 @@ public class LoginTestController {
         System.out.println("a");
         Optional<User> user = userRepository.findByPhone(principal.getName());
         System.out.println("b");
-        return user.get().getId().toString() + user.get().getPhone() + user.get().getAddress();
+        return user.get().getId().toString() + user.get().getPhone() + user.get().getCurrent();
     }
 
     @GetMapping("/user")
@@ -53,7 +53,7 @@ public class LoginTestController {
         JSONObject entity = new JSONObject();
         entity.put("Id", user.get().getId().toString());
         entity.put("Phone", user.get().getPhone());
-        entity.put("Address", user.get().getAddress());
+        entity.put("Address", user.get().getCurrent());
         entities.add(entity);
         return new ResponseEntity<Object>(entities, HttpStatus.OK);
     }
