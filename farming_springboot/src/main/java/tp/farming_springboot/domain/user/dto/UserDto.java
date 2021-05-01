@@ -11,7 +11,15 @@ public class UserDto {
         private int otp;
     }
     @Getter
-    public static class UserLoginDto{
+    public static class UserRequestOtpDto{
         private String phone;
+    }
+    @Getter
+    public static class UserAuthDto{
+        private String phone;
+    }
+    @Getter
+    public static class UserNewAddressDto{
+        private String address;
     }
 }
