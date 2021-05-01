@@ -38,3 +38,6 @@ out/
 .vscode/
 #mac
 .DS_Store
+
+#file dir
+photo_files

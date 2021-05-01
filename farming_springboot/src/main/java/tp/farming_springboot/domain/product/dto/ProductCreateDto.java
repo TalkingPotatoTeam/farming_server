@@ -3,6 +3,9 @@ package tp.farming_springboot.domain.product.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import tp.farming_springboot.domain.product.model.PhotoFile;
+
+import java.util.List;
 
 
 @AllArgsConstructor
@@ -15,4 +18,6 @@ public class ProductCreateDto {
     private String quantity;
     private String address;
     private boolean certified;
+    private List<PhotoFile> photoFile;
 }
+
