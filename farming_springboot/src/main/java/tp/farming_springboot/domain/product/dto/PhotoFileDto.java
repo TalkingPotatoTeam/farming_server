@@ -14,6 +14,7 @@ public class PhotoFileDto {
     private String filename;
     private String filePath;
 
+
     public PhotoFile toEntity() {
         PhotoFile build = PhotoFile.builder()
                 .origFilename(origFilename)
@@ -28,5 +29,6 @@ public class PhotoFileDto {
         this.origFilename = origFilename;
         this.filename = filename;
         this.filePath = filePath;
+
     }
 }

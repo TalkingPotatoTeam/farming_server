@@ -12,6 +12,9 @@ import javax.persistence.*;
 @Entity
 public class PhotoFile {
 
+    public PhotoFile() {
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,4 +35,5 @@ public class PhotoFile {
         this.filename = filename;
         this.filePath = filePath;
     }
+
 }
