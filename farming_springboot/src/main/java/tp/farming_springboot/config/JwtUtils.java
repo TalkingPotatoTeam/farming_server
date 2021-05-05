@@ -80,7 +80,10 @@ public class JwtUtils {
         try {
             Jwts.parser().setSigningKey(jwtRefreshSecret).parseClaimsJws(authToken);
             return true;
-        } catch (Exception ex) {
+        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
+            System.out.println("JWT ERROR");
+            throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
+        } catch (ExpiredJwtException ex) {
             throw ex;
         }
     }
@@ -90,6 +93,7 @@ public class JwtUtils {
             return true;
         }
         catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
+            System.out.println("JWT ERROR");
             throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
         } catch (ExpiredJwtException ex) {
             throw ex;
