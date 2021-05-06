@@ -3,16 +3,13 @@ package tp.farming_springboot.response;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.http.HttpStatus;
 
 @Data
 public class Message {
 
     @Getter
     @Setter
-    private HttpStatus status;
-
-
+    private StatusEnum status;
     @Setter
     private String message;
 
@@ -20,7 +17,7 @@ public class Message {
     private Object data;
 
     public Message() {
-        this.status = HttpStatus.BAD_REQUEST;
+        this.status = StatusEnum.BAD_REQUEST;
         this.data = null;
         this.message = null;
     }
