@@ -1,16 +1,11 @@
 package tp.farming_springboot.controller;
 
 
-import org.apache.ibatis.executor.ExecutorException;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +19,7 @@ import tp.farming_springboot.domain.product.util.MD5Generator;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
+import tp.farming_springboot.exception.RestNullPointerException;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
 
@@ -55,6 +51,15 @@ public class ProductController {
         this.fileService = fileService;
     }
 
+    @ExceptionHandler
+    public ResponseEntity<Message> handler(RestNullPointerException e) {
+        Message message = e.getMsg();
+        HttpHeaders headers = e.getHeaders();
+        HttpStatus httpStatus = e.getHttpStatus();
+
+        return new ResponseEntity<>(message, headers, httpStatus);
+    }
+
     @PostMapping
     @ResponseBody
     //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
@@ -62,20 +67,13 @@ public class ProductController {
 
         Optional<User> user = null;
         List<PhotoFile> photoFileList = null;
-        Message message = new Message();
+        Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
 
         try {
-            try {
-                user = userRepo.findByPhone(principal.getName());
-                user.orElseThrow(() -> new Exception("User Token invalid."));
-            }
-            catch(Exception e) {
-                message.setStatus(StatusEnum.UNAUTHORIZED);
-                message.setMessage(e.getMessage());
-                return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
-            }
+            user = userRepo.findByPhone(principal.getName());
+            user.orElseThrow(() -> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, null, StatusEnum.UNAUTHORIZED));
 
             for(MultipartFile file : files) {
                 String origFilename = file.getOriginalFilename();
@@ -83,22 +81,18 @@ public class ProductController {
                 String savePath = System.getProperty("user.dir") + "/photo_files";
 
                 if (!new File(savePath).exists()) {
-                    try{
+                    try {
                         new File(savePath).mkdir();
                     }
                     catch(Exception e){
-                        message.setStatus(StatusEnum.INTERNAL_SERVER_ERROR);
-                        message.setMessage("Making File-dir failed.");
+                        message = new Message(StatusEnum.INTERNAL_SERVER_ERROR, "Making File-dir failed.");
                         return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
                     }
                 }
                 String filePath = savePath + "/" + filename;
                 file.transferTo(new File(filePath));
 
-                PhotoFileDto fileDto = new PhotoFileDto();
-                fileDto.setOrigFilename(origFilename);
-                fileDto.setFilename(filename);
-                fileDto.setFilePath(filePath);
+                PhotoFileDto fileDto = new PhotoFileDto(origFilename, filename, filePath);
 
                 if(photoFileList == null)
                     photoFileList = new ArrayList<PhotoFile>();
@@ -108,74 +102,49 @@ public class ProductController {
             prodDto.setPhotoFile(photoFileList);
 
         } catch(Exception e) {
-            message.setStatus(StatusEnum.INTERNAL_SERVER_ERROR);
-            message.setMessage("File reading error");
+            message = new Message(StatusEnum.INTERNAL_SERVER_ERROR, "File reading error.");
             return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         prodDto.setAddress(user.get().getCurrent().getContent());
         Product prod = prodRepo.save(new Product(user, prodDto));
-        message.setStatus(StatusEnum.OK);
-        message.setMessage("Product item uploaded");
-        message.setData(prod);
+
+        message = new Message(StatusEnum.OK, "Product item uploaded.", prod);
         return new ResponseEntity<>(message, headers, HttpStatus.OK);
     }
 
     // prodRepo의 findall return type => *Iterable*
     @GetMapping
     public ResponseEntity<Message> list(Principal principal) {
-        Message message = new Message();
+        Message message = null;
         HttpHeaders headers = new HttpHeaders();
 
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        Optional<User> user = null;
-        try {
-            user = userRepo.findByPhone(principal.getName());
-            user.orElseThrow(() -> new Exception("User Token invalid."));
-        }
-        catch(Exception e) {
-            message.setStatus(StatusEnum.UNAUTHORIZED);
-            message.setMessage(e.getMessage());
-            return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
-        }
+        Optional<User> user = userRepo.findByPhone(principal.getName());
+        user.orElseThrow(() -> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
 
         Iterable<Product> prodList = prodRepo.findAll();
 
-        message.setMessage("finding all of product is success.");
-        message.setData(prodList);
-        message.setStatus(StatusEnum.OK);
+        message = new Message(StatusEnum.OK, "finding all of product is success.", prodList);
         return new ResponseEntity<>(message, headers, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Message> findByProductId(Principal principal, @PathVariable Long id) {
-        Message message = new Message();
+        Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application","json",Charset.forName("UTF-8")));
         Optional<User> user = null;
-        try {
-            try {
-                user = userRepo.findByPhone(principal.getName());
-                user.orElseThrow(() -> new Exception("User Token invalid."));
-            }
-            catch(Exception e) {
-                message.setStatus(StatusEnum.UNAUTHORIZED);
-                message.setMessage(e.getMessage());
-                return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
-            }
 
-            Optional<Product> prod = prodRepo.findById(id);
-            prod.orElseThrow(()-> new Exception("Finding with id product failed."));
-            message.setMessage("Finding with id product is Success.");
-            message.setStatus(StatusEnum.OK);
-            message.setData(prod);
-            return new ResponseEntity<>(message, headers, HttpStatus.OK);
-        }
-        catch (Exception e) {
-            message.setMessage(e.getMessage());
-            message.setStatus(StatusEnum.NOT_FOUND);
-            return new ResponseEntity<>(message, headers, HttpStatus.NOT_FOUND);
-        }
+        user = userRepo.findByPhone(principal.getName());
+        user.orElseThrow(() -> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
+
+        Optional<Product> prod = prodRepo.findById(id);
+        prod.orElseThrow(()->  new RestNullPointerException(headers, "Finding with id product failed.", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
+
+        message = new Message(StatusEnum.OK, "Finding with product id is Success.", prod);
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
+
     }
 
     @GetMapping("/user/{id}")
@@ -184,33 +153,18 @@ public class ProductController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application","json",Charset.forName("UTF-8")));
         // 게시글이 없는 경우 빈 데이터.
-        Optional<User> current_user = null;
-        Optional<User> product_author = null;
-        try {
-            try {
-                current_user = userRepo.findByPhone(principal.getName());
-                current_user.orElseThrow(() -> new Exception("Current User Token invalid."));
-                product_author = userRepo.findById(id);
-                product_author.orElseThrow(()->new Exception("Author id invalid."));
-            }
-            catch(Exception e) {
 
-                message.setStatus(StatusEnum.UNAUTHORIZED);
-                message.setMessage(e.getMessage());
-                return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
-            }
+        Optional<User> current_user = userRepo.findByPhone(principal.getName());
+        current_user.orElseThrow(() ->  new RestNullPointerException(headers, "Current User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
+        Optional<User> product_author  = userRepo.findById(id);
+        product_author.orElseThrow(()-> new RestNullPointerException(headers, "Finding by author id failed.", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
 
-            Iterable<Product> prod = prodRepo.findByUserId(id);
-            message.setMessage("Finding with user id is Success.");
-            message.setStatus(StatusEnum.OK);
-            message.setData(prod);
-            return new ResponseEntity<>(message, headers, HttpStatus.OK);
-        }
-        catch (Exception e) {
-            message.setMessage("User id invalid.");
-            message.setStatus(StatusEnum.NOT_FOUND);
-            return new ResponseEntity<>(message, headers, HttpStatus.NOT_FOUND);
-        }
+        Iterable<Product> prod = prodRepo.findByUserId(id);
+        message.setMessage("Finding with user id is Success.");
+        message.setStatus(StatusEnum.OK);
+        message.setData(prod);
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
+
     }
 
     @GetMapping("/current-login-user")
@@ -219,16 +173,9 @@ public class ProductController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application","json",Charset.forName("UTF-8")));
 
-        Optional<User> current_user = null;
+        Optional<User> current_user = userRepo.findByPhone(principal.getName());
+        current_user.orElseThrow(() -> new RestNullPointerException(headers, "Current User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
 
-        try {
-            current_user = userRepo.findByPhone(principal.getName());
-            current_user.orElseThrow(() -> new Exception("Current User Token invalid."));
-        } catch (Exception e) {
-            message.setStatus(StatusEnum.UNAUTHORIZED);
-            message.setMessage(e.getMessage());
-            return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
-        }
         Iterable<Product> prodList = prodRepo.findByUserId(current_user.get().getId());
         message.setStatus(StatusEnum.OK);
         message.setMessage("Finding by current-user is success.");
@@ -243,29 +190,22 @@ public class ProductController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
 
-        Optional<User> user = null;
+
         Optional<Product> prod = null;
-        try {
-            user = userRepo.findByPhone(principal.getName());
-            user.orElseThrow(()-> new Exception("User Token Invalid."));
-        }
-        catch (Exception e) {
-            message.setStatus(StatusEnum.UNAUTHORIZED);
-            message.setMessage(e.getMessage());
-            return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
-        }
+
+        Optional<User> user = userRepo.findByPhone(principal.getName());
+        user.orElseThrow(()-> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
 
         try {
             List<PhotoFile> photoFileList = null;
 
-            try {
-                prod = prodRepo.findById(id);
-                prod.orElseThrow(()-> new Exception("Product is not existed."));
-            }
-            catch (Exception e) {
-                message.setStatus(StatusEnum.NOT_FOUND);
-                message.setMessage(e.getMessage());
-                return new ResponseEntity<>(message, headers, HttpStatus.NOT_FOUND);
+            prod = prodRepo.findById(id);
+            prod.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Product by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
+
+            if(prod.get().getUser().getId() != user.get().getId()) {
+                message.setStatus(StatusEnum.UNAUTHORIZED);
+                message.setMessage("You can't add photo, you must author of this product.");
+                return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
             }
 
             for(MultipartFile file : files) {
@@ -287,10 +227,7 @@ public class ProductController {
                 String filePath = savePath + "/" + filename;
                 file.transferTo(new File(filePath));
 
-                PhotoFileDto fileDto = new PhotoFileDto();
-                fileDto.setOrigFilename(origFilename);
-                fileDto.setFilename(filename);
-                fileDto.setFilePath(filePath);
+                PhotoFileDto fileDto = new PhotoFileDto(origFilename, filename, filePath);
 
                 if(photoFileList == null) {
                     photoFileList = new ArrayList<PhotoFile>();
@@ -300,6 +237,7 @@ public class ProductController {
 
             prod.get().addPhoto(photoFileList);
             prodRepo.save(prod.get());
+
             message.setStatus(StatusEnum.OK);
             message.setMessage("Photo uploading success.");
             message.setData(photoFileList);
@@ -312,16 +250,21 @@ public class ProductController {
         }
 
     }
-// 위에까지 수정함 ㅠ
+
     @DeleteMapping("/{product_id}/photo/{photo_id}")
     public ResponseEntity<Message> deletePhotoToProduct(Principal principal, @PathVariable Long product_id, @PathVariable Long photo_id) {
         Message message = new Message();
         HttpHeaders headers= new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
 
-        Optional<Product> prod = prodRepo.findById(product_id);
         Optional<User> user = userRepo.findByPhone(principal.getName());
+        user.orElseThrow(()-> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
+
+        Optional<Product> prod = prodRepo.findById(product_id);
+        prod.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Product by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
+
         Optional<PhotoFile> photoFile = photoFileRepo.findById(photo_id);
+        photoFile.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Photo by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
 
         // 게시글이 없을 때 등등 추가적인 예외처리 필요함.
         if(prod.get().getUser().getId() == user.get().getId()) {
@@ -330,21 +273,19 @@ public class ProductController {
                 prodRepo.save(prod.get());
                 photoFileRepo.delete(photoFile.get());
                 message.setStatus(StatusEnum.OK);
-                message.setMessage("게시글을 삭제했습니다.");
-                message.setData(user);
+                message.setMessage("Photo deleted");
+                message.setData(prod);
                 return new ResponseEntity<>(message, headers, HttpStatus.OK);
             }
             else {
-                message.setStatus(StatusEnum.NOT_FOUND);
-                message.setMessage("게시글에 해당 사진이 존재하지 않습니다.");
-                message.setData(user);
+                message.setStatus(StatusEnum.UNMATCH);
+                message.setMessage("This Photo isn't included in this Product. Enter Another Product id or Photo id.");
                 return new ResponseEntity<>(message, headers, HttpStatus.NOT_FOUND);
             }
         }
         else {
             message.setStatus(StatusEnum.UNAUTHORIZED);
-            message.setMessage("게시글 작성자가 아니면 삭제할 수 없습니다.");
-            message.setData(user);
+            message.setMessage("Can't delete Photo, You must author of this product");
             return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
         }
 
@@ -358,16 +299,13 @@ public class ProductController {
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
 
         Optional<User> user = userRepo.findByPhone(principal.getName());
+        user.orElseThrow(()-> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
 
-        if(!user.isPresent()){
-            message.setStatus(StatusEnum.NOT_FOUND);
-            message.setMessage("유저를 찾을 수 없습니다.");
-            return new ResponseEntity<>(message,headers, HttpStatus.NOT_FOUND);
-        }
-        message.setData(user);
+
         Optional<Product> prod = prodRepo.findById(id);
+        prod.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Product by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
 
-        if(prod.isPresent()) {
+        if(prod.get().getUser().getId() == user.get().getId()) {
 
             if (prodDto.getTitle() != null)
                 prod.get().setTitle(prodDto.getTitle());
@@ -387,13 +325,13 @@ public class ProductController {
             prodRepo.save(prod.get());
             message.setStatus(StatusEnum.OK);
             message.setData(prod);
-            message.setMessage("게시글을 업데이트 했습니다.");
-            return new ResponseEntity<>(message,headers, HttpStatus.OK);
+            message.setMessage("Product updated.");
+            return new ResponseEntity<>(message, headers, HttpStatus.OK);
         }
         else {
-            message.setStatus(StatusEnum.NOT_FOUND);
-            message.setMessage("게시글이 존재하지 않습니다.");
-            return new ResponseEntity<>(message,headers, HttpStatus.NOT_FOUND);
+            message.setStatus(StatusEnum.UNAUTHORIZED);
+            message.setMessage("Can't edit Product, You must author of this product");
+            return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
         }
 
     }
@@ -403,20 +341,23 @@ public class ProductController {
         HttpHeaders headers= new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
 
-        Optional<Product> prod = prodRepo.findById(id);
         Optional<User> user = userRepo.findByPhone(principal.getName());
+        user.orElseThrow(()-> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
 
-        // 게시글이 없을 때 등등 추가적인 예외처리 필요함.
+
+        Optional<Product> prod = prodRepo.findById(id);
+        prod.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Product by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
+
+
         if(prod.get().getUser().getId() == user.get().getId()) {
             prodRepo.deleteById(id);
-
             message.setStatus(StatusEnum.OK);
-            message.setMessage("게시글을 삭제했습니다.");
+            message.setMessage("Product deleted.");
             return new ResponseEntity<>(message, headers, HttpStatus.OK);
         }
         else {
             message.setStatus(StatusEnum.UNAUTHORIZED);
-            message.setMessage("게시글 작성자가 아니면 삭제할 수 없습니다.");
+            message.setMessage("Can't delete Product, You must author of this product");
             return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
         }
 

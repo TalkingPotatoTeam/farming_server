@@ -21,4 +21,16 @@ public class Message {
         this.data = null;
         this.message = null;
     }
+
+    public Message(StatusEnum status, String message, Object data) {
+        this.status = status;
+        this.message = message;
+        this.data = data;
+    }
+
+    public Message(StatusEnum status, String message) {
+        this.status = status;
+        this.message = message;
+        this.data = null;
+    }
 }
