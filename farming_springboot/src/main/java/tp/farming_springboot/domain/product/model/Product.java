@@ -5,12 +5,16 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
+import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.User;
 
 import javax.persistence.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -31,10 +35,22 @@ public class Product {
         this.certified = prodDto.isCertified();
         this.quantity = prodDto.getQuantity();
         this.createdDate = LocalDateTime.now();
+        addPhoto(prodDto.getPhotoFile());
     }
     @Autowired
     public Product() {
 
+    }
+
+    public void addPhoto(List<PhotoFile> photofile) {
+        if(this.photoFile == null)
+            this.photoFile = new ArrayList<PhotoFile>();
+
+        for(PhotoFile photoFile : photofile)
+            this.photoFile.add(photoFile);
+    }
+    public void deletePhoto(PhotoFile photofile){
+        this.photoFile.remove(photofile);
     }
 
     @Id
@@ -77,6 +93,12 @@ public class Product {
     @Getter
     @CreatedDate
     private LocalDateTime createdDate;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name ="product_id")
+    @Getter
+    @Setter
+    private List<PhotoFile> photoFile;
 
     /*@OneToOne
     private Long category_id;
