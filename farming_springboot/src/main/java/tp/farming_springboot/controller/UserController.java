@@ -142,9 +142,61 @@ public class UserController {
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     String access = jwtUtils.generateJwtToken(authentication);
+                    String refresh = jwtUtils.generateJwtRefreshToken(authentication);
+
+                    List<JSONObject> entities = new ArrayList<JSONObject>();
                     JSONObject entity = new JSONObject();
                     entity.put("access", access);
-                    return new ResponseEntity<Object>(entity, HttpStatus.OK);
+                    entity.put("refresh", refresh);
+                    entities.add(entity);
+                    return new ResponseEntity<Object>(entities, HttpStatus.OK);
+                    //String access = jwtUtils.generateJwtToken(authentication);
+                    //JSONObject entity = new JSONObject();
+                    //entity.put("access", access);
+                    //return new ResponseEntity<Object>(entity, HttpStatus.OK);
+                }
+                else {
+                    return ResponseEntity.badRequest().body("Invalid Otp!");
+                }
+            }
+            else {
+                return ResponseEntity.badRequest().body("Otp has expired!");
+            }
+        }
+        else {
+            return ResponseEntity.badRequest().body("FAIL");
+        }
+    }
+    //otp 확인하고 로그인 기능
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody UserDto.UserLoginDto logger){
+        int otp = logger.getOtp();
+        if (otp >= 0) {
+            int serverOtp = otpService.getOtp(logger.getPhone());
+            if (serverOtp > 0) {
+                if (otp == serverOtp) {
+                    otpService.clearOTP(logger.getPhone());
+                    Optional<User> user = userRepository.findByPhone(logger.getPhone());
+                    if(user.isPresent()){
+                        Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(user.get().getPhone(), user.get().getPhone()));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        String access = jwtUtils.generateJwtToken(authentication);
+                        String refresh = jwtUtils.generateJwtRefreshToken(authentication);
+
+                        List<JSONObject> entities = new ArrayList<JSONObject>();
+                        JSONObject entity = new JSONObject();
+                        entity.put("access", access);
+                        entity.put("refresh", refresh);
+                        entities.add(entity);
+                        return new ResponseEntity<Object>(entities, HttpStatus.OK);
+//                        JSONObject entity = new JSONObject();
+//                        entity.put("access", access);
+//                        return new ResponseEntity<Object>(entity, HttpStatus.OK);
+                    }
+                    else{
+                        return ResponseEntity.badRequest().body("Phone number does not exist. Please register");
+                    }
                 }
                 else {
                     return ResponseEntity.badRequest().body("Invalid Otp!");

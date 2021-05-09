@@ -11,6 +11,11 @@ public class UserDto {
         private int otp;
     }
     @Getter
+    public static class UserLoginDto{
+        private String phone;
+        private int otp;
+    }
+    @Getter
     public static class UserRequestOtpDto{
         private String phone;
     }
