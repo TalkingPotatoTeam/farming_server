@@ -66,7 +66,7 @@ public class ProductController {
     public ResponseEntity<Message> create(Principal principal, @RequestPart ProductCreateDto prodDto, @RequestPart (value="PhotoFile", required=false) List<MultipartFile> files) {
 
         Optional<User> user = null;
-        List<PhotoFile> photoFileList = null;
+        List<PhotoFile> photoFileList = null; // isEmpty()로 확인할 수 있게 수정
         Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
@@ -75,29 +75,38 @@ public class ProductController {
             user = userRepo.findByPhone(principal.getName());
             user.orElseThrow(() -> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, null, StatusEnum.UNAUTHORIZED));
 
-            for(MultipartFile file : files) {
-                String origFilename = file.getOriginalFilename();
-                String filename = new MD5Generator(origFilename).toString(); // file name 암호화
-                String savePath = System.getProperty("user.dir") + "/photo_files";
+            if(files == null) {
+                photoFileList = new ArrayList<PhotoFile>();
 
-                if (!new File(savePath).exists()) {
-                    try {
-                        new File(savePath).mkdir();
+            } else {
+                for (MultipartFile file : files) {
+
+                    String origFilename = file.getOriginalFilename();
+                    String filename = new MD5Generator(origFilename).toString(); // file name 암호화
+                    String savePath = System.getProperty("user.dir") + "/photo_files";
+
+                    if (!new File(savePath).exists()) {
+                        try {
+                            new File(savePath).mkdir();
+                        } catch (Exception e) {
+                            message = new Message(StatusEnum.INTERNAL_SERVER_ERROR, 해"Making File-dir failed.");
+                            return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+                        }
                     }
-                    catch(Exception e){
-                        message = new Message(StatusEnum.INTERNAL_SERVER_ERROR, "Making File-dir failed.");
-                        return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
+                    String filePath = savePath + "/" + filename;
+                    file.transferTo(new File(filePath));
+
+                    PhotoFileDto fileDto = new PhotoFileDto();
+                    fileDto.setOrigFilename(origFilename);
+                    fileDto.setFilename(filename);
+                    fileDto.setFilePath(filePath);
+
+                    if (photoFileList == null)
+                        photoFileList = new ArrayList<PhotoFile>();
+
+                    photoFileList.add(fileService.saveFile(fileDto));
+
                 }
-                String filePath = savePath + "/" + filename;
-                file.transferTo(new File(filePath));
-
-                PhotoFileDto fileDto = new PhotoFileDto(origFilename, filename, filePath);
-
-                if(photoFileList == null)
-                    photoFileList = new ArrayList<PhotoFile>();
-
-                photoFileList.add(fileService.saveFile(fileDto));
             }
             prodDto.setPhotoFile(photoFileList);
 
@@ -185,11 +194,10 @@ public class ProductController {
     }
 
     @PostMapping("/{id}/photo")
-    public ResponseEntity<Message> addPhotoToProduct(Principal principal, @PathVariable Long id, @RequestPart(value="PhotoFile") List<MultipartFile> files) {
+    public ResponseEntity<Message> addPhotoToProduct(Principal principal, @PathVariable Long id, @RequestPart(value="PhotoFile",required=false) List<MultipartFile> files) {
         Message message =new Message();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-
 
         Optional<Product> prod = null;
 
@@ -208,35 +216,35 @@ public class ProductController {
                 return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
             }
 
-            for(MultipartFile file : files) {
+            if(files != null) {
+                for (MultipartFile file : files) {
 
-                String origFilename = file.getOriginalFilename();
-                String filename = new MD5Generator(origFilename).toString(); // file name 암호화
-                String savePath = System.getProperty("user.dir") + "/photo_files";
+                    String origFilename = file.getOriginalFilename();
+                    String filename = new MD5Generator(origFilename).toString(); // file name 암호화
+                    String savePath = System.getProperty("user.dir") + "/photo_files";
 
-                if (!new File(savePath).exists()) {
-                    try{
-                        new File(savePath).mkdir();
+                    if (!new File(savePath).exists()) {
+                        try {
+                            new File(savePath).mkdir();
+                        } catch (Exception e) {
+                            message.setStatus(StatusEnum.INTERNAL_SERVER_ERROR);
+                            message.setMessage("Making File-dir failed.");
+                            return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+                        }
                     }
-                    catch(Exception e){
-                        message.setStatus(StatusEnum.INTERNAL_SERVER_ERROR);
-                        message.setMessage("Making File-dir failed.");
-                        return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+                    String filePath = savePath + "/" + filename;
+                    file.transferTo(new File(filePath));
+
+                    PhotoFileDto fileDto = new PhotoFileDto(origFilename, filename, filePath);
+
+                    if (photoFileList == null) {
+                        photoFileList = new ArrayList<PhotoFile>();
                     }
+                    photoFileList.add(fileService.saveFile(fileDto));
                 }
-                String filePath = savePath + "/" + filename;
-                file.transferTo(new File(filePath));
-
-                PhotoFileDto fileDto = new PhotoFileDto(origFilename, filename, filePath);
-
-                if(photoFileList == null) {
-                    photoFileList = new ArrayList<PhotoFile>();
-                }
-                photoFileList.add(fileService.saveFile(fileDto));
+                prod.get().addPhoto(photoFileList);
+                prodRepo.save(prod.get());
             }
-
-            prod.get().addPhoto(photoFileList);
-            prodRepo.save(prod.get());
 
             message.setStatus(StatusEnum.OK);
             message.setMessage("Photo uploading success.");
