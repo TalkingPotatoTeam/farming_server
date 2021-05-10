@@ -22,24 +22,22 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
         logger.error("Unauthorized error: {}", authException.getMessage());
-
         // Check if the request as any exception that we have stored in Request
         final Exception exception = (Exception) request.getAttribute("exception");
+        //String message = exception.getMessage();
         String message;
-        // If yes then use it to create the response message else use the authException
-        if (exception != null) {
-            byte[] body = new ObjectMapper().writeValueAsBytes(Collections.singletonMap("cause", exception.toString()));
-            response.getOutputStream().write(body);
-        } else {
-            if (authException.getCause() != null) {
-                message = authException.getCause().toString() + " " + authException.getMessage();
-            } else {
-                message = authException.getMessage();
-            }
 
-            byte[] body = new ObjectMapper().writeValueAsBytes(Collections.singletonMap("error", message));
-            response.getOutputStream().write(body);
+        //response.setContentType("application/json");
+        //response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        //response.getOutputStream().println("{ \"error\": \"" + authException.getMessage() + "\" }");
+
+        //byte[] body = new ObjectMapper().writeValueAsBytes(Collections.singletonMap("cause", exception.toString()));
+        //response.getOutputStream().write(body);
+        message = exception.getMessage();
+        if (authException.getCause() != null){
+            message += ": "+authException.getCause().getMessage();
         }
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
         //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
     }
 

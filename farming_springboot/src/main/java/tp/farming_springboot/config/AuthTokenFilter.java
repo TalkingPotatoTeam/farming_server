@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -33,6 +34,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private JwtAuthEntryPoint jwtAuthEntryPoint;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -41,7 +44,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             Collections.unmodifiableList(
                     Arrays.asList(
                             //"/api/",
-                            "/authenticate"
+                            "/authenticate",
+                            "/auth/tokens"
                     ));
 
     @Override
@@ -49,7 +53,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+            if(jwt == null) throw new BadCredentialsException("TOKEN REQUIRED");
+            if (jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -58,6 +63,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                filterChain.doFilter(request, response);
             }
             else {
                 System.out.println("Cannot set the Security Context");
@@ -78,22 +84,24 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    filterChain.doFilter(request, response);
                 } else
                     request.setAttribute("exception", ex);
             }catch(Exception e){
                 request.setAttribute("exception",e);
                 throw e;
             }
-        } catch (BadCredentialsException ex) {
-            request.setAttribute("exception", ex);
-            System.out.println("Bad Credentials Exception caught!");
-            throw ex;
+        } catch(AuthenticationException authenticationException) {
+            request.setAttribute("exception",authenticationException);
+            SecurityContextHolder.clearContext();
+            jwtAuthEntryPoint.commence(request, response, authenticationException);
+
         } catch (Exception ex) {
             logger.error("user authentication erorror: {}", ex);
             System.out.println(ex);
             throw ex;
         }
-        filterChain.doFilter(request, response);
+        //filterChain.doFilter(request, response);
     }
 
     private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
