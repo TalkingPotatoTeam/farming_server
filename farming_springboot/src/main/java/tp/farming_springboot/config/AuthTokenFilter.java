@@ -68,17 +68,22 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             String refresh = request.getHeader("Refresh");
             String requestURL = request.getRequestURL().toString();
             // allow for Refresh Token creation if following conditions are true.
-            if (refresh != null && jwtUtils.validateJwtRefresh(refresh)) {
-                allowForRefreshToken(ex, request);
-                //근데 요청을 보낼때마다 리프레시토큰 보내는건 이상함
-                String username = jwtUtils.getUserNameFromJwtRefreshToken(refresh);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                Authentication authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
+            try {
+                if (refresh != null && jwtUtils.validateJwtRefresh(refresh)) {
+                    allowForRefreshToken(ex, request);
+                    //근데 요청을 보낼때마다 리프레시토큰 보내는건 이상함
+                    String username = jwtUtils.getUserNameFromJwtRefreshToken(refresh);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    Authentication authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else
-                request.setAttribute("exception", ex);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else
+                    request.setAttribute("exception", ex);
+            }catch(Exception e){
+                request.setAttribute("exception",e);
+                throw e;
+            }
         } catch (BadCredentialsException ex) {
             request.setAttribute("exception", ex);
             System.out.println("Bad Credentials Exception caught!");
