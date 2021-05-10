@@ -83,8 +83,8 @@ public class JwtUtils {
             Jwts.parser().setSigningKey(jwtRefreshSecret).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
-            System.out.println("JWT ERROR");
-            throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
+            System.out.println("REFRESH JWT ERROR");
+            throw new BadCredentialsException("REFRESH_TOKEN_INVALID_CREDENTIALS", ex);
         } catch (ExpiredJwtException ex) {
             throw ex;
         }
