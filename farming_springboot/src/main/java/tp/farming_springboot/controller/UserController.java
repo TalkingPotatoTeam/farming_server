@@ -127,7 +127,7 @@ public class UserController {
         return new ResponseEntity<Object>(entities, HttpStatus.OK);
     }
     //회원가입 otp 확인하고 유저 만듬
-    @PostMapping("")
+    @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
         int otp = newUser.getOtp();
         if (otp >= 0) {

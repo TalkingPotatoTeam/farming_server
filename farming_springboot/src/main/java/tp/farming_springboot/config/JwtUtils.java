@@ -1,5 +1,6 @@
 package tp.farming_springboot.config;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Date;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
 
@@ -81,8 +83,8 @@ public class JwtUtils {
             Jwts.parser().setSigningKey(jwtRefreshSecret).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
-            System.out.println("JWT ERROR");
-            throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
+            System.out.println("REFRESH JWT ERROR");
+            throw new BadCredentialsException("REFRESH_TOKEN_INVALID_CREDENTIALS", ex);
         } catch (ExpiredJwtException ex) {
             throw ex;
         }
@@ -96,10 +98,12 @@ public class JwtUtils {
         }
         catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
             System.out.println("JWT ERROR");
-            throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
+            throw new BadCredentialsException("TOKEN_INVALID_CREDENTIALS", ex);
         } catch (ExpiredJwtException ex) {
+            System.out.println("JWT EXPIRED ERROR");
             throw ex;
         }
+        //return false;
         /*catch (SignatureException e) {
             logger.error("Invalid JWT signature: {}", e.getMessage());
         } catch (MalformedJwtException e) {
