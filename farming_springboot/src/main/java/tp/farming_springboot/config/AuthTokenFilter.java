@@ -75,8 +75,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             String refresh = request.getHeader("Refresh");
             String requestURL = request.getRequestURL().toString();
             // allow for Refresh Token creation if following conditions are true.
-            try {
-                if (refresh != null && jwtUtils.validateJwtRefresh(refresh)) {
+            try{
+            if(refresh == null) throw new BadCredentialsException("JWT EXPIRED. TRY WITH REFRESH TOKEN");
+            //try {
+                if (jwtUtils.validateJwtRefresh(refresh)) {
                     allowForRefreshToken(ex, request);
                     //근데 요청을 보낼때마다 리프레시토큰 보내는건 이상함
                     String username = jwtUtils.getUserNameFromJwtRefreshToken(refresh);
@@ -88,9 +90,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
                 } else
                     request.setAttribute("exception", ex);
-            }catch(Exception e){
+            }catch(AuthenticationException e){
+                System.out.println("Refresh token exception caught");
                 request.setAttribute("exception",e);
-                throw e;
+                SecurityContextHolder.clearContext();
+                jwtAuthEntryPoint.commence(request, response, e);
             }
         } catch(AuthenticationException authenticationException) {
             request.setAttribute("exception",authenticationException);
@@ -98,7 +102,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             jwtAuthEntryPoint.commence(request, response, authenticationException);
 
         } catch (Exception ex) {
-            logger.error("user authentication erorror: {}", ex);
+            System.out.println("what");
+            logger.error("user authentication error: {}", ex);
             System.out.println(ex);
             throw ex;
         }
