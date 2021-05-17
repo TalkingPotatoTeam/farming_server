@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,7 @@ public class PageController {
 
     @CrossOrigin(origins = "*",allowedHeaders = "*")
     @GetMapping("/home")
-    public Page<PagingDTO> home(@PageableDefault(size=3, sort="createdDate") Pageable pageRequest){
+    public Page<PagingDTO> home(@PageableDefault(size=3, sort="createdDate",direction= Sort.Direction.DESC) Pageable pageRequest){
         Page<Product> productList = productRepository.findAll(pageRequest);
         Page<PagingDTO> pagingList = productList.map(
                 product -> new PagingDTO(
@@ -35,7 +36,7 @@ public class PageController {
     public Page<PagingDTO> search(
             @RequestParam String title,
             @RequestParam String content,
-            @PageableDefault(size=3, sort="createdDate") Pageable pageRequest){
+            @PageableDefault(size=3, sort="createdDate",direction= Sort.Direction.DESC) Pageable pageRequest){
         Page<Product> productList = productRepository.findAll(pageRequest);
         Page<PagingDTO> pagingList = productList.map(
                 product -> new PagingDTO(
