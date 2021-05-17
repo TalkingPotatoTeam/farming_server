@@ -9,10 +9,10 @@ import java.time.LocalDateTime;
 public class PagingDTO {
     private Long id;
     private String title;
-    private User createdBy;
+    private Long createdBy;
     private LocalDateTime createdDate;
 
-    public PagingDTO(Long id, String title, User createdBy, LocalDateTime createdDate){
+    public PagingDTO(Long id, String title, Long createdBy, LocalDateTime createdDate){
         this.id = id;
         this.title = title;
         this.createdBy = createdBy;
