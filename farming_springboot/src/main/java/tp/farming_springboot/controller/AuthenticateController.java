@@ -77,7 +77,7 @@ public class AuthenticateController {
         }
     }
 
-    private void sendMsg(String randomKey, String sendNum){
+    private ResponseEntity<?> sendMsg(String randomKey, String sendNum){
         String api_key = "NCSI7GU7YFBWB6R7"; //사이트에서 발급 받은 API KEY
         String api_secret = "UTYWP9RRXCZO1WJCLYW5XG9CAE5NE5TE"; //사이트에서 발급 받은API SECRET KEY
         Message coolsms = new Message(api_key, api_secret);
@@ -89,11 +89,13 @@ public class AuthenticateController {
         try {
             JSONObject obj = (JSONObject) coolsms.send(params);
             System.out.println(obj.toString()); //전송 결과 출력
+            return ResponseEntity.ok("본인인증번호 문자로 전송됨");
         }
         catch (CoolsmsException e)
         {
             System.out.println(e.getMessage());
             System.out.println(e.getCode());
+            return ResponseEntity.badRequest().body("본인인증번호 문자 전송 실패. 다시 시도해 주세요.");
         }
     }
     //회원가입 요청 otp 문자보내줌
@@ -104,9 +106,9 @@ public class AuthenticateController {
         }
         else{
             int otp = otpService.generateOTP(newUser.getPhone());
-            sendMsg(String.valueOf(otp),newUser.getPhone());
+            return sendMsg(String.valueOf(otp),newUser.getPhone());
         }
-        return ResponseEntity.ok("본인인증번호 문자로 전송됨");
+        //return ResponseEntity.ok("본인인증번호 문자로 전송됨");
     }
 
 

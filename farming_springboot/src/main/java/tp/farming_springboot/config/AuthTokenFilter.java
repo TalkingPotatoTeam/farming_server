@@ -14,12 +14,13 @@ import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tp.farming_springboot.domain.user.repository.UserRepository;
@@ -33,6 +34,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private JwtAuthEntryPoint jwtAuthEntryPoint;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -40,8 +43,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDE_URL =
             Collections.unmodifiableList(
                     Arrays.asList(
-                            //"/api/",
-                            "/authenticate"
+                            "/auth/otp",
+                            "/user/sudo",
+                            "/auth/tokens",
+                            "/user/signup"
                     ));
 
     @Override
@@ -49,7 +54,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+            if(jwt == null) throw new BadCredentialsException("TOKEN REQUIRED");
+            if (jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -58,6 +64,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                filterChain.doFilter(request, response);
             }
             else {
                 System.out.println("Cannot set the Security Context");
@@ -68,27 +75,39 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             String refresh = request.getHeader("Refresh");
             String requestURL = request.getRequestURL().toString();
             // allow for Refresh Token creation if following conditions are true.
-            if (refresh != null && jwtUtils.validateJwtRefresh(refresh)) {
-                allowForRefreshToken(ex, request);
-                //근데 요청을 보낼때마다 리프레시토큰 보내는건 이상함
-                String username = jwtUtils.getUserNameFromJwtRefreshToken(refresh);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                Authentication authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
+            try{
+            if(refresh == null) throw new BadCredentialsException("JWT EXPIRED. TRY WITH REFRESH TOKEN");
+            //try {
+                if (jwtUtils.validateJwtRefresh(refresh)) {
+                    allowForRefreshToken(ex, request);
+                    //근데 요청을 보낼때마다 리프레시토큰 보내는건 이상함
+                    String username = jwtUtils.getUserNameFromJwtRefreshToken(refresh);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    Authentication authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else
-                request.setAttribute("exception", ex);
-        } catch (BadCredentialsException ex) {
-            request.setAttribute("exception", ex);
-            System.out.println("Bad Credentials Exception caught!");
-            throw ex;
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    filterChain.doFilter(request, response);
+                } else
+                    request.setAttribute("exception", ex);
+            }catch(AuthenticationException e){
+                System.out.println("Refresh token exception caught");
+                request.setAttribute("exception",e);
+                SecurityContextHolder.clearContext();
+                jwtAuthEntryPoint.commence(request, response, e);
+            }
+        } catch(AuthenticationException authenticationException) {
+            request.setAttribute("exception",authenticationException);
+            SecurityContextHolder.clearContext();
+            jwtAuthEntryPoint.commence(request, response, authenticationException);
+
         } catch (Exception ex) {
-            logger.error("user authentication erorror: {}", ex);
+            System.out.println("what");
+            logger.error("user authentication error: {}", ex);
             System.out.println(ex);
             throw ex;
         }
-        filterChain.doFilter(request, response);
+        //filterChain.doFilter(request, response);
     }
 
     private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
