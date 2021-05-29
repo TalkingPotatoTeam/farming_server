@@ -25,7 +25,6 @@ import java.util.Optional;
 @Entity
 public class Product {
 
-    @Autowired
     public Product(Optional<User> user, ProductCreateDto prodDto) {
         this.user = user.get();
         this.title = prodDto.getTitle();
@@ -36,8 +35,9 @@ public class Product {
         this.quantity = prodDto.getQuantity();
         this.createdDate = LocalDateTime.now();
         addPhoto(prodDto.getPhotoFile());
+        this.receipt = prodDto.getReceipt();
     }
-    @Autowired
+
     public Product() {
 
     }
@@ -99,6 +99,12 @@ public class Product {
     @Getter
     @Setter
     private List<PhotoFile> photoFile;
+
+
+    @Getter
+    @Setter
+    @OneToOne(cascade = CascadeType.ALL)
+    private PhotoFile receipt;
 
     /*@OneToOne
     private Long category_id;

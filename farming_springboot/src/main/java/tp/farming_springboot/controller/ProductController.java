@@ -34,14 +34,11 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value="/product")
 public class ProductController {
-    @Autowired
-    private ProductRepository prodRepo;
-    @Autowired
-    private UserRepository userRepo;
-    @Autowired
-    private FileRepository photoFileRepo;
-    @Autowired
-    private FileService fileService;
+    private final ProductRepository prodRepo;
+    private final UserRepository userRepo;
+    private final FileRepository photoFileRepo;
+    private final FileService fileService;
+
 
     @Autowired
     public ProductController(ProductRepository prodRepo, UserRepository userRepository, FileRepository photoFileRepository, FileService fileService) {
@@ -63,10 +60,15 @@ public class ProductController {
     @PostMapping
     @ResponseBody
     //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<Message> create(Principal principal, @RequestPart ProductCreateDto prodDto, @RequestPart (value="PhotoFile", required=false) List<MultipartFile> files) {
+    public ResponseEntity<Message> create(
+            Principal principal, @RequestPart ProductCreateDto prodDto,
+            @RequestPart (value="PhotoFile", required=false) List<MultipartFile> files,
+            @RequestPart(value = "ReceiptFile", required = false) MultipartFile receiptFile
+            ) {
 
         Optional<User> user = null;
         List<PhotoFile> photoFileList = null; // isEmpty()로 확인할 수 있게 수정
+        PhotoFile receipt = null;
         Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
@@ -74,6 +76,35 @@ public class ProductController {
         try {
             user = userRepo.findByPhone(principal.getName());
             user.orElseThrow(() -> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, null, StatusEnum.UNAUTHORIZED));
+
+            if(receiptFile != null){
+                String origFilename = receiptFile.getOriginalFilename();
+                String filename = new MD5Generator(origFilename).toString(); // file name 암호화
+                String savePath = System.getProperty("user.dir") + "/receipt_photo_files";
+
+                if (!new File(savePath).exists()) {
+                    try {
+                        new File(savePath).mkdir();
+                    } catch (Exception e) {
+                        message = new Message(StatusEnum.INTERNAL_SERVER_ERROR, "Making File-dir failed.");
+                        return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+                    }
+                }
+                String filePath = savePath + "/" + filename;
+                receiptFile.transferTo(new File(filePath));
+
+                PhotoFileDto fileDto = new PhotoFileDto();
+                fileDto.setOrigFilename(origFilename);
+                fileDto.setFilename(filename);
+                fileDto.setFilePath(filePath);
+
+                receipt = fileService.saveFile(fileDto);
+                prodDto.setReceipt(receipt);
+                prodDto.setCertified(true);
+            } else {
+                prodDto.setCertified(false);
+            }
+
 
             if(files == null) {
                 photoFileList = new ArrayList<PhotoFile>();
@@ -89,7 +120,7 @@ public class ProductController {
                         try {
                             new File(savePath).mkdir();
                         } catch (Exception e) {
-                            message = new Message(StatusEnum.INTERNAL_SERVER_ERROR, 해"Making File-dir failed.");
+                            message = new Message(StatusEnum.INTERNAL_SERVER_ERROR, "Making File-dir failed.");
                             return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
                         }
                     }
@@ -192,7 +223,7 @@ public class ProductController {
         return new ResponseEntity<>(message, headers, HttpStatus.OK);
 
     }
-
+/* 사진만 올리기 => 폐기 예정 ..
     @PostMapping("/{id}/photo")
     public ResponseEntity<Message> addPhotoToProduct(Principal principal, @PathVariable Long id, @RequestPart(value="PhotoFile",required=false) List<MultipartFile> files) {
         Message message =new Message();
@@ -217,6 +248,7 @@ public class ProductController {
             }
 
             if(files != null) {
+
                 for (MultipartFile file : files) {
 
                     String origFilename = file.getOriginalFilename();
@@ -258,6 +290,8 @@ public class ProductController {
         }
 
     }
+*/
+/* 사진만 지우기 => 폐기 예정..
 
     @DeleteMapping("/{product_id}/photo/{photo_id}")
     public ResponseEntity<Message> deletePhotoToProduct(Principal principal, @PathVariable Long product_id, @PathVariable Long photo_id) {
@@ -298,10 +332,19 @@ public class ProductController {
         }
 
     }
+*/
+
 
     // 게시물 id로 수정하기
     @PutMapping("/{id}")
-    public ResponseEntity<Message> update(Principal principal, @PathVariable Long id, @RequestPart ProductCreateDto prodDto) {
+    public ResponseEntity<Message> update(
+            Principal principal,
+            @PathVariable Long id,
+            @RequestPart ProductCreateDto prodDto,
+            @RequestPart(value="PhotoFile", required = false) List<MultipartFile> files,
+            @RequestPart(value="ReceiptFile", required = false) MultipartFile ReceiptFile
+            ) {
+
         Message message = new Message();
         HttpHeaders headers= new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
@@ -309,40 +352,106 @@ public class ProductController {
         Optional<User> user = userRepo.findByPhone(principal.getName());
         user.orElseThrow(()-> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
 
-
         Optional<Product> prod = prodRepo.findById(id);
         prod.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Product by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
 
-        if(prod.get().getUser().getId() == user.get().getId()) {
+        // delete 기존 사진 데이터 .
+        photoFileRepo.deleteRelatedProductId(id);
 
-            if (prodDto.getTitle() != null)
-                prod.get().setTitle(prodDto.getTitle());
+        try {
+            List<PhotoFile> photoFileList = null;
+            PhotoFile receiptPhoto = null;
+            if(prod.get().getUser().getId() != user.get().getId()) {
+                message.setStatus(StatusEnum.UNAUTHORIZED);
+                message.setMessage("You can't add photo, you must author of this product.");
+                return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
+            }
+            if(ReceiptFile != null) {
+                String origFilename = ReceiptFile.getOriginalFilename();
+                String filename = new MD5Generator(origFilename).toString(); // file name 암호화
+                String savePath = System.getProperty("user.dir") + "/receipt_photo_files";
 
-            if (prodDto.getContent() != null)
-                prod.get().setContent(prodDto.getContent());
+                if (!new File(savePath).exists()) {
+                    try {
+                        new File(savePath).mkdir();
+                    } catch (Exception e) {
+                        message.setStatus(StatusEnum.INTERNAL_SERVER_ERROR);
+                        message.setMessage("Making File-dir failed.");
+                        return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+                    }
+                }
+                String filePath = savePath + "/" + filename;
+                ReceiptFile.transferTo(new File(filePath));
 
-            if (prodDto.getPrice() != null)
-                prod.get().setPrice(prodDto.getPrice());
+                PhotoFileDto fileDto = new PhotoFileDto(origFilename, filename, filePath);
+                receiptPhoto = fileService.saveFile(fileDto);
+                prod.get().setCertified(true);
+            }
+            else {
+                prod.get().setCertified(false);
+            }
+            if(files != null) {
+                for (MultipartFile file : files) {
 
-            if (prodDto.getAddress() != null)
-                prod.get().setAddress(prodDto.getAddress());
+                    String origFilename = file.getOriginalFilename();
+                    String filename = new MD5Generator(origFilename).toString(); // file name 암호화
+                    String savePath = System.getProperty("user.dir") + "/photo_files";
 
-            if (prodDto.getQuantity() != null)
-                prod.get().setQuantity(prodDto.getQuantity());
+                    if (!new File(savePath).exists()) {
+                        try {
+                            new File(savePath).mkdir();
+                        } catch (Exception e) {
+                            message.setStatus(StatusEnum.INTERNAL_SERVER_ERROR);
+                            message.setMessage("Making File-dir failed.");
+                            return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+                        }
+                    }
+                    String filePath = savePath + "/" + filename;
+                    file.transferTo(new File(filePath));
 
-            prodRepo.save(prod.get());
+                    PhotoFileDto fileDto = new PhotoFileDto(origFilename, filename, filePath);
+
+                    if (photoFileList == null) {
+                        photoFileList = new ArrayList<PhotoFile>();
+                    }
+                    photoFileList.add(fileService.saveFile(fileDto));
+                }
+                if (prodDto.getTitle() != prod.get().getTitle())
+                    prod.get().setTitle(prodDto.getTitle());
+
+                if (prodDto.getContent() != prod.get().getContent())
+                    prod.get().setContent(prodDto.getContent());
+
+                if (prodDto.getPrice() != prod.get().getPrice())
+                    prod.get().setPrice(prodDto.getPrice());
+
+                //주소를 수정해도될까?
+                if (prodDto.getAddress() != prod.get().getAddress())
+                    prod.get().setAddress(prodDto.getAddress());
+
+                if (prodDto.getQuantity() != prod.get().getQuantity())
+                    prod.get().setQuantity(prodDto.getQuantity());
+
+                prod.get().setReceipt(receiptPhoto);
+                prod.get().addPhoto(photoFileList);
+                prodRepo.save(prod.get());
+
+            }
+
             message.setStatus(StatusEnum.OK);
             message.setData(prod);
             message.setMessage("Product updated.");
             return new ResponseEntity<>(message, headers, HttpStatus.OK);
-        }
-        else {
-            message.setStatus(StatusEnum.UNAUTHORIZED);
-            message.setMessage("Can't edit Product, You must author of this product");
-            return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
+
+        } catch(Exception e) {
+            message.setStatus(StatusEnum.INTERNAL_SERVER_ERROR);
+            message.setMessage("Photo uploading failed.");
+            return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+
     }
+    //자동으로 사진도 삭제.
     @DeleteMapping("/{id}")
     public ResponseEntity<Message> delete(Principal principal, @PathVariable Long id) {
         Message message = new Message();

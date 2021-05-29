@@ -19,7 +19,6 @@ public class PhotoFile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(nullable = false)
     private String origFilename;
 
@@ -28,6 +27,9 @@ public class PhotoFile {
 
     @Column(nullable = false)
     private String filePath;
+
+    @ManyToOne(cascade = CascadeType.DETACH)
+    private Product product;
 
     @Builder
     public PhotoFile(String origFilename, String filename, String filePath) {
