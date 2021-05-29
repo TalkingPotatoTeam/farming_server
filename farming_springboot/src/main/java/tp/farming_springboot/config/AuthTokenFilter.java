@@ -46,7 +46,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                             "/auth/otp",
                             "/user/sudo",
                             "/auth/tokens",
-                            "/user/signup"
+                            "/user/signup",
+                            "/init"
                     ));
 
     @Override

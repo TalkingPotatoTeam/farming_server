@@ -35,6 +35,7 @@ public class Product {
         this.certified = prodDto.isCertified();
         this.quantity = prodDto.getQuantity();
         this.createdDate = LocalDateTime.now();
+        this.category = prodDto.getCategory();
         addPhoto(prodDto.getPhotoFile());
     }
     @Autowired
@@ -99,6 +100,10 @@ public class Product {
     @Getter
     @Setter
     private List<PhotoFile> photoFile;
+
+    @ManyToOne
+    @JoinColumn(name ="category_id")
+    private Category category;
 
     /*@OneToOne
     private Long category_id;
