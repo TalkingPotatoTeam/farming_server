@@ -1,6 +1,7 @@
 package tp.farming_springboot.controller;
 
 
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpHeaders;
@@ -11,8 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.PhotoFileDto;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
+import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.model.Product;
+import tp.farming_springboot.domain.product.repository.CategoryRepository;
 import tp.farming_springboot.domain.product.repository.FileRepository;
 import tp.farming_springboot.domain.product.service.FileService;
 import tp.farming_springboot.domain.product.util.MD5Generator;
@@ -42,7 +45,8 @@ public class ProductController {
     private FileRepository photoFileRepo;
     @Autowired
     private FileService fileService;
-
+    @Autowired
+    private CategoryRepository categoryRepository;
     @Autowired
     public ProductController(ProductRepository prodRepo, UserRepository userRepository, FileRepository photoFileRepository, FileService fileService) {
         this.prodRepo = prodRepo;
@@ -107,7 +111,7 @@ public class ProductController {
         }
 
         prodDto.setAddress(user.get().getCurrent().getContent());
-        Product prod = prodRepo.save(new Product(user, prodDto));
+        Product prod = prodRepo.save(new Product(user, prodDto, categoryRepository));
 
         message = new Message(StatusEnum.OK, "Product item uploaded.", prod);
         return new ResponseEntity<>(message, headers, HttpStatus.OK);
@@ -363,7 +367,13 @@ public class ProductController {
 
 
     }
-
+    @GetMapping("/categories")
+    public ResponseEntity<Message> showCategories(){
+        HttpHeaders headers= new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+        Message message = new Message(StatusEnum.OK, "",categoryRepository.getCategories());
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
+    }
 
 
 }

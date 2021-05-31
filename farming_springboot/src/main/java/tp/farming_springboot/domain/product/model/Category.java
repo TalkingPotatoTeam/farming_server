@@ -1,5 +1,6 @@
 package tp.farming_springboot.domain.product.model;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Table;
 
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Setter
+@Getter
 @Entity
 public class Category {
     @Id
@@ -21,5 +23,4 @@ public class Category {
     @OneToMany(mappedBy="category")
     private List<Product> products = new ArrayList<Product>();
 
-    // getter , setter 생략
 }
