@@ -1,6 +1,7 @@
 package tp.farming_springboot.domain.product.model;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,9 @@ import java.util.Optional;
 @Entity
 public class Product {
 
-    @Autowired
+
     public Product(Optional<User> user, ProductCreateDto prodDto, CategoryRepository categoryRepository) {
+
         this.user = user.get();
         this.title = prodDto.getTitle();
         this.content = prodDto.getContent();
@@ -39,8 +41,9 @@ public class Product {
         Optional<Category> ctgy = categoryRepository.findByName(prodDto.getCategory());
         this.category = ctgy.get();
         addPhoto(prodDto.getPhotoFile());
+        this.receipt = prodDto.getReceipt();
     }
-    @Autowired
+
     public Product() {
 
     }
@@ -97,15 +100,21 @@ public class Product {
     @CreatedDate
     private LocalDateTime createdDate;
 
+    @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name ="product_id")
     @Getter
     @Setter
     private List<PhotoFile> photoFile;
 
+    @Getter
+    @Setter
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private PhotoFile receipt;
     @ManyToOne
     @JoinColumn(name ="category_id")
     private Category category;
+
 
     /*@OneToOne
     private Long category_id;

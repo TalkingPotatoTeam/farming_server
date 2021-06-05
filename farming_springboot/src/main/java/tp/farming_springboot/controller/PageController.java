@@ -15,10 +15,16 @@ import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
 
 @RestController
-@RequiredArgsConstructor
 public class PageController {
+
+    private final ProductRepository productRepository;
+
+
     @Autowired
-    ProductRepository productRepository;
+    public PageController(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
+
 
     @CrossOrigin(origins = "*",allowedHeaders = "*")
     @GetMapping("/home")

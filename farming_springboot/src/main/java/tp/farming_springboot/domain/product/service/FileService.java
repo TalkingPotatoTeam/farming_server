@@ -10,8 +10,8 @@ import tp.farming_springboot.domain.product.repository.FileRepository;
 import javax.transaction.Transactional;
 
 @Service
-public class FileService {
-    @Autowired
+public class FileService{
+
     private FileRepository fileRepository;
 
     @Autowired

@@ -1,5 +1,6 @@
 package tp.farming_springboot.domain.product.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +20,6 @@ public class PhotoFile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(nullable = false)
     private String origFilename;
 
@@ -28,6 +28,10 @@ public class PhotoFile {
 
     @Column(nullable = false)
     private String filePath;
+
+    @JsonBackReference
+    @ManyToOne(cascade = CascadeType.DETACH)
+    private Product product;
 
     @Builder
     public PhotoFile(String origFilename, String filename, String filePath) {

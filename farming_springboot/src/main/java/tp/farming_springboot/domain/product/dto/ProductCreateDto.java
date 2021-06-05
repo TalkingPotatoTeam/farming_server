@@ -20,6 +20,8 @@ public class ProductCreateDto {
     private String address;
     private boolean certified;
     private List<PhotoFile> photoFile;
+    private PhotoFile receipt;
     private String category;
+
 }
 
