@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
+import tp.farming_springboot.domain.product.repository.CategoryRepository;
 import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.User;
 
@@ -26,7 +27,7 @@ import java.util.Optional;
 public class Product {
 
     @Autowired
-    public Product(Optional<User> user, ProductCreateDto prodDto) {
+    public Product(Optional<User> user, ProductCreateDto prodDto, CategoryRepository categoryRepository) {
         this.user = user.get();
         this.title = prodDto.getTitle();
         this.content = prodDto.getContent();
@@ -35,6 +36,8 @@ public class Product {
         this.certified = prodDto.isCertified();
         this.quantity = prodDto.getQuantity();
         this.createdDate = LocalDateTime.now();
+        Optional<Category> ctgy = categoryRepository.findByName(prodDto.getCategory());
+        this.category = ctgy.get();
         addPhoto(prodDto.getPhotoFile());
     }
     @Autowired
@@ -99,6 +102,10 @@ public class Product {
     @Getter
     @Setter
     private List<PhotoFile> photoFile;
+
+    @ManyToOne
+    @JoinColumn(name ="category_id")
+    private Category category;
 
     /*@OneToOne
     private Long category_id;
