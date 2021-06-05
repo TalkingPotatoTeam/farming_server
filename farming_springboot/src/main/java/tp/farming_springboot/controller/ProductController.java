@@ -23,13 +23,20 @@ import tp.farming_springboot.exception.RestNullPointerException;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import java.io.File;
 import java.nio.charset.Charset;
 
+import java.nio.file.Paths;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 
 @RestController
 @RequestMapping(value="/product")
@@ -79,7 +86,7 @@ public class ProductController {
 
             if(receiptFile != null){
                 String origFilename = receiptFile.getOriginalFilename();
-                String filename = new MD5Generator(origFilename).toString(); // file name 암호화
+                String filename = new MD5Generator(origFilename + LocalDateTime.now()).toString(); // file name 암호화
                 String savePath = System.getProperty("user.dir") + "/receipt_photo_files";
 
                 if (!new File(savePath).exists()) {
@@ -113,7 +120,7 @@ public class ProductController {
                 for (MultipartFile file : files) {
 
                     String origFilename = file.getOriginalFilename();
-                    String filename = new MD5Generator(origFilename).toString(); // file name 암호화
+                    String filename = new MD5Generator(origFilename + LocalDateTime.now()).toString(); // file name 암호화
                     String savePath = System.getProperty("user.dir") + "/photo_files";
 
                     if (!new File(savePath).exists()) {
@@ -223,116 +230,29 @@ public class ProductController {
         return new ResponseEntity<>(message, headers, HttpStatus.OK);
 
     }
-/* 사진만 올리기 => 폐기 예정 ..
-    @PostMapping("/{id}/photo")
-    public ResponseEntity<Message> addPhotoToProduct(Principal principal, @PathVariable Long id, @RequestPart(value="PhotoFile",required=false) List<MultipartFile> files) {
-        Message message =new Message();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
 
-        Optional<Product> prod = null;
 
-        Optional<User> user = userRepo.findByPhone(principal.getName());
-        user.orElseThrow(()-> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
-
-        try {
-            List<PhotoFile> photoFileList = null;
-
-            prod = prodRepo.findById(id);
-            prod.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Product by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
-
-            if(prod.get().getUser().getId() != user.get().getId()) {
-                message.setStatus(StatusEnum.UNAUTHORIZED);
-                message.setMessage("You can't add photo, you must author of this product.");
-                return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
-            }
-
-            if(files != null) {
-
-                for (MultipartFile file : files) {
-
-                    String origFilename = file.getOriginalFilename();
-                    String filename = new MD5Generator(origFilename).toString(); // file name 암호화
-                    String savePath = System.getProperty("user.dir") + "/photo_files";
-
-                    if (!new File(savePath).exists()) {
-                        try {
-                            new File(savePath).mkdir();
-                        } catch (Exception e) {
-                            message.setStatus(StatusEnum.INTERNAL_SERVER_ERROR);
-                            message.setMessage("Making File-dir failed.");
-                            return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
-                        }
-                    }
-                    String filePath = savePath + "/" + filename;
-                    file.transferTo(new File(filePath));
-
-                    PhotoFileDto fileDto = new PhotoFileDto(origFilename, filename, filePath);
-
-                    if (photoFileList == null) {
-                        photoFileList = new ArrayList<PhotoFile>();
-                    }
-                    photoFileList.add(fileService.saveFile(fileDto));
-                }
-                prod.get().addPhoto(photoFileList);
-                prodRepo.save(prod.get());
-            }
-
-            message.setStatus(StatusEnum.OK);
-            message.setMessage("Photo uploading success.");
-            message.setData(photoFileList);
-            return new ResponseEntity<>(message, headers, HttpStatus.OK);
-
-        } catch(Exception e) {
-            message.setStatus(StatusEnum.INTERNAL_SERVER_ERROR);
-            message.setMessage("Photo uploading failed.");
-            return new ResponseEntity<>(message, headers, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-    }
-*/
-/* 사진만 지우기 => 폐기 예정..
-
-    @DeleteMapping("/{product_id}/photo/{photo_id}")
-    public ResponseEntity<Message> deletePhotoToProduct(Principal principal, @PathVariable Long product_id, @PathVariable Long photo_id) {
+    private void deleteFiles(List<PhotoFile> photoList) {
         Message message = new Message();
         HttpHeaders headers= new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
 
-        Optional<User> user = userRepo.findByPhone(principal.getName());
-        user.orElseThrow(()-> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
-
-        Optional<Product> prod = prodRepo.findById(product_id);
-        prod.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Product by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
-
-        Optional<PhotoFile> photoFile = photoFileRepo.findById(photo_id);
-        photoFile.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Photo by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
-
-        // 게시글이 없을 때 등등 추가적인 예외처리 필요함.
-        if(prod.get().getUser().getId() == user.get().getId()) {
-            if(prod.get().getPhotoFile().contains(photoFile.get())) {
-                prod.get().deletePhoto(photoFile.get());
-                prodRepo.save(prod.get());
-                photoFileRepo.delete(photoFile.get());
-                message.setStatus(StatusEnum.OK);
-                message.setMessage("Photo deleted");
-                message.setData(prod);
-                return new ResponseEntity<>(message, headers, HttpStatus.OK);
-            }
-            else {
-                message.setStatus(StatusEnum.UNMATCH);
-                message.setMessage("This Photo isn't included in this Product. Enter Another Product id or Photo id.");
-                return new ResponseEntity<>(message, headers, HttpStatus.NOT_FOUND);
-            }
+        if(photoList == null || photoList.size() == 0){
+            return;
         }
-        else {
-            message.setStatus(StatusEnum.UNAUTHORIZED);
-            message.setMessage("Can't delete Photo, You must author of this product");
-            return new ResponseEntity<>(message, headers, HttpStatus.UNAUTHORIZED);
+
+        for (PhotoFile pf : photoList) {
+            try {
+                Path filePath = Paths.get(pf.getFilePath());
+                Files.deleteIfExists(filePath);
+
+            }
+            catch(Exception e){
+                System.out.println("error");
+            }
         }
 
     }
-*/
 
 
     // 게시물 id로 수정하기
@@ -355,7 +275,16 @@ public class ProductController {
         Optional<Product> prod = prodRepo.findById(id);
         prod.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Product by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
 
-        // delete 기존 사진 데이터 .
+        if(prod.get().getPhotoFile().size() > 0) {
+            deleteFiles(prod.get().getPhotoFile());
+        }
+
+        if(prod.get().getReceipt() != null) {
+            List<PhotoFile> tempReceiptList = new ArrayList<PhotoFile>();
+            tempReceiptList.add(prod.get().getReceipt());
+            deleteFiles(tempReceiptList);
+        }
+        prod.get().setReceipt(null);
         photoFileRepo.deleteRelatedProductId(id);
 
         try {
@@ -368,7 +297,7 @@ public class ProductController {
             }
             if(ReceiptFile != null) {
                 String origFilename = ReceiptFile.getOriginalFilename();
-                String filename = new MD5Generator(origFilename).toString(); // file name 암호화
+                String filename = new MD5Generator(origFilename + LocalDateTime.now()).toString(); // file name 암호화
                 String savePath = System.getProperty("user.dir") + "/receipt_photo_files";
 
                 if (!new File(savePath).exists()) {
@@ -392,9 +321,8 @@ public class ProductController {
             }
             if(files != null) {
                 for (MultipartFile file : files) {
-
                     String origFilename = file.getOriginalFilename();
-                    String filename = new MD5Generator(origFilename).toString(); // file name 암호화
+                    String filename = new MD5Generator(origFilename + LocalDateTime.now()).toString(); // file name 암호화
                     String savePath = System.getProperty("user.dir") + "/photo_files";
 
                     if (!new File(savePath).exists()) {
@@ -461,12 +389,19 @@ public class ProductController {
         Optional<User> user = userRepo.findByPhone(principal.getName());
         user.orElseThrow(()-> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, StatusEnum.UNAUTHORIZED));
 
-
         Optional<Product> prod = prodRepo.findById(id);
         prod.orElseThrow(()-> new RestNullPointerException(headers, "Can't Find Product by Id", HttpStatus.NOT_FOUND, StatusEnum.NOT_FOUND));
 
 
         if(prod.get().getUser().getId() == user.get().getId()) {
+            if(prod.get().getPhotoFile().size() != 0) {
+                deleteFiles(prod.get().getPhotoFile());
+            }
+            if(prod.get().getReceipt() != null) {
+                List<PhotoFile> tempReceiptList = new ArrayList<PhotoFile>();
+                tempReceiptList.add(prod.get().getReceipt());
+                deleteFiles(tempReceiptList);
+            }
             prodRepo.deleteById(id);
             message.setStatus(StatusEnum.OK);
             message.setMessage("Product deleted.");
@@ -480,7 +415,5 @@ public class ProductController {
 
 
     }
-
-
 
 }

@@ -1,6 +1,7 @@
 package tp.farming_springboot.domain.product.model;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,16 +95,16 @@ public class Product {
     @CreatedDate
     private LocalDateTime createdDate;
 
+    @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name ="product_id")
     @Getter
     @Setter
     private List<PhotoFile> photoFile;
 
-
     @Getter
     @Setter
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private PhotoFile receipt;
 
     /*@OneToOne

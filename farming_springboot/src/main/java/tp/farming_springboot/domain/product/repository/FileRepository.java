@@ -23,4 +23,11 @@ public interface FileRepository extends JpaRepository<PhotoFile, Long> {
             value = "delete from PhotoFile p where p.product.id = :id"
     )
     public void deleteRelatedProductId(Long id);
+
+    @Modifying
+    @Transactional
+    @Query(
+            value = "delete from PhotoFile p where p.id = :id"
+    )
+    public void deleteByPhotoId(Long id);
 }
