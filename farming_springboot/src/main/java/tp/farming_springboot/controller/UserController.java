@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import tp.farming_springboot.config.JwtUtils;
+import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.user.dto.UserDto;
 import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.ERole;
@@ -42,15 +43,7 @@ public class UserController {
     @Autowired
     OtpService otpService;
 
-    @GetMapping("/init")
-    public void init() {
-        Role roleUser = new Role();
-        Role roleAdmin = new Role();
-        roleUser.setName(ERole.ROLE_USER);
-        roleRepository.save(roleUser);
-        roleAdmin.setName(ERole.ROLE_ADMIN);
-        roleRepository.save(roleAdmin);
-    }
+
 
     @PutMapping("/address/{id}")//대표주소 변경
     public ResponseEntity<?> changeCurrentAddress(Authentication authentication, @PathVariable Long id) {
