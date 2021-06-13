@@ -3,7 +3,9 @@ package tp.farming_springboot.controller;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +24,10 @@ import tp.farming_springboot.domain.user.repository.AddressRepository;
 import tp.farming_springboot.domain.user.repository.RoleRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.domain.user.service.OtpService;
+import tp.farming_springboot.response.Message;
+import tp.farming_springboot.response.StatusEnum;
+
+import java.nio.charset.Charset;
 import java.util.*;
 @CrossOrigin
 @RestController
@@ -46,39 +52,62 @@ public class UserController {
 
 
     @PutMapping("/address/{id}")//대표주소 변경
-    public ResponseEntity<?> changeCurrentAddress(Authentication authentication, @PathVariable Long id) {
+    public ResponseEntity<Message> changeCurrentAddress(Authentication authentication, @PathVariable Long id) {
+        Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+
         Optional<User> user = userRepository.findByPhone(authentication.getName());
         Optional<Address> toChange = addressRepository.findById(id);
         user.get().setCurrent(toChange.get());
         userRepository.save(user.get());
-        return ResponseEntity.ok("대표 주소 변경 성공");
+
+        message = new Message(StatusEnum.OK, "Current address changed.");
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
     }
 
     @GetMapping("/address") //내 주소들 보기
     public ResponseEntity<?> getAddress(Authentication authentication){
+        Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+
         Optional<User> user = userRepository.findByPhone(authentication.getName());
         List<JSONObject> entities = new ArrayList<JSONObject>();
         JSONObject entity = new JSONObject();
         entity.put("Current Address", user.get().getCurrent());
         entity.put("All Address", user.get().getAddresses());
         entities.add(entity);
-        return new ResponseEntity<Object>(entities, HttpStatus.OK);
+
+        message = new Message(StatusEnum.OK, "Addresses.", entities);
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
+        //return new ResponseEntity<Object>(entities, HttpStatus.OK);
     }
 
     @DeleteMapping("/address/{id}") //주소 삭제
     public ResponseEntity<?>  deleteAddress(Authentication authentication, @PathVariable Long id ){
+        Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+
         Optional<User> user = userRepository.findByPhone(authentication.getName());
         Optional<Address> toDelete = addressRepository.findById(id);
         if (user.get().getCurrent().getId() == id){
-            return ResponseEntity.badRequest().body("대표 주소는 삭제 불가능");
+            message = new Message(StatusEnum.BAD_REQUEST, "Current address can not be deleted. Change Address First.");
+            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
         }
         user.get().deleteAddress(toDelete.get());
         addressRepository.deleteById(id);
-        return ResponseEntity.ok("주소 삭제됨!");
+        message = new Message(StatusEnum.OK, "Address deleted.");
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
     }
 
     @PostMapping("/address") //주소 추가
     public ResponseEntity<?>  addAddress(Authentication authentication, @RequestBody UserDto.UserNewAddressDto User ){
+        Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+
         Optional<User> user = userRepository.findByPhone(authentication.getName());
         Address newAddress = new Address();
         newAddress.setUser_id(user.get().getId());
@@ -86,7 +115,8 @@ public class UserController {
         addressRepository.save(newAddress);
         user.get().addAddress(newAddress);
         userRepository.save(user.get());
-        return ResponseEntity.ok("주소 추가됨!");
+        message = new Message(StatusEnum.OK, "Address added.");
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
     }
 
     @PatchMapping("") //데이터 수정
@@ -102,13 +132,22 @@ public class UserController {
 
     @DeleteMapping("") //탈퇴
     public ResponseEntity<?> deleteUser(Authentication authentication){
+        Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+
         Optional<User> user = userRepository.findByPhone(authentication.getName());
         userRepository.deleteById(user.get().getId());
-        return ResponseEntity.ok("회원탈퇴 성공!");
+        message = new Message(StatusEnum.OK, "Delete ID successful.");
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
     }
 
     @GetMapping("") //내 정보 겟
     public ResponseEntity<?> getUser(Authentication authentication){
+        Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+
         Optional<User> user = userRepository.findByPhone(authentication.getName());
         List<JSONObject> entities = new ArrayList<JSONObject>();
         JSONObject entity = new JSONObject();
@@ -117,11 +156,17 @@ public class UserController {
         entity.put("Current Address", user.get().getCurrent());
         entity.put("All Addresses", user.get().getAddresses());
         entities.add(entity);
-        return new ResponseEntity<Object>(entities, HttpStatus.OK);
+        message = new Message(StatusEnum.OK, "User", entities);
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
+        //return new ResponseEntity<Object>(entities, HttpStatus.OK);
     }
     //회원가입 otp 확인하고 유저 만듬
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
+        Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+
         int otp = newUser.getOtp();
         if (otp >= 0) {
             int serverOtp = otpService.getOtp(newUser.getPhone());
@@ -142,27 +187,39 @@ public class UserController {
                     entity.put("access", access);
                     entity.put("refresh", refresh);
                     entities.add(entity);
-                    return new ResponseEntity<Object>(entities, HttpStatus.OK);
+                    message = new Message(StatusEnum.OK, "Sign up was successfull", entities);
+                    return new ResponseEntity<>(message, headers, HttpStatus.OK);
+                    //return new ResponseEntity<Object>(entities, HttpStatus.OK);
                     //String access = jwtUtils.generateJwtToken(authentication);
                     //JSONObject entity = new JSONObject();
                     //entity.put("access", access);
                     //return new ResponseEntity<Object>(entity, HttpStatus.OK);
                 }
                 else {
-                    return ResponseEntity.badRequest().body("Invalid Otp!");
+                    message = new Message(StatusEnum.BAD_REQUEST, "INVALID OTP");
+                    return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+                    //return ResponseEntity.badRequest().body("Invalid Otp!");
                 }
             }
             else {
-                return ResponseEntity.badRequest().body("Otp has expired!");
+                message = new Message(StatusEnum.BAD_REQUEST, "OTP EXPIRED");
+                return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+                //return ResponseEntity.badRequest().body("Otp has expired!");
             }
         }
         else {
-            return ResponseEntity.badRequest().body("FAIL");
+            message = new Message(StatusEnum.BAD_REQUEST, "FAIL. CONTACT ADMIN");
+            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+            //return ResponseEntity.badRequest().body("FAIL");
         }
     }
     //otp 확인하고 로그인 기능
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserDto.UserLoginDto logger){
+        Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+
         int otp = logger.getOtp();
         if (otp >= 0) {
             int serverOtp = otpService.getOtp(logger.getPhone());
@@ -182,25 +239,35 @@ public class UserController {
                         entity.put("access", access);
                         entity.put("refresh", refresh);
                         entities.add(entity);
-                        return new ResponseEntity<Object>(entities, HttpStatus.OK);
+                        message = new Message(StatusEnum.OK, "login successful", entities);
+                        return new ResponseEntity<>(message, headers, HttpStatus.OK);
+                        //return new ResponseEntity<Object>(entities, HttpStatus.OK);
 //                        JSONObject entity = new JSONObject();
 //                        entity.put("access", access);
 //                        return new ResponseEntity<Object>(entity, HttpStatus.OK);
                     }
                     else{
-                        return ResponseEntity.badRequest().body("Phone number does not exist. Please register");
+                        message = new Message(StatusEnum.BAD_REQUEST, "Phone number does not exist. Please register first");
+                        return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+                        //return ResponseEntity.badRequest().body("Phone number does not exist. Please register");
                     }
                 }
                 else {
-                    return ResponseEntity.badRequest().body("Invalid Otp!");
+                    message = new Message(StatusEnum.BAD_REQUEST, "INVALID OTP");
+                    return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+                    //return ResponseEntity.badRequest().body("Invalid Otp!");
                 }
             }
             else {
-                return ResponseEntity.badRequest().body("Otp has expired!");
+                message = new Message(StatusEnum.BAD_REQUEST, "OTP EXPIRED");
+                return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+                //return ResponseEntity.badRequest().body("Otp has expired!");
             }
         }
         else {
-            return ResponseEntity.badRequest().body("FAIL");
+            message = new Message(StatusEnum.BAD_REQUEST, "FAIL. CONTACT ADMIN");
+            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+            //return ResponseEntity.badRequest().body("FAIL");
         }
     }
     @PostMapping("/sudo") //테스트할때 문자인증 없이 회원가입용
