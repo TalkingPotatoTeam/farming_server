@@ -3,8 +3,12 @@ version: "3.7"
 services:
 
   db:
+    platform: linux/x86_64
     image: mysql:5.7
-    command: ["--lower_case_table_names=1","--ignore-db-dir=lost+found","--character-set-server=utf8mb4"]
+    command: [ "--lower_case_table_names=1",
+        "--ignore-db-dir=lost+found",
+        "--character-set-server=utf8,
+                 --collation-server=utf8_general_ci" ]
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: farming_db
@@ -19,6 +23,7 @@ services:
     networks:
       - backend-network
 
+
   springboot:
     image: farming_springboot:0.0.1
     ports:
@@ -28,19 +33,53 @@ services:
     restart: always
     depends_on:
       - db
+     # - mongodb
+    links :
+      - mongodb
     environment:
       SPRING_DATASOURCE_USERNAME: tp
       SPRING_DATASOURCE_PASSWORD: tp
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/farming_db?useSSL=false
+
+      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: mongodb
+      SPRING_DATA_MONGODB_HOST: mongo
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_USERNAME: user
+      SPRING_DATA_MONGODB_PASSWORD: password
+
     networks:
       - backend-network
+      - backend-network2
       - frontend-network
+
+
+
+  mongodb:
+    image: mongo:latest
+    environment:
+    #MONGO_INITDB_ROOT_USERNAME: user
+    #MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_DB_USERNAME: tp
+      MONGO_DB_PASSWORD: tp
+    volumes:
+      - "./database/mongodb/:/application"
+    #command: mongod --smallfiles --logpath=/dev/null # --quiet
+    container_name: "mongo"
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - backend-network2
+    hostname : "mongo"
 
 volumes:
   farming_db:
+  mongodb:
 
 
 networks:
   backend-network:
+    driver: bridge
+  backend-network2:
     driver: bridge
   frontend-network:
