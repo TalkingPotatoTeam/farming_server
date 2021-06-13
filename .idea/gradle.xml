@@ -8,7 +8,8 @@
         <option name="testRunner" value="GRADLE" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$/farming_springboot" />
-        <option name="gradleJvm" value="azul-1.8" />
+        <option name="gradleHome" value="$PROJECT_DIR$/../../../../Gradle/gradle-6.0.1" />
+        <option name="gradleJvm" value="10" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$/farming_springboot" />
