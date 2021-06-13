@@ -70,7 +70,7 @@ services:
       - "27017:27017"
     networks:
       - backend-network2
-    hostname : mongo
+    hostname : "mongo"
 
 volumes:
   farming_db:
