@@ -6,7 +6,9 @@ import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,8 +26,10 @@ import tp.farming_springboot.domain.user.repository.AddressRepository;
 import tp.farming_springboot.domain.user.repository.RoleRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.domain.user.service.OtpService;
+import tp.farming_springboot.response.StatusEnum;
 
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.Charset;
 import java.util.*;
 @CrossOrigin
 @RestController
@@ -51,6 +55,9 @@ public class AuthenticateController {
 
     @GetMapping("/tokens") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급
     public ResponseEntity<?> authenticate(@RequestBody UserDto.UserAuthDto logger){
+        tp.farming_springboot.response.Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
         try{
             if (userRepository.existsByPhone(logger.getPhone())) {
                 Optional<User> user = userRepository.findByPhone(logger.getPhone());
@@ -66,14 +73,20 @@ public class AuthenticateController {
                 entity.put("access", access);
                 entity.put("refresh", refresh);
                 entities.add(entity);
-                return new ResponseEntity<Object>(entities, HttpStatus.OK);
+                message = new tp.farming_springboot.response.Message(StatusEnum.OK, "Update access and refresh token.",entities);
+                return new ResponseEntity<>(message, headers, HttpStatus.OK);
+                //return new ResponseEntity<Object>(entities, HttpStatus.OK);
             }
             else{
-                return new ResponseEntity<>("Phone number does not exist in db",HttpStatus.BAD_REQUEST);
+                message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "Phone number does not exist in db.");
+                return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+                //return new ResponseEntity<>("Phone number does not exist in db",HttpStatus.BAD_REQUEST);
             }
         }catch(Exception e){
             System.out.println(e);
-            return new ResponseEntity<>("",HttpStatus.BAD_REQUEST);
+            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "알수없는 오류.");
+            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+            //return new ResponseEntity<>("",HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -86,23 +99,35 @@ public class AuthenticateController {
         params.put("from", "01073408629"); //사전에 사이트에서 번호를 인증하고 등록하여야 함
         params.put("type", "SMS"); params.put("text", "파밍 인증번호는 "+randomKey+" 입니다.");//메시지 내용
         //params.put("app_version", "test app 1.2");
+        tp.farming_springboot.response.Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
         try {
             JSONObject obj = (JSONObject) coolsms.send(params);
             System.out.println(obj.toString()); //전송 결과 출력
-            return ResponseEntity.ok("본인인증번호 문자로 전송됨");
+            message = new tp.farming_springboot.response.Message(StatusEnum.OK, "OTP validation text is sent.");
+            return new ResponseEntity<>(message, headers, HttpStatus.OK);
+            //return ResponseEntity.ok("본인인증번호 문자로 전송됨");
         }
         catch (CoolsmsException e)
         {
             System.out.println(e.getMessage());
             System.out.println(e.getCode());
-            return ResponseEntity.badRequest().body("본인인증번호 문자 전송 실패. 다시 시도해 주세요.");
+            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "Something went wrong. Please try again.");
+            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+            //return ResponseEntity.badRequest().body("본인인증번호 문자 전송 실패. 다시 시도해 주세요.");
         }
     }
     //회원가입 요청 otp 문자보내줌
     @GetMapping("/otp")
     public ResponseEntity<?> requestSignup(@RequestBody UserDto.UserRequestOtpDto newUser){
         if (userRepository.existsByPhone(newUser.getPhone())) {
-            return ResponseEntity.badRequest().body("Phone Number is already taken");
+            tp.farming_springboot.response.Message message = null;
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "Phone Number is already registered.");
+            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+            //return ResponseEntity.badRequest().body("Phone Number is already taken");
         }
         else{
             int otp = otpService.generateOTP(newUser.getPhone());
