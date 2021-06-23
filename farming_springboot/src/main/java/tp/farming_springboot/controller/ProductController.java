@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
+//import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 
 @RestController
 @RequestMapping(value="/product")
@@ -49,14 +49,17 @@ public class ProductController {
     private final UserRepository userRepo;
     private final FileRepository photoFileRepo;
     private final FileService fileService;
+    private final CategoryRepository categoryRepository;
 
     @Autowired
-    public ProductController(ProductRepository prodRepo, UserRepository userRepository, FileRepository photoFileRepository, FileService fileService) {
+    public ProductController(ProductRepository prodRepo, UserRepository userRepo, FileRepository photoFileRepo, FileService fileService, CategoryRepository categoryRepository) {
         this.prodRepo = prodRepo;
-        this.userRepo = userRepository;
-        this.photoFileRepo = photoFileRepository;
+        this.userRepo = userRepo;
+        this.photoFileRepo = photoFileRepo;
         this.fileService = fileService;
+        this.categoryRepository = categoryRepository;
     }
+
 
     @ExceptionHandler
     public ResponseEntity<Message> handler(RestNullPointerException e) {
