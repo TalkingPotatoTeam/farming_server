@@ -12,12 +12,14 @@ import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
 import tp.farming_springboot.domain.review.dto.ReviewCreateDto;
 import tp.farming_springboot.domain.review.repository.ReviewRepository;
+import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.response.Message;
 
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value="/review")
@@ -28,11 +30,13 @@ public class ReviewController {
 
     @PostMapping
     @ResponseBody
-    public ResponseEntity<Message> create(Principal principal, @RequestPart ReviewCreateDto reviewDto){
+    public ResponseEntity<Message> create(Principal principal){
         Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
 
+        Optional<User> user = userRepository.findByPhone(principal.getName());
+        System.out.println(user.get().getPhone());
 
         return new ResponseEntity<>(message,headers, HttpStatus.OK);
     }
