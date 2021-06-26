@@ -214,7 +214,7 @@ public class UserController {
         }
     }
     //otp 확인하고 로그인 기능
-    @PostMapping("/login")
+    @GetMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserDto.UserLoginDto logger){
         Message message = null;
         HttpHeaders headers = new HttpHeaders();

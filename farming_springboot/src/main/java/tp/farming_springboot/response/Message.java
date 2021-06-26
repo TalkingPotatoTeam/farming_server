@@ -1,11 +1,15 @@
 package tp.farming_springboot.response;
 
+import java.time.ZonedDateTime;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+
 @Data
 public class Message {
+
+    private ZonedDateTime timestamp;
 
     @Setter
     private int statusCode;
@@ -25,6 +29,7 @@ public class Message {
         this.status = StatusEnum.BAD_REQUEST;
         this.data = null;
         this.message = null;
+        this.timestamp = ZonedDateTime.now();
     }
 
     public Message(StatusEnum status, String message, Object data) {
@@ -32,6 +37,7 @@ public class Message {
         this.statusCode = status.statusCode;
         this.message = message;
         this.data = data;
+        this.timestamp = ZonedDateTime.now();
     }
 
     public Message(StatusEnum status, String message) {
@@ -39,5 +45,6 @@ public class Message {
         this.statusCode = status.statusCode;
         this.message = message;
         this.data = null;
+        this.timestamp = ZonedDateTime.now();
     }
 }
