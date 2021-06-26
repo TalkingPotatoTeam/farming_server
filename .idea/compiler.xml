@@ -14,4 +14,9 @@
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8" />
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="farming_springboot.main" options="--add-exports jdk.scripting.nashorn/jdk.nashorn.internal.runtime.regexp.joni=ALL-UNNAMED" />
+    </option>
+  </component>
 </project>
