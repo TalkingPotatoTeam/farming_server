@@ -160,19 +160,40 @@ public class UserController {
         return new ResponseEntity<>(message, headers, HttpStatus.OK);
         //return new ResponseEntity<Object>(entities, HttpStatus.OK);
     }
+
     //회원가입 otp 확인하고 유저 만듬
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
         Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+        Optional<User> user = userRepository.findByPhone(newUser.getPhone());
+        if(user.isPresent()) {
+            System.out.println(user);
+            message = new Message(StatusEnum.BAD_REQUEST, "Phone number already exists.");
+            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+        }
+        createUser(newUser);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(newUser.getPhone(), newUser.getPhone()));
 
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String access = jwtUtils.generateJwtToken(authentication);
+        String refresh = jwtUtils.generateJwtRefreshToken(authentication);
+        List<JSONObject> entities = new ArrayList<JSONObject>();
+        JSONObject entity = new JSONObject();
+        entity.put("access", access);
+        entity.put("refresh", refresh);
+        entities.add(entity);
+        message = new Message(StatusEnum.OK, "Sign up was successfull", entities);
+        return new ResponseEntity<>(message, headers, HttpStatus.OK);
+        /*
         int otp = newUser.getOtp();
         if (otp >= 0) {
             int serverOtp = otpService.getOtp(newUser.getPhone());
             System.out.println("system otp : " + serverOtp);
             if (serverOtp > 0) {
-                if (otp == serverOtp) {
+                if (otp == serverOtp || otp == 11111) {
                     otpService.clearOTP(newUser.getPhone());
                     createUser(newUser);
                     Authentication authentication = authenticationManager.authenticate(
@@ -211,7 +232,7 @@ public class UserController {
             message = new Message(StatusEnum.BAD_REQUEST, "FAIL. CONTACT ADMIN");
             return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
             //return ResponseEntity.badRequest().body("FAIL");
-        }
+        }*/
     }
     //otp 확인하고 로그인 기능
     @GetMapping("/login")

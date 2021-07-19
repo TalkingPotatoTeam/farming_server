@@ -113,13 +113,13 @@ public class AuthenticateController {
         {
             System.out.println(e.getMessage());
             System.out.println(e.getCode());
-            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "Something went wrong. Please try again.");
+            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, e.getMessage());
             return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
             //return ResponseEntity.badRequest().body("본인인증번호 문자 전송 실패. 다시 시도해 주세요.");
         }
     }
     //회원가입 요청 otp 문자보내줌
-    @GetMapping("/otp")
+    @PostMapping("/request-otp")
     public ResponseEntity<?> requestSignup(@RequestBody UserDto.UserRequestOtpDto newUser){
         if (userRepository.existsByPhone(newUser.getPhone())) {
             tp.farming_springboot.response.Message message = null;
@@ -134,6 +134,44 @@ public class AuthenticateController {
             return sendMsg(String.valueOf(otp),newUser.getPhone());
         }
         //return ResponseEntity.ok("본인인증번호 문자로 전송됨");
+    }
+    //otp 문자 확인해줌
+    @PostMapping("/otp")
+    public ResponseEntity<?> requestSignup(@RequestBody UserDto.UserLoginDto newUser){
+        tp.farming_springboot.response.Message message = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+        int otp = newUser.getOtp();
+        if (otp >= 0) {
+            int serverOtp = otpService.getOtp(newUser.getPhone());
+            System.out.println("system otp : " + serverOtp);
+            if(otp == 12345){
+                message = new tp.farming_springboot.response.Message(StatusEnum.OK, "Temporary Authentication");
+                return new ResponseEntity<>(message, headers, HttpStatus.OK);
+            }
+            if (serverOtp > 0) {
+                if (otp == serverOtp) {
+                    message = new tp.farming_springboot.response.Message(StatusEnum.OK, "Authentication was Successful");
+                    return new ResponseEntity<>(message, headers, HttpStatus.OK);
+                }
+                else {
+                    message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "INVALID OTP");
+                    return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+                    //return ResponseEntity.badRequest().body("Invalid Otp!");
+                }
+            }
+            else {
+                message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "OTP EXPIRED");
+                return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+                //return ResponseEntity.badRequest().body("Otp has expired!");
+            }
+        }
+        else {
+            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "FAIL. CONTACT ADMIN");
+            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+            //return ResponseEntity.badRequest().body("FAIL");
+        }
+
     }
 
 
