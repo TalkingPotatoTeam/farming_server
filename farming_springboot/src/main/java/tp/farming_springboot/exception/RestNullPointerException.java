@@ -23,6 +23,10 @@ public class RestNullPointerException extends NullPointerException {
     private Message msg;
 
 
+    public RestNullPointerException(String message){
+        this.message = message;
+    }
+
     public RestNullPointerException(HttpHeaders headers, String message, HttpStatus httpStatus, Object obj, StatusEnum statusEnum) {
         this.headers = headers;
         this.message = message;
