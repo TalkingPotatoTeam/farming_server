@@ -44,7 +44,6 @@ public class Message {
         this.status = status;
         this.statusCode = status.statusCode;
         this.message = message;
-        this.data = null;
         this.timestamp = ZonedDateTime.now();
     }
 }

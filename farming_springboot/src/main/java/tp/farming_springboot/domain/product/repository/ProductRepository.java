@@ -11,6 +11,9 @@ import tp.farming_springboot.domain.product.model.Product;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     public Iterable<Product> findByUserId(Long id);
+
+
+
     Page<Product> findAll(Pageable pageable);
     @Query(
             value = "SELECT p FROM Product p WHERE p.title LIKE %:title% OR p.content LIKE %:content%",

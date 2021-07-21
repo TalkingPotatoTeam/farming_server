@@ -27,10 +27,8 @@ import java.util.Optional;
 @Entity
 public class Product {
 
-
-    public Product(Optional<User> user, ProductCreateDto prodDto, CategoryRepository categoryRepository) {
-
-        this.user = user.get();
+    public Product(User user, ProductCreateDto prodDto, CategoryRepository categoryRepository) {
+        this.user = user;
         this.title = prodDto.getTitle();
         this.content = prodDto.getContent();
         this.price = prodDto.getPrice();
