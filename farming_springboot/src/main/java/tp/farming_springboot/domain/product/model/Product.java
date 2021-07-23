@@ -109,6 +109,7 @@ public class Product {
     @Setter
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private PhotoFile receipt;
+
     @ManyToOne
     @JoinColumn(name ="category_id")
     private Category category;

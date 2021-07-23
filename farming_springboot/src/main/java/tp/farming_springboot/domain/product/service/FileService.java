@@ -1,29 +1,23 @@
 package tp.farming_springboot.domain.product.service;
 
 
-import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.PhotoFileDto;
 import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.repository.FileRepository;
 import tp.farming_springboot.domain.product.util.MD5Generator;
-import tp.farming_springboot.response.Message;
-import tp.farming_springboot.response.StatusEnum;
-import tp.farming_springboot.domain.product.util.MD5Generator;
+import tp.farming_springboot.exception.PhotoFileException;
+
 import javax.transaction.Transactional;
 import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +25,7 @@ public class FileService{
 
     private final FileRepository fileRepository;
 
-
-    public PhotoFile photoFileCreate(MultipartFile receiptFile)  {
+    public PhotoFile photoFileCreate(MultipartFile receiptFile) throws PhotoFileException {
         try {
             String origFilename = receiptFile.getOriginalFilename();
 
@@ -49,6 +42,7 @@ public class FileService{
             receiptFile.transferTo(new File(filePath));
 
             PhotoFileDto fileDto = new PhotoFileDto();
+
             fileDto.setOrigFilename(origFilename);
             fileDto.setFilename(filename);
             fileDto.setFilePath(filePath);
@@ -58,15 +52,16 @@ public class FileService{
             return receipt;
         }
         catch(Exception e) {
-            return null;
+            throw new PhotoFileException("PhotoFile creating error.");
         }
     }
 
 
-    public List<PhotoFile> photoFileListCreate(List<MultipartFile> files) {
+    public List<PhotoFile> photoFileListCreate(List<MultipartFile> files) throws PhotoFileException {
         List<PhotoFile> photoFileList = new ArrayList<PhotoFile>();
 
         if(files.size() > 10) {
+            //파일 사이즈 에러 throw
             return null;
         }
 
@@ -84,8 +79,8 @@ public class FileService{
                 file.transferTo(new File(filePath));
 
                 PhotoFileDto fileDto = new PhotoFileDto();
-                fileDto.setOrigFilename(origFilename);
 
+                fileDto.setOrigFilename(origFilename);
                 fileDto.setFilename(filename);
                 fileDto.setFilePath(filePath);
 
@@ -98,9 +93,26 @@ public class FileService{
             return photoFileList;
 
         } catch(Exception e) {
-            return null;
+            throw new PhotoFileException("PhotoFile creating error.");
         }
 
+
+    }
+
+    public void deleteFiles(List<PhotoFile> photoList) throws PhotoFileException {
+
+        if(photoList == null || photoList.size() == 0){
+            return;
+        } else {
+            for (PhotoFile pf : photoList) {
+                try {
+                    Path filePath = Paths.get(pf.getFilePath());
+                    Files.deleteIfExists(filePath);
+                } catch (Exception e) {
+                    throw new PhotoFileException("Can't delete Photo File from file directory.");
+                }
+            }
+        }
 
     }
 
