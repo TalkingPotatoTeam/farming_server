@@ -15,8 +15,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Transactional
 public interface FileRepository extends JpaRepository<PhotoFile, Long> {
     public Iterable<PhotoFile> findByProductId(Long id);
+
+
     @Modifying
     @Transactional
     @Query(

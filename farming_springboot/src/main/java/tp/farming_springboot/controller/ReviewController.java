@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import tp.farming_springboot.domain.review.dto.ReviewCreateDto;
 import tp.farming_springboot.domain.review.model.Review;
@@ -30,6 +31,7 @@ public class ReviewController {
     private final ReviewChoiceRepository reviewChoiceRepository;
     private final ReviewRepository reviewRepository;
 
+
     @ExceptionHandler
     public ResponseEntity<Message> handler(RestNullPointerException e) {
         Message message = e.getMsg();
@@ -44,6 +46,7 @@ public class ReviewController {
     public ResponseEntity<Message> create(Principal principal,
                                           @RequestPart ReviewCreateDto reviewDto,
                                           @PathVariable Long revieweeId){
+
         Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
