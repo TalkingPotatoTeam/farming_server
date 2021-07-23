@@ -1,6 +1,7 @@
 package tp.farming_springboot.controller;
 
 import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
 import net.nurigo.java_sdk.api.Message;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.json.simple.JSONObject;
@@ -34,23 +35,16 @@ import java.util.*;
 @CrossOrigin
 @RestController
 @EnableAutoConfiguration
+@RequiredArgsConstructor
 @RequestMapping(value = "/auth")
 public class AuthenticateController {
-    @Autowired
-    PasswordEncoder encoder;
-    @Autowired
-    OtpService otpService;
-    @Autowired
-    JwtUtils jwtUtils;
-    @Autowired
-    AuthenticationManager authenticationManager;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    AddressRepository addressRepository;
-    @Autowired
-    RoleRepository roleRepository;
-
+    private final PasswordEncoder encoder;
+    private final OtpService otpService;
+    private final JwtUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
+    private final RoleRepository roleRepository;
 
 
     @GetMapping("/tokens") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급

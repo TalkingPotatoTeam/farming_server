@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
@@ -27,8 +28,7 @@ public class ReviewController {
     private final ReviewRepository reviewRepository;
 
     @PostMapping
-    @ResponseBody
-    public ResponseEntity<Message> create(Principal principal, @RequestPart ReviewCreateDto reviewDto){
+    public ResponseEntity<Message> create(Authentication authentication, @RequestPart ReviewCreateDto reviewDto){
         Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));

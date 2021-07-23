@@ -25,10 +25,6 @@ public class Message {
 
 
     public Message() {
-        this.statusCode = StatusEnum.BAD_REQUEST.statusCode;
-        this.status = StatusEnum.BAD_REQUEST;
-        this.data = null;
-        this.message = null;
         this.timestamp = ZonedDateTime.now();
     }
 
