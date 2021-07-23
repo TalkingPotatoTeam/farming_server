@@ -15,6 +15,7 @@ import tp.farming_springboot.domain.review.repository.ReviewChoiceRepository;
 import tp.farming_springboot.domain.review.repository.ReviewRepository;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.UserRepository;
+import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.RestNullPointerException;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
@@ -30,16 +31,8 @@ public class ReviewController {
     private final UserRepository userRepository;
     private final ReviewChoiceRepository reviewChoiceRepository;
     private final ReviewRepository reviewRepository;
+    private final UserService userService;
 
-
-    @ExceptionHandler
-    public ResponseEntity<Message> handler(RestNullPointerException e) {
-        Message message = e.getMsg();
-        HttpHeaders headers = e.getHeaders();
-        HttpStatus httpStatus = e.getHttpStatus();
-
-        return new ResponseEntity<>(message, headers, httpStatus);
-    }
 
     @PostMapping("/{revieweeId}")
     @ResponseBody
@@ -51,17 +44,13 @@ public class ReviewController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
 
-        Optional<User> reviewer = userRepository.findByPhone(principal.getName());
-        reviewer.orElseThrow(() -> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, null, StatusEnum.UNAUTHORIZED));
-
-
-        Optional<User> reviewee = userRepository.findById(revieweeId);
-        reviewer.orElseThrow(() -> new RestNullPointerException(headers, "User Token invalid.", HttpStatus.UNAUTHORIZED, null, StatusEnum.UNAUTHORIZED));
+        User reviewer = userService.findUserByPhone(principal.getName());
+        User reviewee = userService.findUserById(revieweeId);
 
 
         Review review = new Review();
-        review.setReviewer(reviewer.get());
-        review.setReviewee(reviewee.get());
+        review.setReviewer(reviewer);
+        review.setReviewee(reviewee);
 
         System.out.println(reviewDto.getReviewContent());
         if(reviewDto.getReviewContent().equals("네, 일치했어요.")) {
