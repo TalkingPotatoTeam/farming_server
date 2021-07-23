@@ -10,11 +10,14 @@ import javax.persistence.*;
 @Entity
 public class Review {
 
-    public Review(Long id, User user, String reviewContent, int tag) {
-        this.id = id;
-        this.user = user;
+    public Review(User reviewer, User reviewee, ReviewChoice reviewContent) {
+        this.reviewer = reviewer;
+        this.reviewee = reviewee;
         this.reviewContent = reviewContent;
-        this.tag = tag;
+    }
+
+    public Review(){
+
     }
 
     @Id
@@ -24,20 +27,25 @@ public class Review {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name ="user_id")
+    @JoinColumn(name ="reviewer_id")
     // JoinColumn => 참조하는 (객체 이름_필드이름)
     @Getter
     @Setter
-    private User user;
+    private User reviewer;
+
+    @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name ="reviewee_id")
+    // JoinColumn => 참조하는 (객체 이름_필드이름)
+    @Getter
+    @Setter
+    private User reviewee;
+
 
     @Getter
     @Setter
-    String reviewContent;
+    @ManyToOne
+    private ReviewChoice reviewContent;
 
 
-    // 부정적인 리뷰인지, 아닌지 체크 용도
-    @Getter
-    @Setter
-    int tag;
 
 }
