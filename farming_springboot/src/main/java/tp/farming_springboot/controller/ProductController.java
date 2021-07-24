@@ -19,7 +19,7 @@ import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
 import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.PhotoFileException;
-import tp.farming_springboot.exception.UserNotAutorizedException;
+import tp.farming_springboot.exception.UserNotAuthorizedException;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
 
@@ -99,7 +99,7 @@ public class ProductController {
             @RequestPart ProductCreateDto prodDto,
             @RequestPart(value="PhotoFile", required = false) List<MultipartFile> files,
             @RequestPart(value="ReceiptFile", required = false) MultipartFile ReceiptFile
-            ) throws UserNotAutorizedException, PhotoFileException {
+            ) throws UserNotAuthorizedException, PhotoFileException {
 
         String userName = authentication.getName();
         productService.update(prodDto, userName, id, ReceiptFile, files);
@@ -111,7 +111,7 @@ public class ProductController {
     //자동으로 사진도 삭제.
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public String delete(Authentication authentication, @PathVariable Long id) throws UserNotAutorizedException, PhotoFileException {
+    public String delete(Authentication authentication, @PathVariable Long id) throws UserNotAuthorizedException, PhotoFileException {
         productService.delete(authentication.getName(), id);
         return "Deleting product success.";
     }

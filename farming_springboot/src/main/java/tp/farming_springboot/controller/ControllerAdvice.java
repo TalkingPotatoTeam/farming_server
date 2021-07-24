@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import tp.farming_springboot.exception.PhotoFileException;
 import tp.farming_springboot.exception.RestNullPointerException;
-import tp.farming_springboot.exception.UserNotAutorizedException;
+import tp.farming_springboot.exception.UserNotAuthorizedException;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
 
@@ -31,8 +31,8 @@ public class ControllerAdvice {
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    @ExceptionHandler(UserNotAutorizedException.class)
-    public ResponseEntity<Message> handle(UserNotAutorizedException e) {
+    @ExceptionHandler(UserNotAuthorizedException.class)
+    public ResponseEntity<Message> handle(UserNotAuthorizedException e) {
         Message message = new Message(StatusEnum.UNAUTHORIZED, e.getMessage());
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.UNAUTHORIZED);
     }

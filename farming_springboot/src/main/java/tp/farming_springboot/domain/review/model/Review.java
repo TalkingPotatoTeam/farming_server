@@ -1,6 +1,7 @@
 package tp.farming_springboot.domain.review.model;
 
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import tp.farming_springboot.domain.user.model.User;
@@ -9,7 +10,7 @@ import javax.persistence.*;
 
 @Entity
 public class Review {
-
+    @Builder
     public Review(User reviewer, User reviewee, ReviewChoice reviewContent) {
         this.reviewer = reviewer;
         this.reviewee = reviewee;
