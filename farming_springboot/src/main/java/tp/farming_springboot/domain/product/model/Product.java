@@ -2,6 +2,7 @@ package tp.farming_springboot.domain.product.model;
 
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,7 @@ import tp.farming_springboot.domain.user.model.User;
 import javax.persistence.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 // db 테이블과 클래스이름을 동일하게 하지 않으면, @Table annotation 사용해야 함.
@@ -59,7 +58,6 @@ public class Product {
 
     @Id
     @Getter
-    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -114,12 +112,15 @@ public class Product {
     @JoinColumn(name ="category_id")
     private Category category;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name="heart",
+            joinColumns = @JoinColumn(name="product_id"),
+            inverseJoinColumns = @JoinColumn(name="user_id")
+    )
+    private Set<User> likeUsers = new HashSet<>();
 
-    /*@OneToOne
-    private Long category_id;
 
-    */
-    //video, image, tags
 
 }
 
