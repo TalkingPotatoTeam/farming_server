@@ -38,6 +38,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @RequestMapping(value = "/auth")
 public class AuthenticateController {
+
     private final PasswordEncoder encoder;
     private final OtpService otpService;
     private final JwtUtils jwtUtils;

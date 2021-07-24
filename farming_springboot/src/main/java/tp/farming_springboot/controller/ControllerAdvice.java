@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
-import tp.farming_springboot.exception.PhotoFileException;
-import tp.farming_springboot.exception.RestNullPointerException;
-import tp.farming_springboot.exception.UserNotAutorizedException;
+import tp.farming_springboot.domain.user.model.Address;
+import tp.farming_springboot.exception.*;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
 
@@ -63,6 +62,19 @@ public class ControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Message> handle(MissingServletRequestPartException e) {
         Message message = new Message(StatusEnum.PARAMETER_LACKED, e.getMessage());
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AddressRemoveException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Message> handle(AddressRemoveException e) {
+        Message message = new Message(StatusEnum.BAD_REQUEST, e.getMessage());
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(UserExistsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Message> handle(UserExistsException e) {
+        Message message = new Message(StatusEnum.BAD_REQUEST, e.getMessage());
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
     }
 

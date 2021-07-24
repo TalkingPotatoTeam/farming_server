@@ -24,6 +24,8 @@ public class UserDto {
     }
     @Getter
     public static class UserNewAddressDto{
-        private String address;
+        private String content;
+        private Double lat;
+        private Double lon;
     }
 }

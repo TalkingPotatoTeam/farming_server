@@ -31,7 +31,6 @@ public class User  {
     @Getter @Setter
     private String phone;
 
-
     @OneToOne(fetch=FetchType.EAGER, cascade =CascadeType.ALL)
     @Getter @Setter
     private Address current; //현재 주소
@@ -47,6 +46,7 @@ public class User  {
     @JoinColumn(name="user_id")
     @Getter @Setter
     private List<Address> addresses = new ArrayList<Address>(); //여러 주소 가질 수 있음
+
 
     public User (String phone ){//생성자
         this.password=phone;

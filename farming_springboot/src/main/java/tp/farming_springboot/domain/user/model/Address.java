@@ -18,6 +18,14 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter @Setter private Long id;
     @Getter @Setter private Long user_id;
-    @Getter @Setter private String content; //주소정보
+    @Getter @Setter private String content;
+    @Getter @Setter private Double lat;
+    @Getter @Setter private Double lon;
 
+    public Address (Long user_id, String content, Double lat, Double lon){
+        this.user_id = user_id;
+        this.content = content;
+        this.lat = lat;
+        this.lon = lon;
+    }
 }

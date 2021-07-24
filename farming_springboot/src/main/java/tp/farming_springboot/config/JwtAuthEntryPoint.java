@@ -25,7 +25,7 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         // Check if the request as any exception that we have stored in Request
         final Exception exception = (Exception) request.getAttribute("exception");
         //String message = exception.getMessage();
-        String message;
+        String message="";
 
         //response.setContentType("application/json");
         //response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import tp.farming_springboot.domain.user.model.User;
-
+@RequiredArgsConstructor
 public class UserDetailsImpl implements UserDetails{
     private static final long serialVersionUID = 1L;
 
@@ -27,11 +28,10 @@ public class UserDetailsImpl implements UserDetails{
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String phone, String address, String password,
+    public UserDetailsImpl(Long id, String phone, String password,
                            Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.phone = phone;
-        this.address = address;
         this.password = password;
         this.authorities = authorities;
     }
@@ -44,7 +44,6 @@ public class UserDetailsImpl implements UserDetails{
         return new UserDetailsImpl(
                 user.getId(),
                 user.getPhone(),
-                user.getCurrent().getContent(),
                 user.getPassword(),
                 authorities);
     }
