@@ -43,6 +43,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDE_URL =
             Collections.unmodifiableList(
                     Arrays.asList(
+                            "/auth/request-otp",
                             "/auth/otp",
                             "/user/sudo",
                             "/auth/tokens",
