@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import tp.farming_springboot.config.JwtUtils;
+import tp.farming_springboot.domain.user.dto.UserCreateDto;
 import tp.farming_springboot.domain.user.dto.UserDto;
 import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.ERole;
@@ -46,7 +47,7 @@ public class AuthenticateController {
 
 
     @GetMapping("/tokens") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급
-    public ResponseEntity<?> authenticate(@RequestBody UserDto.UserAuthDto logger){
+    public ResponseEntity<?> authenticate(@RequestBody UserCreateDto logger){
         tp.farming_springboot.response.Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
@@ -107,7 +108,7 @@ public class AuthenticateController {
     }
     //회원가입 요청 otp 문자보내줌
     @PostMapping("/request-otp")
-    public ResponseEntity<?> requestSignup(@RequestBody UserDto.UserRequestOtpDto newUser){
+    public ResponseEntity<?> requestSignup(@RequestBody UserCreateDto newUser){
         if (userRepository.existsByPhone(newUser.getPhone())) {
             tp.farming_springboot.response.Message message = null;
             HttpHeaders headers = new HttpHeaders();
@@ -122,7 +123,7 @@ public class AuthenticateController {
     }
     //otp 문자 확인해줌
     @PostMapping("/otp")
-    public ResponseEntity<?> requestSignup(@RequestBody UserDto.UserLoginDto newUser){
+    public ResponseEntity<?> validateOtp(@RequestBody UserCreateDto newUser){
         tp.farming_springboot.response.Message message = null;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
@@ -142,19 +143,16 @@ public class AuthenticateController {
                 else {
                     message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "INVALID OTP");
                     return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-                    //return ResponseEntity.badRequest().body("Invalid Otp!");
                 }
             }
             else {
                 message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "OTP EXPIRED");
                 return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-                //return ResponseEntity.badRequest().body("Otp has expired!");
             }
         }
         else {
             message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "FAIL. CONTACT ADMIN");
             return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-            //return ResponseEntity.badRequest().body("FAIL");
         }
 
     }
