@@ -14,7 +14,7 @@ import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.PhotoFileException;
 import tp.farming_springboot.exception.RestNullPointerException;
-import tp.farming_springboot.exception.UserNotAutorizedException;
+import tp.farming_springboot.exception.UserNotAuthorizedException;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -37,8 +37,8 @@ public class ProductService {
         return product;
     }
 
-    public void create(String userName, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException {
-        User user = userService.findUserByPhone(userName);
+    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException {
+        User user = userService.findUserByPhone(userPhone);
         List<PhotoFile> photoFileList = new ArrayList<PhotoFile>();
 
         if(receiptFile != null){
@@ -60,12 +60,12 @@ public class ProductService {
 
 
     @Transactional
-    public void delete(String userName, Long id) throws UserNotAutorizedException, PhotoFileException {
-        User user = userService.findUserByPhone(userName);
+    public void delete(String userPhone, Long id) throws UserNotAuthorizedException, PhotoFileException {
+        User user = userService.findUserByPhone(userPhone);
         Product product = this.findById(id);
 
         if(!isUserAuthor(user, product)) {
-            throw new UserNotAutorizedException("Current user and product author is not same.");
+            throw new UserNotAuthorizedException("Current user and product author is not same.");
         }else {
             if(product.getPhotoFile().size() != 0) {
                 fileService.deleteFiles(product.getPhotoFile());
@@ -82,15 +82,15 @@ public class ProductService {
 
     @Transactional
     public void update(ProductCreateDto prodDto,
-                       String userName, Long id,
+                       String userPhone, Long id,
                        MultipartFile ReceiptFile,
-                       List<MultipartFile> photoFiles) throws UserNotAutorizedException, PhotoFileException {
+                       List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException {
 
-        User user = userService.findUserByPhone(userName);
+        User user = userService.findUserByPhone(userPhone);
         Product prod = this.findById(id);
 
         if(!isUserAuthor(user, prod))
-            throw new UserNotAutorizedException("Current user and product author is not same.");
+            throw new UserNotAuthorizedException("Current user and product author is not same.");
         else {
             // 사진 파일 삭제
             if (prod.getPhotoFile().size() > 0) {

@@ -9,8 +9,8 @@ import tp.farming_springboot.response.StatusEnum;
 
 
 
-public class UserNotAutorizedException extends Exception{
-    public UserNotAutorizedException(String msg){
+public class UserNotAuthorizedException extends Exception{
+    public UserNotAuthorizedException(String msg){
         super(msg);
     }
 

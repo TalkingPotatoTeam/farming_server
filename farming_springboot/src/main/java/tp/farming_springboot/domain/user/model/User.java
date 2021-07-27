@@ -1,5 +1,6 @@
 package tp.farming_springboot.domain.user.model;
 import lombok.*;
+import tp.farming_springboot.domain.product.model.Product;
 
 import javax.persistence.*;
 import java.util.*;
@@ -47,6 +48,14 @@ public class User  {
     @JoinColumn(name="user_id")
     @Getter @Setter
     private List<Address> addresses = new ArrayList<Address>(); //여러 주소 가질 수 있음
+
+
+    @ManyToMany(mappedBy = "likeUsers")
+    private Set<Product> likeProducts = new HashSet<>();
+
+
+
+
 
     public User (String phone ){//생성자
         this.password=phone;
