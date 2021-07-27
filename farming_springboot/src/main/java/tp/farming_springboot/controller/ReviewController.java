@@ -39,8 +39,8 @@ public class ReviewController {
                                           @PathVariable Long revieweeId){
 
         System.out.println("ReviewController.create");
-        String userName = authentication.getName();
-        reviewService.create(userName, revieweeId, reviewDto);
+        String userPhone = authentication.getName();
+        reviewService.create(userPhone, revieweeId, reviewDto);
         return "Review uploaded.";
     }
 }

@@ -37,8 +37,8 @@ public class ProductService {
         return product;
     }
 
-    public void create(String userName, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException {
-        User user = userService.findUserByPhone(userName);
+    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException {
+        User user = userService.findUserByPhone(userPhone);
         List<PhotoFile> photoFileList = new ArrayList<PhotoFile>();
 
         if(receiptFile != null){
@@ -60,8 +60,8 @@ public class ProductService {
 
 
     @Transactional
-    public void delete(String userName, Long id) throws UserNotAuthorizedException, PhotoFileException {
-        User user = userService.findUserByPhone(userName);
+    public void delete(String userPhone, Long id) throws UserNotAuthorizedException, PhotoFileException {
+        User user = userService.findUserByPhone(userPhone);
         Product product = this.findById(id);
 
         if(!isUserAuthor(user, product)) {
@@ -82,11 +82,11 @@ public class ProductService {
 
     @Transactional
     public void update(ProductCreateDto prodDto,
-                       String userName, Long id,
+                       String userPhone, Long id,
                        MultipartFile ReceiptFile,
                        List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException {
 
-        User user = userService.findUserByPhone(userName);
+        User user = userService.findUserByPhone(userPhone);
         Product prod = this.findById(id);
 
         if(!isUserAuthor(user, prod))

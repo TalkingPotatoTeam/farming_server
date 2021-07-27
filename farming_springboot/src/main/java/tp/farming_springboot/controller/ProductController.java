@@ -46,8 +46,8 @@ public class ProductController {
             @RequestPart(value = "ReceiptFile", required = false) MultipartFile receiptFile
             ) throws PhotoFileException {
 
-        String userName = authentication.getName();
-        productService.create(userName, prodDto, files, receiptFile);
+        String userPhone = authentication.getName();
+        productService.create(userPhone, prodDto, files, receiptFile);
         return "Product item uploaded.";
     }
 
@@ -101,8 +101,8 @@ public class ProductController {
             @RequestPart(value="ReceiptFile", required = false) MultipartFile ReceiptFile
             ) throws UserNotAuthorizedException, PhotoFileException {
 
-        String userName = authentication.getName();
-        productService.update(prodDto, userName, id, ReceiptFile, files);
+        String userPhone = authentication.getName();
+        productService.update(prodDto, userPhone, id, ReceiptFile, files);
 
         return "Updating product success.";
     }

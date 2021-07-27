@@ -22,8 +22,8 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewChoiceRepository reviewChoiceRepository;
 
-    public void create(String userName, Long revieweeId, ReviewCreateDto reviewDto) {
-        User reviewer = userService.findUserByPhone(userName);
+    public void create(String userPhone, Long revieweeId, ReviewCreateDto reviewDto) {
+        User reviewer = userService.findUserByPhone(userPhone);
         User reviewee = userService.findUserById(revieweeId);
 
         String reviewContentKeyString = "";
