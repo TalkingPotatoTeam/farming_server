@@ -126,7 +126,7 @@ public class UserController {
     }
 
     //set User's Current Address
-    @PutMapping("/address/{id}")//대표주소 변경
+    @PutMapping("/address/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Message> changeCurrentAddress(Authentication authentication, @PathVariable Long id) {
         String userPhone = authentication.getName();
@@ -136,7 +136,7 @@ public class UserController {
     }
 
     //return User Profile
-    @GetMapping("") //내 정보 겟
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Message> getUser(Authentication authentication){
         Optional<User> user = userRepository.findByPhone(authentication.getName());
@@ -151,6 +151,7 @@ public class UserController {
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
+    //Update user's phone num
     @PatchMapping("")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Message> updateUserPhone(Authentication authentication, @RequestBody UserDto.UserRegisterDto newUser) throws UserExistsException{
@@ -160,34 +161,6 @@ public class UserController {
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
-
-    //회원가입 otp 확인하고 유저 만듬
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody UserDto.UserRegisterDto newUser) {
-        Message message = null;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        Optional<User> user = userRepository.findByPhone(newUser.getPhone());
-        if(user.isPresent()) {
-            System.out.println(user);
-            message = new Message(StatusEnum.BAD_REQUEST, "Phone number already exists.");
-            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-        }
-        createUser(newUser);
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(newUser.getPhone(), newUser.getPhone()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String access = jwtUtils.generateJwtToken(authentication);
-        String refresh = jwtUtils.generateJwtRefreshToken(authentication);
-        List<JSONObject> entities = new ArrayList<JSONObject>();
-        JSONObject entity = new JSONObject();
-        entity.put("access", access);
-        entity.put("refresh", refresh);
-        entities.add(entity);
-        message = new Message(StatusEnum.OK, "Sign up was successfull", entities);
-        return new ResponseEntity<>(message, headers, HttpStatus.OK);
-    }
 
     //otp 확인하고 로그인 기능
     @GetMapping("/login")

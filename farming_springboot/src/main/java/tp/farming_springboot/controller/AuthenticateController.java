@@ -39,13 +39,10 @@ import java.util.*;
 @RequestMapping(value = "/auth")
 public class AuthenticateController {
 
-    private final PasswordEncoder encoder;
     private final OtpService otpService;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-    private final AddressRepository addressRepository;
-    private final RoleRepository roleRepository;
 
 
     @GetMapping("/tokens") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급
@@ -70,18 +67,15 @@ public class AuthenticateController {
                 entities.add(entity);
                 message = new tp.farming_springboot.response.Message(StatusEnum.OK, "Update access and refresh token.",entities);
                 return new ResponseEntity<>(message, headers, HttpStatus.OK);
-                //return new ResponseEntity<Object>(entities, HttpStatus.OK);
             }
             else{
                 message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "Phone number does not exist in db.");
                 return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-                //return new ResponseEntity<>("Phone number does not exist in db",HttpStatus.BAD_REQUEST);
             }
         }catch(Exception e){
             System.out.println(e);
             message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "알수없는 오류.");
             return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-            //return new ResponseEntity<>("",HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -102,7 +96,6 @@ public class AuthenticateController {
             System.out.println(obj.toString()); //전송 결과 출력
             message = new tp.farming_springboot.response.Message(StatusEnum.OK, "OTP validation text is sent.");
             return new ResponseEntity<>(message, headers, HttpStatus.OK);
-            //return ResponseEntity.ok("본인인증번호 문자로 전송됨");
         }
         catch (CoolsmsException e)
         {
@@ -110,7 +103,6 @@ public class AuthenticateController {
             System.out.println(e.getCode());
             message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, e.getMessage());
             return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-            //return ResponseEntity.badRequest().body("본인인증번호 문자 전송 실패. 다시 시도해 주세요.");
         }
     }
     //회원가입 요청 otp 문자보내줌
@@ -122,13 +114,11 @@ public class AuthenticateController {
             headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
             message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "Phone Number is already registered.");
             return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-            //return ResponseEntity.badRequest().body("Phone Number is already taken");
         }
         else{
             int otp = otpService.generateOTP(newUser.getPhone());
             return sendMsg(String.valueOf(otp),newUser.getPhone());
         }
-        //return ResponseEntity.ok("본인인증번호 문자로 전송됨");
     }
     //otp 문자 확인해줌
     @PostMapping("/otp")
@@ -147,7 +137,7 @@ public class AuthenticateController {
             if (serverOtp > 0) {
                 if (otp == serverOtp) {
                     message = new tp.farming_springboot.response.Message(StatusEnum.OK, "Authentication was Successful");
-                    return new ResponseEntity<>(message, headers, HttpStatus.OK);
+                        return new ResponseEntity<>(message, headers, HttpStatus.OK);
                 }
                 else {
                     message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "INVALID OTP");
@@ -189,35 +179,4 @@ public class AuthenticateController {
         return expectedMap;
     }
 
-    /*
-    @GetMapping(value = "/getResponse")
-    public String getResponse(HttpServletRequest request) throws JsonProcessingException {
-
-        String response = null;
-
-        try {
-                // Authenticate User and get JWT
-                ResponseEntity<ResponseToken> authenticationResponse = restTemplate.exchange(AUTHENTICATION_URL,
-                        HttpMethod.POST, authenticationEntity, ResponseToken.class);
-
-                // if the authentication is successful
-                if (authenticationResponse.getStatusCode().equals(HttpStatus.OK)) {
-                    token = "Bearer " + authenticationResponse.getBody().getToken();
-                    response = getData();
-
-                }
-        } catch (Exception ex) {
-            // check if exception is due to ExpiredJwtException
-            if (ex.getMessage().contains("io.jsonwebtoken.ExpiredJwtException")) {
-                // Refresh Token
-                refreshToken();
-                // try again with refresh token
-                response = getData();
-            }else {
-                System.out.println(ex);
-            }
-        }
-        return response;
-
-    }*/
 }
