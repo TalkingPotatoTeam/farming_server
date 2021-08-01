@@ -29,6 +29,13 @@ public class ControllerAdvice {
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Message> handler(IllegalArgumentException e) {
+        Message message = new Message(StatusEnum.BAD_REQUEST, e.getMessage());
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
+    }
+
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(UserNotAuthorizedException.class)
     public ResponseEntity<Message> handle(UserNotAuthorizedException e) {

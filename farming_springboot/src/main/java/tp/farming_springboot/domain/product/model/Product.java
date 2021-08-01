@@ -138,12 +138,17 @@ public class Product {
     )
 
     private Set<User> likeUsers = new HashSet<>();
-    private String productStatus = "판매중";
     private LocalDateTime buyProductDate;
     private String freshness;
 
+    /*
+    * Setter가 필요한 도메인과 그렇지 않은 도메인 구분
+    *
+    *
+     */
 
-
+    @Setter
+    private String productStatus = "판매중";
 
 
 }

@@ -7,16 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-
 import org.springframework.web.bind.annotation.*;
 import tp.farming_springboot.domain.product.service.LikeService;
 import tp.farming_springboot.domain.user.dto.UserResponseDto;
-import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.exception.UserAlreadyLikeProductException;
 import tp.farming_springboot.exception.UserNotLikeProductException;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
-
 import java.nio.charset.Charset;
 import java.util.*;
 

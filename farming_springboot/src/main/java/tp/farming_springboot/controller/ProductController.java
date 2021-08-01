@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
 import tp.farming_springboot.domain.product.dto.ProductResponseDto;
+import tp.farming_springboot.domain.product.dto.ProductStatusDto;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
 import tp.farming_springboot.domain.product.service.ProductService;
@@ -106,6 +107,16 @@ public class ProductController {
         productService.delete(authentication.getName(), id);
         return "Deleting product success.";
     }
+
+    @PutMapping(value="/status/{productId}")
+    @ResponseStatus(HttpStatus.OK)
+    public String changeStatusOfProduct(Authentication authentication, @PathVariable Long productId,
+                                        @RequestBody ProductStatusDto productStatus) throws UserNotAuthorizedException {
+
+        productService.changeStatusOfProduct(authentication.getName(), productId, productStatus);
+        return "Updating Status Of Product is Success.";
+    }
+
 
     @GetMapping("/categories")
     public ResponseEntity<Message> showCategories(){

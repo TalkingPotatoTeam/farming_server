@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
 import tp.farming_springboot.domain.product.dto.ProductResponseDto;
+import tp.farming_springboot.domain.product.dto.ProductStatusDto;
 import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
@@ -14,7 +15,6 @@ import tp.farming_springboot.domain.product.repository.ProductRepository;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.PhotoFileException;
-import tp.farming_springboot.exception.RestNullPointerException;
 import tp.farming_springboot.exception.UserNotAuthorizedException;
 
 import javax.transaction.Transactional;
@@ -155,6 +155,29 @@ public class ProductService {
             );
 
             productRepository.save(prod);
+        }
+    }
+
+
+    public void changeStatusOfProduct(String userPhone, Long productId, ProductStatusDto productStatus) throws UserNotAuthorizedException {
+        User user = userService.findUserByPhone(userPhone);
+        Product product = productRepository.findByIdOrElseThrow(productId);
+
+        if(!isUserAuthor(user, product)) {
+            throw new UserNotAuthorizedException("Current user and product author is not same.");
+        } else {
+            List<String> productStatusList = new ArrayList<>();
+            productStatusList.add("판매중");
+            productStatusList.add("예약중");
+            productStatusList.add("판매완료");
+
+            if(!productStatusList.contains(productStatus.getProductStatus())) {
+                System.out.println(" = " + productStatus);
+                throw new IllegalArgumentException("Product Status is not existed.");
+            } else {
+                product.setProductStatus(productStatus.getProductStatus());
+                productRepository.save(product);
+            }
         }
     }
 
