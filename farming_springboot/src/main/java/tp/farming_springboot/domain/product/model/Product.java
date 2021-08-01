@@ -112,6 +112,8 @@ public class Product {
     @JoinColumn(name ="category_id")
     private Category category;
 
+    @Getter
+    @Setter
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name="heart",
