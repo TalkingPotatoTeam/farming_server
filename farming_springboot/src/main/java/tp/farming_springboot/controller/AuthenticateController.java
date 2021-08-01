@@ -2,8 +2,8 @@ package tp.farming_springboot.controller;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import net.nurigo.java_sdk.api.Message;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
+import org.apache.coyote.Response;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -17,7 +17,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 import tp.farming_springboot.config.JwtUtils;
+import tp.farming_springboot.domain.user.dto.UserAuthenDto;
 import tp.farming_springboot.domain.user.dto.UserCreateDto;
 import tp.farming_springboot.domain.user.dto.UserDto;
 import tp.farming_springboot.domain.user.model.Address;
@@ -27,10 +29,17 @@ import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.AddressRepository;
 import tp.farming_springboot.domain.user.repository.RoleRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
+import tp.farming_springboot.domain.user.service.AuthenticateService;
 import tp.farming_springboot.domain.user.service.OtpService;
+import tp.farming_springboot.domain.user.service.SmsService;
+import tp.farming_springboot.domain.user.service.UserService;
+import tp.farming_springboot.exception.AddressRemoveException;
+import tp.farming_springboot.exception.VerificationException;
 import tp.farming_springboot.response.StatusEnum;
-
+import tp.farming_springboot.response.Message;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
 @CrossOrigin
@@ -44,7 +53,14 @@ public class AuthenticateController {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final SmsService smsService;
+    private final AuthenticateService authenticateService;
 
+    public HttpHeaders HttpHeaderSetting(){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+        return headers;
+    }
 
     @GetMapping("/tokens") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급
     public ResponseEntity<?> authenticate(@RequestBody UserCreateDto logger){
@@ -80,83 +96,41 @@ public class AuthenticateController {
         }
     }
 
-    private ResponseEntity<?> sendMsg(String randomKey, String sendNum){
-        String api_key = "NCSI7GU7YFBWB6R7"; //사이트에서 발급 받은 API KEY
-        String api_secret = "UTYWP9RRXCZO1WJCLYW5XG9CAE5NE5TE"; //사이트에서 발급 받은API SECRET KEY
-        Message coolsms = new Message(api_key, api_secret);
-        HashMap<String, String> params = new HashMap<String, String>();
-        params.put("to", sendNum);
-        params.put("from", "01073408629"); //사전에 사이트에서 번호를 인증하고 등록하여야 함
-        params.put("type", "SMS"); params.put("text", "파밍 인증번호는 "+randomKey+" 입니다.");//메시지 내용
-        //params.put("app_version", "test app 1.2");
-        tp.farming_springboot.response.Message message = null;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        try {
-            JSONObject obj = (JSONObject) coolsms.send(params);
-            System.out.println(obj.toString()); //전송 결과 출력
-            message = new tp.farming_springboot.response.Message(StatusEnum.OK, "OTP validation text is sent.");
-            return new ResponseEntity<>(message, headers, HttpStatus.OK);
-        }
-        catch (CoolsmsException e)
-        {
-            System.out.println(e.getMessage());
-            System.out.println(e.getCode());
-            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, e.getMessage());
-            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-        }
-    }
-    //회원가입 요청 otp 문자보내줌
+    //send otp number to user
     @PostMapping("/request-otp")
-    public ResponseEntity<?> requestSignup(@RequestBody UserCreateDto newUser){
-        if (userRepository.existsByPhone(newUser.getPhone())) {
-            tp.farming_springboot.response.Message message = null;
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "Phone Number is already registered.");
-            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+    @ResponseStatus(HttpStatus.OK)
+    private ResponseEntity<Message> sendMsg(UserAuthenDto user){
+        try {
+            String phone = user.getPhone();
+            int otp = otpService.generateOTP(phone);
+            String result = smsService.sendSMS(String.valueOf(otp), phone);
+            Message message = new Message(StatusEnum.OK,"User Created", result );
+            return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
         }
-        else{
-            int otp = otpService.generateOTP(newUser.getPhone());
-            return sendMsg(String.valueOf(otp),newUser.getPhone());
+        catch(CoolsmsException e){
+            Message message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, e.getMessage());
+            return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
         }
     }
-    //otp 문자 확인해줌
+    //verify number and redirect to signup or login
     @PostMapping("/otp")
-    public ResponseEntity<?> validateOtp(@RequestBody UserCreateDto newUser){
-        tp.farming_springboot.response.Message message = null;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        int otp = newUser.getOtp();
-        if (otp >= 0) {
-            int serverOtp = otpService.getOtp(newUser.getPhone());
-            System.out.println("system otp : " + serverOtp);
-            if(otp == 12345){
-                message = new tp.farming_springboot.response.Message(StatusEnum.OK, "Temporary Authentication");
-                return new ResponseEntity<>(message, headers, HttpStatus.OK);
-            }
-            if (serverOtp > 0) {
-                if (otp == serverOtp) {
-                    message = new tp.farming_springboot.response.Message(StatusEnum.OK, "Authentication was Successful");
-                        return new ResponseEntity<>(message, headers, HttpStatus.OK);
-                }
-                else {
-                    message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "INVALID OTP");
-                    return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-                }
-            }
-            else {
-                message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "OTP EXPIRED");
-                return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-            }
+    public ResponseEntity<Message> validateOtp(@RequestBody UserCreateDto newUser) throws VerificationException {
+        String phone = newUser.getPhone();
+        int userOtp = newUser.getOtp();
+        int serverOtp = otpService.getOtp(phone);
+        String result = authenticateService.verifyOtp(userOtp, serverOtp);
+
+        Optional<User> user = userRepository.findByPhone(phone);
+        if(user.isPresent()) {//login
+            result += " +Continue to Log in";
         }
-        else {
-            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "FAIL. CONTACT ADMIN");
-            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
+        else { //create user
+            result += "Continue to Sign up";
         }
 
+        Message message = new Message(StatusEnum.OK, result);
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
-
 
     //만료된 토큰 + 리프레시 토큰 받고 새로운 access 토큰 발급해줌
     @GetMapping(value = "/acces-token")

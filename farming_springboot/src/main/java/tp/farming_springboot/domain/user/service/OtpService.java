@@ -5,11 +5,6 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-
-/**
- * @author shrisowdhaman
- * Dec 15, 2017
- */
 @Service
 public class OtpService {
 

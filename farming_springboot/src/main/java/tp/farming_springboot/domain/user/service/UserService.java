@@ -54,18 +54,6 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
 
     private final OtpService otpService;
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Message> handler(RestNullPointerException e) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-
-        Message message = new Message();
-        message.setMessage(e.getMessage());
-        message.setStatus(StatusEnum.BAD_REQUEST);
-
-        return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-    }
     //check if user exists
     //check if user does not exist
     public User findUserById(Long id) {
@@ -102,7 +90,7 @@ public class UserService {
         Optional<User> user = userRepository.findByPhone(userPhone);
         userRepository.deleteById(user.get().getId());
     }
-    //addaddress
+    //add address
     public void addAddress(String userPhone, Address address){
         Optional<User> user = userRepository.findByPhone(userPhone);
         List<Address> addresses = new ArrayList<Address>();
@@ -113,7 +101,7 @@ public class UserService {
         user.get().setAddresses(addresses);
         userRepository.save(user.get());
     }
-    //deleteaddress
+    //delete address
     public void deleteAddress(String userPhone, Long addressId) throws AddressRemoveException{
         Optional<User> user = userRepository.findByPhone(userPhone);
         List<Address> addresses = user.get().getAddresses();
@@ -126,7 +114,7 @@ public class UserService {
         userRepository.save(user.get());
     }
 
-    //setcurrentaddress
+    //set current address
     public void setCurrentAddress(String userPhone, Long addressId){
         Optional<User> user = userRepository.findByPhone(userPhone);
         Optional<Address> toCurrent = addressRepository.findById(addressId);

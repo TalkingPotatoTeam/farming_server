@@ -51,7 +51,7 @@ public class ControllerAdvice {
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ExceptionHandler({MissingServletRequestParameterException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Message> handle(MissingServletRequestParameterException e) {
         Message message = new Message(StatusEnum.PARAMETER_LACKED, e.getMessage());
@@ -74,6 +74,13 @@ public class ControllerAdvice {
     @ExceptionHandler(UserExistsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Message> handle(UserExistsException e) {
+        Message message = new Message(StatusEnum.BAD_REQUEST, e.getMessage());
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(VerificationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Message> handle(VerificationException e) {
         Message message = new Message(StatusEnum.BAD_REQUEST, e.getMessage());
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
     }

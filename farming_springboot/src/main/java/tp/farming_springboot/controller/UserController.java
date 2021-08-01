@@ -2,7 +2,6 @@ package tp.farming_springboot.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,10 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.config.JwtUtils;
-import tp.farming_springboot.domain.product.dto.ProductCreateDto;
-import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.user.dto.AddressDto;
 import tp.farming_springboot.domain.user.dto.UserCreateDto;
 import tp.farming_springboot.domain.user.dto.UserDto;
@@ -32,7 +28,6 @@ import tp.farming_springboot.domain.user.service.AddressService;
 import tp.farming_springboot.domain.user.service.OtpService;
 import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.AddressRemoveException;
-import tp.farming_springboot.exception.PhotoFileException;
 import tp.farming_springboot.exception.UserExistsException;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
@@ -51,7 +46,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final AddressService addressService;
-    private final  RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder encoder;
@@ -142,6 +137,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Message> getUser(Authentication authentication){
         Optional<User> user = userRepository.findByPhone(authentication.getName());
+        if(user.isPresent())System.out.println(user.get().getId());
         List<JSONObject> entities = new ArrayList<JSONObject>();
         JSONObject entity = new JSONObject();
         entity.put("Id", user.get().getId().toString());

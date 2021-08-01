@@ -51,6 +51,7 @@ public class User  {
     public User (String phone ){//생성자
         this.password=phone;
         this.phone=phone;
+        this.roles = new HashSet<Role>();
     }
 
     public void addAddress(Address address) {

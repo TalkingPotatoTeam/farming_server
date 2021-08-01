@@ -21,31 +21,29 @@ public class UserDetailsImpl implements UserDetails{
 
     private String phone;
 
-    private String address;
-
     @JsonIgnore
     private String password;
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String phone, String password,
-                           Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(Long id, String phone, String password){
+                           //,Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.phone = phone;
         this.password = password;
-        this.authorities = authorities;
+        //this.authorities = authorities;
     }
 
     public static UserDetailsImpl build(User user) {
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
-                .collect(Collectors.toList());
+        //List<GrantedAuthority> authorities = user.getRoles().stream()
+                //.map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                //.collect(Collectors.toList());
 
         return new UserDetailsImpl(
                 user.getId(),
                 user.getPhone(),
-                user.getPassword(),
-                authorities);
+                user.getPassword());
+                //,authorities);
     }
 
     @Override
