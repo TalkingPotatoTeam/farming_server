@@ -15,8 +15,6 @@ import tp.farming_springboot.domain.user.model.User;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReviewCreateDto {
-
-
     private String reviewContent;
 
     private ReviewChoice reviewChoice;

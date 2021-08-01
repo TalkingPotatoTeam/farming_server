@@ -20,7 +20,7 @@ public class LikeService {
 
     public void create(String userPhone, Long productId) throws UserAlreadyLikeProductException {
         User user = userService.findUserByPhone(userPhone);
-        Product product = productService.findById(productId);
+        Product product = productRepository.findByIdOrElseThrow(productId);
 
         if(product.getLikeUsers().contains(user)){
             throw new UserAlreadyLikeProductException("User { id: " + user.getId() + " }" + " already liked this product.");
@@ -33,7 +33,7 @@ public class LikeService {
 
     public void delete(String userPhone, Long productId) throws UserNotLikeProductException {
         User user = userService.findUserByPhone(userPhone);
-        Product product = productService.findById(productId);
+        Product product = productRepository.findByIdOrElseThrow(productId);
 
         if(product.getLikeUsers().contains(user)){
             product.getLikeUsers().remove(user);
@@ -44,7 +44,7 @@ public class LikeService {
     }
 
     public Set<User> getLikeUserSet(Long productId) {
-        Product product = productService.findById(productId);
+        Product product = productRepository.findByIdOrElseThrow(productId);
         return product.getLikeUsers();
     }
 }

@@ -4,6 +4,7 @@ package tp.farming_springboot.domain.product.model;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
@@ -45,6 +46,7 @@ public class Product {
 
     }
 
+
     public void addPhoto(List<PhotoFile> photofile) {
         if(this.photoFile == null)
             this.photoFile = new ArrayList<PhotoFile>();
@@ -52,9 +54,7 @@ public class Product {
         for(PhotoFile photoFile : photofile)
             this.photoFile.add(photoFile);
     }
-    public void deletePhoto(PhotoFile photofile){
-        this.photoFile.remove(photofile);
-    }
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

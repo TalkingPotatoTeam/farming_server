@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
+import tp.farming_springboot.domain.product.dto.ProductResponseDto;
 import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
@@ -30,12 +31,11 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
 
 
-    public Product findById(Long id) {
-        Product product = productRepository.findById(id).orElseThrow(
-                () -> new RestNullPointerException("Can't Find Product by <Id: " + id + ">")
-        );
-        return product;
+    public ProductResponseDto findById(Long id) {
+        Product product = productRepository.findByIdOrElseThrow(id);
+        return ProductResponseDto.from(product);
     }
+
 
     public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException {
         User user = userService.findUserByPhone(userPhone);
@@ -54,6 +54,9 @@ public class ProductService {
         }
         prodDto.setPhotoFile(photoFileList);
         prodDto.setAddress(user.getCurrent().getContent());
+
+
+
         productRepository.save(new Product(user, prodDto, categoryRepository));
     }
 
@@ -62,7 +65,7 @@ public class ProductService {
     @Transactional
     public void delete(String userPhone, Long id) throws UserNotAuthorizedException, PhotoFileException {
         User user = userService.findUserByPhone(userPhone);
-        Product product = this.findById(id);
+        Product product = productRepository.findByIdOrElseThrow(id);
 
         if(!isUserAuthor(user, product)) {
             throw new UserNotAuthorizedException("Current user and product author is not same.");
@@ -87,7 +90,7 @@ public class ProductService {
                        List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException {
 
         User user = userService.findUserByPhone(userPhone);
-        Product prod = this.findById(id);
+        Product prod = productRepository.findByIdOrElseThrow(id);
 
         if(!isUserAuthor(user, prod))
             throw new UserNotAuthorizedException("Current user and product author is not same.");
@@ -146,13 +149,12 @@ public class ProductService {
         }
     }
 
-
-
     public boolean isUserAuthor(User user, Product product) {
         if(user.getId() == product.getUser().getId())
             return true;
         else
             return false;
     }
+
 
 }

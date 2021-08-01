@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
+import tp.farming_springboot.domain.product.dto.ProductResponseDto;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
 import tp.farming_springboot.domain.product.service.ProductService;
@@ -52,17 +53,10 @@ public class ProductController {
         return "Product item uploaded.";
     }
 
-    // prodRepo의 findall return type => *Iterable*
-    @GetMapping
-    public ResponseEntity<Message> list(Authentication authentication) {
-        Iterable<Product> prodList = prodRepo.findAll();
-        Message message= new Message(StatusEnum.OK, "finding all of product is success.", prodList);
-        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Message> findByProductId(Authentication authentication, @PathVariable Long id) {
-        Product prod = productService.findById(id);
+        ProductResponseDto prod = productService.findById(id);
         Message message = new Message(StatusEnum.OK, "Finding with product id is Success.", prod);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
@@ -70,10 +64,11 @@ public class ProductController {
     @GetMapping("/user/{id}")
     public ResponseEntity<Message> findByUserId(Authentication authentication, @PathVariable Long id) {
         //id 검증 용도
-        User user  = userService.findUserById(id);
+        User user  = userService.findUserById
 
         //Null이어도 에러 처리가 없어야 함.
         Iterable<Product> prodList = prodRepo.findByUserId(id);
+
         Message message = new Message(StatusEnum.OK,"Finding with user id is Success.", prodList );
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
 
