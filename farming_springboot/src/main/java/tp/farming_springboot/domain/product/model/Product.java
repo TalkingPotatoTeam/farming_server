@@ -98,25 +98,19 @@ public class Product {
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name ="user_id")
     // JoinColumn => 참조하는 (객체 이름_필드이름)
-    @Setter
+
     private User user;
 
-    @Setter
     private String title;
 
-    @Setter
     private String content;
 
-    @Setter
     private String price;
 
-    @Setter
     private String quantity;
 
-    @Setter
     private String address;
 
-    @Setter
     private boolean certified;
 
     @CreatedDate
@@ -125,10 +119,9 @@ public class Product {
     @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name ="product_id")
-    @Setter
     private List<PhotoFile> photoFile;
 
-    @Setter
+
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private PhotoFile receipt;
 
@@ -137,7 +130,6 @@ public class Product {
     private Category category;
 
     @Getter
-    @Setter
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name="heart",
@@ -146,14 +138,8 @@ public class Product {
     )
 
     private Set<User> likeUsers = new HashSet<>();
-
-    @Setter
     private String productStatus = "판매중";
-
-    @Setter
     private LocalDateTime buyProductDate;
-
-    @Setter
     private String freshness;
 
 
