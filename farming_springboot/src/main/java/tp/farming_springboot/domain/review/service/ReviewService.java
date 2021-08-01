@@ -22,9 +22,12 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewChoiceRepository reviewChoiceRepository;
 
-    public void create(String userName, Long revieweeId, ReviewCreateDto reviewDto) {
-        User reviewer = userService.findUserByPhone(userName);
+    public void create(String userPhone, Long revieweeId, ReviewCreateDto reviewDto) {
+        User reviewer = userService.findUserByPhone(userPhone);
         User reviewee = userService.findUserById(revieweeId);
+
+
+        System.out.println("reviewDto.getReviewContent() = " + reviewDto.getReviewContent());
 
         String reviewContentKeyString = "";
         if(reviewDto.getReviewContent().equals("네, 일치했어요."))
@@ -42,6 +45,7 @@ public class ReviewService {
         else if(reviewDto.getReviewContent().equals("시간약속을 지키지 않았어요."))
             reviewContentKeyString = "시간약속 안지킴";
 
+        System.out.println("reviewContentKeyString = " + reviewContentKeyString);
         ReviewChoice reviewChoice = reviewChoiceRepository.findByReviewContent(reviewContentKeyString)
                 .orElseThrow(()-> new RestNullPointerException("Can`t find review content."));
 
