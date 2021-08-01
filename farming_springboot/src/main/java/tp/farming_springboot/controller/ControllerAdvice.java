@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -63,6 +64,16 @@ public class ControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Message> handle(MissingServletRequestPartException e) {
         Message message = new Message(StatusEnum.PARAMETER_LACKED, e.getMessage());
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Message> handle(MethodArgumentNotValidException e) {
+        Message message = new Message(StatusEnum.PARAMETER_LACKED, e.getBindingResult()
+                .getAllErrors()
+                .get(0)
+                .getDefaultMessage());
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
     }
 

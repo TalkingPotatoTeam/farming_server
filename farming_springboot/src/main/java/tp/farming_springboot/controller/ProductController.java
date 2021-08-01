@@ -23,6 +23,7 @@ import tp.farming_springboot.exception.UserNotAuthorizedException;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
 
+import javax.validation.Valid;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class ProductController {
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     public String create(
-            Authentication authentication, @RequestPart ProductCreateDto prodDto,
+            Authentication authentication, @Valid @RequestPart ProductCreateDto prodDto,
             @RequestPart (value="PhotoFile", required=false) List<MultipartFile> files,
             @RequestPart(value = "ReceiptFile", required = false) MultipartFile receiptFile
             ) throws PhotoFileException {

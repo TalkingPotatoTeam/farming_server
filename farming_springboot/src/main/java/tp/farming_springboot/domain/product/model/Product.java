@@ -5,16 +5,12 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
-import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.User;
 
 import javax.persistence.*;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -24,6 +20,7 @@ import java.util.*;
 
 
 @Entity
+@Getter
 public class Product {
 
     public Product(User user, ProductCreateDto prodDto, CategoryRepository categoryRepository) {
@@ -39,6 +36,9 @@ public class Product {
         this.category = ctgy.get();
         addPhoto(prodDto.getPhotoFile());
         this.receipt = prodDto.getReceipt();
+        this.productStatus = "판매중";
+        this.buyProductDate = prodDto.getBuyProductDate();
+        this.freshness = prodDto.getFreshness();
     }
 
     public Product() {
@@ -57,53 +57,42 @@ public class Product {
     }
 
     @Id
-    @Getter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name ="user_id")
     // JoinColumn => 참조하는 (객체 이름_필드이름)
-    @Getter
     @Setter
     private User user;
 
-    @Getter
     @Setter
     private String title;
 
-    @Getter
     @Setter
     private String content;
 
-    @Getter
     @Setter
     private String price;
 
-    @Getter
     @Setter
     private String quantity;
 
-    @Getter
     @Setter
     private String address;
 
-    @Getter
     @Setter
     private boolean certified;
 
-    @Getter
     @CreatedDate
     private LocalDateTime createdDate;
 
     @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name ="product_id")
-    @Getter
     @Setter
     private List<PhotoFile> photoFile;
 
-    @Getter
     @Setter
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private PhotoFile receipt;
@@ -118,7 +107,20 @@ public class Product {
             joinColumns = @JoinColumn(name="product_id"),
             inverseJoinColumns = @JoinColumn(name="user_id")
     )
+    @Builder.Default
     private Set<User> likeUsers = new HashSet<>();
+
+
+    @Setter
+    private String productStatus;
+
+    @Setter
+    private LocalDateTime buyProductDate;
+
+    @Setter
+    private String freshness;
+
+
 
 
 
