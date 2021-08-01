@@ -36,7 +36,6 @@ public class ProductService {
         return ProductResponseDto.from(product);
     }
 
-
     public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException {
         User user = userService.findUserByPhone(userPhone);
         List<PhotoFile> photoFileList = new ArrayList<PhotoFile>();
@@ -52,12 +51,26 @@ public class ProductService {
         if(photoFiles != null) {
             photoFileList = fileService.photoFileListCreate(photoFiles);
         }
+        prodDto.setUser(user);
         prodDto.setPhotoFile(photoFileList);
-        prodDto.setAddress(user.getCurrent().getContent());
+        prodDto.setCategory(categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName()));
 
+        Product product = Product.of(
+                prodDto.getUser(),
+                prodDto.getTitle(),
+                prodDto.getContent(),
+                prodDto.getPrice(),
+                prodDto.getUser().getCurrent().getContent(),
+                prodDto.isCertified(),
+                prodDto.getQuantity(),
+                prodDto.getCategory(),
+                prodDto.getReceipt(),
+                prodDto.getPhotoFile(),
+                prodDto.getBuyProductDate(),
+                prodDto.getFreshness()
+        );
 
-
-        productRepository.save(new Product(user, prodDto, categoryRepository));
+        productRepository.save(product);
     }
 
 
@@ -110,40 +123,36 @@ public class ProductService {
                 fileService.deleteFiles(tempReceiptList);
 
                 //orphan removal 설정으로 참조하지 않으면 필드를 자동으로 삭제해줌 => repo를 통한 delete 과정 없어도됨
-                prod.setReceipt(null);
+                prodDto.setReceipt(null);
             }
 
-
-            List<PhotoFile> photoFileList = new ArrayList<PhotoFile>();
-            PhotoFile receiptPhoto = new PhotoFile();
-
             if (ReceiptFile != null) {
-                receiptPhoto = fileService.photoFileCreate(ReceiptFile);
-                prod.setReceipt(receiptPhoto);
-                prod.setCertified(true);
+                PhotoFile receiptPhoto = fileService.photoFileCreate(ReceiptFile);
+                prodDto.setReceipt(receiptPhoto);
+                prodDto.setCertified(true);
+
             } else {
-                prod.setCertified(false);
+                prodDto.setCertified(false);
             }
 
             if (photoFiles != null) {
-                photoFileList = fileService.photoFileListCreate(photoFiles);
-                prod.setPhotoFile(photoFileList);
+                List<PhotoFile> photoFileList = fileService.photoFileListCreate(photoFiles);
+                prodDto.setPhotoFile(photoFileList);
             }
 
-            if (prodDto.getTitle() != prod.getTitle())
-                prod.setTitle(prodDto.getTitle());
-
-            if (prodDto.getContent() != prod.getContent())
-                prod.setContent(prodDto.getContent());
-
-            if (prodDto.getPrice() != prod.getPrice())
-                prod.setPrice(prodDto.getPrice());
-
-            if (prodDto.getAddress() != prod.getAddress())
-                prod.setAddress(prodDto.getAddress());
-
-            if (prodDto.getQuantity() != prod.getQuantity())
-                prod.setQuantity(prodDto.getQuantity());
+            prodDto.setCategory(categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName()));
+            prod.update(
+                    prodDto.getTitle(),
+                    prodDto.getContent(),
+                    prodDto.getPrice(),
+                    prodDto.isCertified(),
+                    prodDto.getQuantity(),
+                    prodDto.getCategory(),
+                    prodDto.getReceipt(),
+                    prodDto.getPhotoFile(),
+                    prodDto.getBuyProductDate(),
+                    prodDto.getFreshness()
+            );
 
             productRepository.save(prod);
         }

@@ -24,6 +24,7 @@ public class ProductResponseDto {
     private String category;
     private LocalDateTime buyProductDate;
     private String freshness;
+    private String productStatus;
 
     public static ProductResponseDto from(Product product) {
         ProductResponseDto productResponseDto = new ProductResponseDto();
@@ -39,6 +40,7 @@ public class ProductResponseDto {
         productResponseDto.category = product.getCategory().getName();
         productResponseDto.buyProductDate = product.getBuyProductDate();
         productResponseDto.freshness = product.getFreshness();
+        productResponseDto.productStatus = product.getProductStatus();
 
         return productResponseDto;
     }

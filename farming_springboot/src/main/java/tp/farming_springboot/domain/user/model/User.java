@@ -53,10 +53,6 @@ public class User  {
     @ManyToMany(mappedBy = "likeUsers")
     private Set<Product> likeProducts = new HashSet<>();
 
-
-
-
-
     public User (String phone ){//생성자
         this.password=phone;
         this.phone=phone;

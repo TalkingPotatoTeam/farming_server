@@ -55,18 +55,16 @@ public class ProductController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<Message> findByProductId(Authentication authentication, @PathVariable Long id) {
+    public ResponseEntity<Message> findByProductId(@PathVariable Long id) {
         ProductResponseDto prod = productService.findById(id);
         Message message = new Message(StatusEnum.OK, "Finding with product id is Success.", prod);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<Message> findByUserId(Authentication authentication, @PathVariable Long id) {
+    public ResponseEntity<Message> findByUserId(@PathVariable Long id) {
         //id 검증 용도
-        User user  = userService.findUserById
-
-        //Null이어도 에러 처리가 없어야 함.
+        User user  = userService.findUserById(id);
         Iterable<Product> prodList = prodRepo.findByUserId(id);
 
         Message message = new Message(StatusEnum.OK,"Finding with user id is Success.", prodList );
@@ -78,7 +76,6 @@ public class ProductController {
     public ResponseEntity<Message> findByLoggedUserId(Authentication authentication) {
         User user = userService.findUserByPhone(authentication.getName());
 
-        //Null이어도 에러 처리가 없어야 함.
         Iterable<Product> prodList = prodRepo.findByUserId(user.getId());
         Message message = new Message(StatusEnum.OK, "Finding by current-user is success.", prodList);
 
@@ -123,6 +120,5 @@ public class ProductController {
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
         return headers;
     }
-
 
 }

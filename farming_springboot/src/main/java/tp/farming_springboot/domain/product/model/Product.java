@@ -2,13 +2,8 @@ package tp.farming_springboot.domain.product.model;
 
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
-import tp.farming_springboot.domain.product.dto.ProductCreateDto;
-import tp.farming_springboot.domain.product.repository.CategoryRepository;
 import tp.farming_springboot.domain.user.model.User;
 
 import javax.persistence.*;
@@ -22,39 +17,79 @@ import java.util.*;
 
 @Entity
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Product {
 
-    public Product(User user, ProductCreateDto prodDto, CategoryRepository categoryRepository) {
+    public Product(User user,
+                   String title,
+                   String content,
+                   String price,
+                   String address,
+                   boolean certified,
+                   String quantity,
+                   Category category,
+                   PhotoFile receipt,
+                   List<PhotoFile> photoFileList,
+                   LocalDateTime buyProductDate,
+                   String freshness) {
+
         this.user = user;
-        this.title = prodDto.getTitle();
-        this.content = prodDto.getContent();
-        this.price = prodDto.getPrice();
-        this.address = prodDto.getAddress();
-        this.certified = prodDto.isCertified();
-        this.quantity = prodDto.getQuantity();
+        this.title = title;
+        this.content = content;
+        this.price = price;
+        this.address = address;
+        this.certified = certified;
+        this.quantity = quantity;
         this.createdDate = LocalDateTime.now();
-        Optional<Category> ctgy = categoryRepository.findByName(prodDto.getCategory());
-        this.category = ctgy.get();
-        addPhoto(prodDto.getPhotoFile());
-        this.receipt = prodDto.getReceipt();
-        this.productStatus = "판매중";
-        this.buyProductDate = prodDto.getBuyProductDate();
-        this.freshness = prodDto.getFreshness();
+        this.category = category;
+        this.receipt = receipt;
+        this.photoFile = photoFileList;
+        this.buyProductDate = buyProductDate;
+        this.freshness = freshness;
     }
 
-    public Product() {
+    public static Product of(User user,
+                             String title,
+                             String content,
+                             String price,
+                             String address,
+                             boolean certified,
+                             String quantity,
+                             Category category,
+                             PhotoFile receipt,
+                             List<PhotoFile> photoFileList,
+                             LocalDateTime buyProductDate,
+                             String freshness
+                             ){
 
+        return new Product(user, title, content, price, address, certified, quantity, category, receipt, photoFileList, buyProductDate, freshness);
     }
 
+    public void update(
+                   String title,
+                   String content,
+                   String price,
+                   boolean certified,
+                   String quantity,
+                   Category category,
+                   PhotoFile receipt,
+                   List<PhotoFile> photoFileList,
+                   LocalDateTime buyProductDate,
+                   String freshness) {
 
-    public void addPhoto(List<PhotoFile> photofile) {
-        if(this.photoFile == null)
-            this.photoFile = new ArrayList<PhotoFile>();
 
-        for(PhotoFile photoFile : photofile)
-            this.photoFile.add(photoFile);
+        this.title = title;
+        this.content = content;
+        this.price = price;
+        this.certified = certified;
+        this.quantity = quantity;
+        this.category = category;
+        this.receipt = receipt;
+        this.photoFile = photoFileList;
+        this.buyProductDate = buyProductDate;
+        this.freshness = freshness;
     }
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -109,12 +144,11 @@ public class Product {
             joinColumns = @JoinColumn(name="product_id"),
             inverseJoinColumns = @JoinColumn(name="user_id")
     )
-    @Builder.Default
+
     private Set<User> likeUsers = new HashSet<>();
 
-
     @Setter
-    private String productStatus;
+    private String productStatus = "판매중";
 
     @Setter
     private LocalDateTime buyProductDate;
