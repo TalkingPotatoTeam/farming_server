@@ -18,11 +18,8 @@ import tp.farming_springboot.domain.user.dto.AddressDto;
 import tp.farming_springboot.domain.user.dto.UserCreateDto;
 import tp.farming_springboot.domain.user.dto.UserDto;
 import tp.farming_springboot.domain.user.model.Address;
-import tp.farming_springboot.domain.user.model.ERole;
-import tp.farming_springboot.domain.user.model.Role;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.AddressRepository;
-import tp.farming_springboot.domain.user.repository.RoleRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.domain.user.service.AddressService;
 import tp.farming_springboot.domain.user.service.OtpService;
@@ -46,7 +43,6 @@ public class UserController {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final AddressService addressService;
-    private final RoleRepository roleRepository;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder encoder;
@@ -171,9 +167,6 @@ public class UserController {
         addressRepository.save(newAddress);
         newUser.addAddress(newAddress);
         //유저 롤 추가
-        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-        newUser.addRole(userRole);
         newUser.setCurrent(newAddress);
         userRepository.save(newUser);
         Authentication authentication = authenticationManager.authenticate(

@@ -35,12 +35,6 @@ public class User  {
     @Getter @Setter
     private Address current; //현재 주소
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @Getter @Setter
-    @JoinTable(	name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name="user_id")
@@ -51,7 +45,6 @@ public class User  {
     public User (String phone ){//생성자
         this.password=phone;
         this.phone=phone;
-        this.roles = new HashSet<Role>();
     }
 
     public void addAddress(Address address) {
@@ -64,11 +57,5 @@ public class User  {
         addresses.remove(address);
     }
 
-    public void addRole(Role role) {
-        if( roles == null){
-            roles = new HashSet<Role>();
-        }
-        roles.add(role);
-    }
 
 }
