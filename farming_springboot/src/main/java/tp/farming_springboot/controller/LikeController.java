@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 
 import org.springframework.web.bind.annotation.*;
 import tp.farming_springboot.domain.product.service.LikeService;
+import tp.farming_springboot.domain.user.dto.UserResponseDto;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.exception.UserAlreadyLikeProductException;
 import tp.farming_springboot.exception.UserNotLikeProductException;
@@ -45,7 +46,7 @@ public class LikeController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{productId}")
     public ResponseEntity<Message> getLikeUserList(@PathVariable Long productId) {
-        Set<User> userSet = likeService.getLikeUserSet(productId);
+        Set<UserResponseDto> userSet = likeService.getLikeUserSet(productId);
         Message message = new Message(StatusEnum.OK, "", userSet);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }

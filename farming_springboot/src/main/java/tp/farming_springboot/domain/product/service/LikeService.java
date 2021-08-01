@@ -6,6 +6,8 @@ import java.util.*;
 import org.springframework.stereotype.Service;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
+import tp.farming_springboot.domain.user.dto.UserDto;
+import tp.farming_springboot.domain.user.dto.UserResponseDto;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.UserAlreadyLikeProductException;
@@ -43,8 +45,13 @@ public class LikeService {
         }
     }
 
-    public Set<User> getLikeUserSet(Long productId) {
+    public Set<UserResponseDto> getLikeUserSet(Long productId) {
         Product product = productRepository.findByIdOrElseThrow(productId);
-        return product.getLikeUsers();
+
+        Set<UserResponseDto> userResponseDtos = new HashSet<>();
+        product.getLikeUsers().forEach(
+                user -> userResponseDtos.add(UserResponseDto.from(user))
+        );
+        return userResponseDtos;
     }
 }

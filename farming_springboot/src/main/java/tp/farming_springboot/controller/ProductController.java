@@ -66,7 +66,6 @@ public class ProductController {
         //id 검증 용도
         User user  = userService.findUserById(id);
         Iterable<Product> prodList = prodRepo.findByUserId(id);
-
         Message message = new Message(StatusEnum.OK,"Finding with user id is Success.", prodList );
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
 
@@ -75,7 +74,6 @@ public class ProductController {
     @GetMapping("/current-login-user")
     public ResponseEntity<Message> findByLoggedUserId(Authentication authentication) {
         User user = userService.findUserByPhone(authentication.getName());
-
         Iterable<Product> prodList = prodRepo.findByUserId(user.getId());
         Message message = new Message(StatusEnum.OK, "Finding by current-user is success.", prodList);
 
