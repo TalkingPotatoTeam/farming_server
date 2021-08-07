@@ -5,6 +5,7 @@ import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.model.Product;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -22,7 +23,7 @@ public class ProductResponseDto {
     private List<PhotoFile> photoFile;
     private PhotoFile receipt;
     private String category;
-    private LocalDateTime buyProductDate;
+    private Date buyProductDate;
     private String freshness;
     private String productStatus;
 

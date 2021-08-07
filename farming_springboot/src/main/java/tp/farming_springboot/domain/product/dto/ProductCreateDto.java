@@ -32,7 +32,7 @@ public class ProductCreateDto {
     @NotBlank(message="Product category can't be blank.")
     private String categoryName;
     private Category category;
-    private LocalDateTime buyProductDate;
+    private String buyProductDate;
     private String freshness;
 
 }

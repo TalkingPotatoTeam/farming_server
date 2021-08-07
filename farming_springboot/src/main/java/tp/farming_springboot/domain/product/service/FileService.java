@@ -1,6 +1,5 @@
 package tp.farming_springboot.domain.product.service;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,8 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +24,15 @@ public class FileService{
     private final FileRepository fileRepository;
 
     public PhotoFile photoFileCreate(MultipartFile receiptFile) throws PhotoFileException {
-        try {
-            String origFilename = receiptFile.getOriginalFilename();
+        String origFilename = receiptFile.getOriginalFilename();
+        List<String> allowedExtNameList = Arrays.asList(new String[]{"jpg", "gif", "png", "bmp", "rle", "dib", "tif", "tiff"});
+        String extensionName = Objects.requireNonNull(origFilename).substring(origFilename.lastIndexOf(".") + 1);
 
-            System.out.println("origFilename = " + origFilename);
-            
+
+        try {
+            if(!allowedExtNameList.contains( extensionName.toLowerCase())) {
+                throw new IllegalArgumentException("File Extension Not allowed. Only allow Photo File.");
+            }
             String filename = new MD5Generator(origFilename + LocalDateTime.now()).toString(); // file name 암호화
             String savePath = System.getProperty("user.dir") + "/receipt_photo_files";
 
@@ -52,8 +54,9 @@ public class FileService{
             return receipt;
         }
         catch(Exception e) {
-            throw new PhotoFileException("PhotoFile creating error.");
+            throw new PhotoFileException(e.getMessage());
         }
+
     }
 
 
@@ -61,14 +64,20 @@ public class FileService{
         List<PhotoFile> photoFileList = new ArrayList<PhotoFile>();
 
         if(files.size() > 10) {
-            //파일 사이즈 에러 throw
-            return null;
+            throw new PhotoFileException("Photo can be uploaded within size 10.");
         }
 
         try {
             for (MultipartFile file : files) {
 
                 String origFilename = file.getOriginalFilename();
+                List<String> allowedExtNameList = Arrays.asList(new String[]{"jpg", "gif", "png", "bmp", "rle", "dib", "tif", "tiff"});
+                String extensionName = Objects.requireNonNull(origFilename).substring(origFilename.lastIndexOf(".") + 1);
+
+                if(!allowedExtNameList.contains( extensionName.toLowerCase())) {
+                    throw new IllegalArgumentException("File Extension Not allowed. Only allow Photo File.");
+                }
+
                 String filename = new MD5Generator(origFilename + LocalDateTime.now()).toString(); // file name 암호화
                 String savePath = System.getProperty("user.dir") + "/photo_files";
 

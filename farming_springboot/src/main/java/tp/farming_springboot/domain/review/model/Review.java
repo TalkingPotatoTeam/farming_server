@@ -11,7 +11,8 @@ import javax.persistence.*;
 @Entity
 public class Review {
     @Builder
-    public Review(User reviewer, User reviewee, ReviewChoice reviewContent) {
+    public Review(Long questionId, User reviewer, User reviewee, ReviewChoice reviewContent) {
+        this.questionId = questionId;
         this.reviewer = reviewer;
         this.reviewee = reviewee;
         this.reviewContent = reviewContent;
@@ -26,6 +27,10 @@ public class Review {
     @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Getter @Setter
+    private Long questionId;
+
 
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name ="reviewer_id")

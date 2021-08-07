@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import tp.farming_springboot.domain.product.dto.ProductResponseDto;
 import tp.farming_springboot.domain.product.service.LikeService;
 import tp.farming_springboot.domain.user.dto.UserResponseDto;
 import tp.farming_springboot.exception.UserAlreadyLikeProductException;
@@ -47,6 +48,16 @@ public class LikeController {
         Message message = new Message(StatusEnum.OK, "", userSet);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/product/{userId}")
+    public ResponseEntity<Message> getLikelistByUser(@PathVariable Long userId) {
+        Set<ProductResponseDto> productSet = likeService.getLikelistByUser(userId);
+        Message message = new Message(StatusEnum.OK, "", productSet);
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
+    }
+
+
 
     public HttpHeaders HttpHeaderSetting(){
         HttpHeaders headers = new HttpHeaders();

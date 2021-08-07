@@ -27,6 +27,7 @@ import tp.farming_springboot.response.StatusEnum;
 
 import javax.validation.Valid;
 import java.nio.charset.Charset;
+import java.text.ParseException;
 import java.util.List;
 
 @RestControllerAdvice
@@ -47,7 +48,7 @@ public class ProductController {
             Authentication authentication, @Valid @RequestPart ProductCreateDto prodDto,
             @RequestPart (value="PhotoFile", required=false) List<MultipartFile> files,
             @RequestPart(value = "ReceiptFile", required = false) MultipartFile receiptFile
-            ) throws PhotoFileException {
+            ) throws PhotoFileException, ParseException {
 
         String userPhone = authentication.getName();
         productService.create(userPhone, prodDto, files, receiptFile);
@@ -91,7 +92,7 @@ public class ProductController {
             @RequestPart ProductCreateDto prodDto,
             @RequestPart(value="PhotoFile", required = false) List<MultipartFile> files,
             @RequestPart(value="ReceiptFile", required = false) MultipartFile ReceiptFile
-            ) throws UserNotAuthorizedException, PhotoFileException {
+            ) throws UserNotAuthorizedException, PhotoFileException, ParseException {
 
         String userPhone = authentication.getName();
         productService.update(prodDto, userPhone, id, ReceiptFile, files);
