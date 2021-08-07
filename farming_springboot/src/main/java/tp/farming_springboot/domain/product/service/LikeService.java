@@ -4,6 +4,7 @@ package tp.farming_springboot.domain.product.service;
 import lombok.RequiredArgsConstructor;
 import java.util.*;
 import org.springframework.stereotype.Service;
+import tp.farming_springboot.domain.product.dto.ProductResponseDto;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
 import tp.farming_springboot.domain.user.dto.UserResponseDto;
@@ -51,5 +52,17 @@ public class LikeService {
                 user -> userResponseDtos.add(UserResponseDto.from(user))
         );
         return userResponseDtos;
+    }
+
+    public Set<ProductResponseDto> getLikelistByUser(Long userId) {
+        User user = userService.findUserById(userId);
+
+        Set<ProductResponseDto> productResponseDtos = new HashSet<>();
+
+        user.getLikeProducts().forEach(
+                product -> productResponseDtos.add(ProductResponseDto.from(product))
+        );
+
+        return productResponseDtos;
     }
 }

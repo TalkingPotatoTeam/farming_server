@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import tp.farming_springboot.domain.review.dto.ReviewCreateDto;
 import tp.farming_springboot.domain.review.service.ReviewService;
+import tp.farming_springboot.exception.UserNotAuthorizedException;
 
 
 @RestController
@@ -20,7 +21,7 @@ public class ReviewController {
     @PostMapping("/{revieweeId}")
     public String create(Authentication authentication,
                                           @RequestBody ReviewCreateDto reviewDto,
-                                          @PathVariable Long revieweeId){
+                                          @PathVariable Long revieweeId) throws UserNotAuthorizedException {
 
         System.out.println("ReviewController.create");
         String userPhone = authentication.getName();
