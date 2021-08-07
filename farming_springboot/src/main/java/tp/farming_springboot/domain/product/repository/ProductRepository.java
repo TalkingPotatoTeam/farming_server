@@ -7,12 +7,21 @@ import org.springframework.data.jpa.repository.Query;
 
 import org.springframework.stereotype.Repository;
 import tp.farming_springboot.domain.product.model.Product;
+import tp.farming_springboot.exception.RestNullPointerException;
+
+import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     public Iterable<Product> findByUserId(Long id);
 
+    public Optional<Product> findById(Long id);
 
+    default Product findByIdOrElseThrow(Long id) {
+        return this.findById(id).orElseThrow(
+                () -> new RestNullPointerException("Can't Find Product by <Id: " + id + ">")
+        );
+    }
 
     Page<Product> findAll(Pageable pageable);
     @Query(

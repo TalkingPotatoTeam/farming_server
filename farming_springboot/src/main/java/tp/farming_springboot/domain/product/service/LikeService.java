@@ -6,6 +6,7 @@ import java.util.*;
 import org.springframework.stereotype.Service;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
+import tp.farming_springboot.domain.user.dto.UserResponseDto;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.UserAlreadyLikeProductException;
@@ -14,13 +15,12 @@ import tp.farming_springboot.exception.UserNotLikeProductException;
 @Service
 @RequiredArgsConstructor
 public class LikeService {
-    private final ProductService productService;
     private final UserService userService;
     private final ProductRepository productRepository;
 
     public void create(String userPhone, Long productId) throws UserAlreadyLikeProductException {
         User user = userService.findUserByPhone(userPhone);
-        Product product = productService.findById(productId);
+        Product product = productRepository.findByIdOrElseThrow(productId);
 
         if(product.getLikeUsers().contains(user)){
             throw new UserAlreadyLikeProductException("User { id: " + user.getId() + " }" + " already liked this product.");
@@ -33,7 +33,7 @@ public class LikeService {
 
     public void delete(String userPhone, Long productId) throws UserNotLikeProductException {
         User user = userService.findUserByPhone(userPhone);
-        Product product = productService.findById(productId);
+        Product product = productRepository.findByIdOrElseThrow(productId);
 
         if(product.getLikeUsers().contains(user)){
             product.getLikeUsers().remove(user);
@@ -43,8 +43,13 @@ public class LikeService {
         }
     }
 
-    public Set<User> getLikeUserSet(Long productId) {
-        Product product = productService.findById(productId);
-        return product.getLikeUsers();
+    public Set<UserResponseDto> getLikeUserSet(Long productId) {
+        Product product = productRepository.findByIdOrElseThrow(productId);
+
+        Set<UserResponseDto> userResponseDtos = new HashSet<>();
+        product.getLikeUsers().forEach(
+                user -> userResponseDtos.add(UserResponseDto.from(user))
+        );
+        return userResponseDtos;
     }
 }

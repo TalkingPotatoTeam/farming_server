@@ -20,7 +20,6 @@ public class Category {
     @Column( name="name", nullable=false, length=100 )
     private String name;
 
-    @OneToMany(mappedBy="category")
-    private List<Product> products = new ArrayList<Product>();
+
 
 }
