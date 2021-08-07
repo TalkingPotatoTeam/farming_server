@@ -18,6 +18,8 @@ import tp.farming_springboot.exception.PhotoFileException;
 import tp.farming_springboot.exception.UserNotAuthorizedException;
 
 import javax.transaction.Transactional;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +38,7 @@ public class ProductService {
         return ProductResponseDto.from(product);
     }
 
-    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException {
+    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException, ParseException {
         User user = userService.findUserByPhone(userPhone);
         List<PhotoFile> photoFileList = new ArrayList<PhotoFile>();
 
@@ -66,7 +68,7 @@ public class ProductService {
                 prodDto.getCategory(),
                 prodDto.getReceipt(),
                 prodDto.getPhotoFile(),
-                prodDto.getBuyProductDate(),
+                new SimpleDateFormat("yyyy.MM.dd").parse(prodDto.getBuyProductDate()),
                 prodDto.getFreshness()
         );
 
@@ -100,7 +102,7 @@ public class ProductService {
     public void update(ProductCreateDto prodDto,
                        String userPhone, Long id,
                        MultipartFile ReceiptFile,
-                       List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException {
+                       List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException, ParseException {
 
         User user = userService.findUserByPhone(userPhone);
         Product prod = productRepository.findByIdOrElseThrow(id);
@@ -150,7 +152,7 @@ public class ProductService {
                     prodDto.getCategory(),
                     prodDto.getReceipt(),
                     prodDto.getPhotoFile(),
-                    prodDto.getBuyProductDate(),
+                    new SimpleDateFormat("yyyy.MM.dd").parse(prodDto.getBuyProductDate()),
                     prodDto.getFreshness()
             );
 

@@ -11,11 +11,16 @@ public class PagingDTO {
     private String title;
     private Long createdBy;
     private LocalDateTime createdDate;
+    private boolean certified;
+    private String price;
 
-    public PagingDTO(Long id, String title, Long createdBy, LocalDateTime createdDate){
+
+    public PagingDTO(Long id, Long createdBy, String title ,LocalDateTime createdDate, boolean certified, String price) {
         this.id = id;
-        this.title = title;
         this.createdBy = createdBy;
+        this.title = title;
         this.createdDate = createdDate;
+        this.certified = certified;
+        this.price = price;
     }
 }

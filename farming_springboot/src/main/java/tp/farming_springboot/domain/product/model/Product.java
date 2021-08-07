@@ -31,7 +31,7 @@ public class Product {
                    Category category,
                    PhotoFile receipt,
                    List<PhotoFile> photoFileList,
-                   LocalDateTime buyProductDate,
+                   Date buyProductDate,
                    String freshness) {
 
         this.user = user;
@@ -59,7 +59,7 @@ public class Product {
                              Category category,
                              PhotoFile receipt,
                              List<PhotoFile> photoFileList,
-                             LocalDateTime buyProductDate,
+                             Date buyProductDate,
                              String freshness
                              ){
 
@@ -75,7 +75,7 @@ public class Product {
                    Category category,
                    PhotoFile receipt,
                    List<PhotoFile> photoFileList,
-                   LocalDateTime buyProductDate,
+                   Date buyProductDate,
                    String freshness) {
 
 
@@ -138,7 +138,7 @@ public class Product {
     )
 
     private Set<User> likeUsers = new HashSet<>();
-    private LocalDateTime buyProductDate;
+    private Date buyProductDate;
     private String freshness;
 
     /*

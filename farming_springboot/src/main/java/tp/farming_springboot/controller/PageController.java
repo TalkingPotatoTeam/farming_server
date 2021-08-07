@@ -15,16 +15,10 @@ import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
 
 @RestController
+@RequiredArgsConstructor
 public class PageController {
 
     private final ProductRepository productRepository;
-
-
-    @Autowired
-    public PageController(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
-
 
     @CrossOrigin(origins = "*",allowedHeaders = "*")
     @GetMapping("/home")
@@ -32,8 +26,12 @@ public class PageController {
         Page<Product> productList = productRepository.findAll(pageRequest);
         Page<PagingDTO> pagingList = productList.map(
                 product -> new PagingDTO(
-                        product.getId(),product.getTitle(),
-                        product.getUser().getId(), product.getCreatedDate()
+                        product.getId(),
+                        product.getUser().getId(),
+                        product.getTitle(),
+                        product.getCreatedDate(),
+                        product.isCertified(),
+                        product.getPrice()
                 ));
         return pagingList;
     }
@@ -46,8 +44,12 @@ public class PageController {
         Page<Product> productList = productRepository.findAll(pageRequest);
         Page<PagingDTO> pagingList = productList.map(
                 product -> new PagingDTO(
-                        product.getId(),product.getTitle(),
-                        product.getUser().getId(), product.getCreatedDate()
+                        product.getId(),
+                        product.getUser().getId(),
+                        product.getTitle(),
+                        product.getCreatedDate(),
+                        product.isCertified(),
+                        product.getPrice()
                 ));
         return pagingList;
     }
