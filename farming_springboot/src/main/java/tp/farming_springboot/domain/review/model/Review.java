@@ -1,6 +1,7 @@
 package tp.farming_springboot.domain.review.model;
 
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import tp.farming_springboot.domain.user.model.User;
@@ -9,8 +10,9 @@ import javax.persistence.*;
 
 @Entity
 public class Review {
-
-    public Review(User reviewer, User reviewee, ReviewChoice reviewContent) {
+    @Builder
+    public Review(Long questionId, User reviewer, User reviewee, ReviewChoice reviewContent) {
+        this.questionId = questionId;
         this.reviewer = reviewer;
         this.reviewee = reviewee;
         this.reviewContent = reviewContent;
@@ -25,6 +27,10 @@ public class Review {
     @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Getter @Setter
+    private Long questionId;
+
 
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name ="reviewer_id")
