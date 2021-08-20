@@ -38,9 +38,6 @@ import java.util.*;
 public class AuthenticateController {
 
     private final OtpService otpService;
-    private final JwtUtils jwtUtils;
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
     private final SmsService smsService;
     private final AuthenticateService authenticateService;
     private final UserService userService;
@@ -51,38 +48,20 @@ public class AuthenticateController {
         return headers;
     }
 
-    @GetMapping("/tokens") //사용자 번호만 받고 access 토큰 + refresh 토큰 발급
-    public ResponseEntity<?> authenticate(@RequestBody UserCreateDto logger){
-        tp.farming_springboot.response.Message message = null;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        try{
-            if (userRepository.existsByPhone(logger.getPhone())) {
-                Optional<User> user = userRepository.findByPhone(logger.getPhone());
-                Authentication authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(user.get().getPhone(), user.get().getPhone()));
+    //renew tokens for free
+    @GetMapping("/tokens")
+    public ResponseEntity<?> temp(@RequestBody UserAuthenDto logger){
+        List<JSONObject> entities = authenticateService.getNewTokens(logger.getPhone());
+        Message message = new Message(StatusEnum.OK,"",entities);
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
+    }
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                String access = jwtUtils.generateJwtToken(authentication);
-                String refresh = jwtUtils.generateJwtRefreshToken(authentication);
-
-                List<JSONObject> entities = new ArrayList<JSONObject>();
-                JSONObject entity = new JSONObject();
-                entity.put("access", access);
-                entity.put("refresh", refresh);
-                entities.add(entity);
-                message = new tp.farming_springboot.response.Message(StatusEnum.OK, "Update access and refresh token.",entities);
-                return new ResponseEntity<>(message, headers, HttpStatus.OK);
-            }
-            else{
-                message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "Phone number does not exist in db.");
-                return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-            }
-        }catch(Exception e){
-            System.out.println(e);
-            message = new tp.farming_springboot.response.Message(StatusEnum.BAD_REQUEST, "알수없는 오류.");
-            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
-        }
+    //renew tokens
+    @GetMapping("/renew-tokens")
+    public ResponseEntity<?> renew(@RequestBody UserAuthenDto logger){
+        List<JSONObject> entities = authenticateService.getNewTokens(logger.getPhone());
+        Message message = new Message(StatusEnum.OK,"",entities);
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
     //send otp number to user
@@ -101,48 +80,25 @@ public class AuthenticateController {
             return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
         }
     }
+
     //verify number and redirect to signup or login
     @PostMapping("/validate")
     public ResponseEntity<Message> validateOtp(@RequestBody UserCreateDto newUser) throws VerificationException, UserExistsException {
         String phone = newUser.getPhone();
-        int userOtp = newUser.getOtp();
-        int serverOtp = otpService.getOtp(phone);
 
         //validate
-        authenticateService.verifyOtp(userOtp, serverOtp);
+        authenticateService.verifyOtp(newUser.getOtp(), otpService.getOtp(phone));
         String result = "Authentication was Successful.";
+
         //if user does not exist create new user
         if(!userService.checkUserExists(phone)) {
             userService.create(phone);
         }
 
         //return tokens
-        List<JSONObject> entities = new ArrayList<JSONObject>();
-        JSONObject entity = new JSONObject();
-        entity.put("access", authenticateService.accessToken(phone));
-        entity.put("refresh", authenticateService.refreshToken(phone));
-        entities.add(entity);
+        List<JSONObject> entities = authenticateService.getNewTokens(phone);
         Message message = new Message(StatusEnum.OK, result, entities);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
-    }
-
-    //만료된 토큰 + 리프레시 토큰 받고 새로운 access 토큰 발급해줌
-    @GetMapping(value = "/acces-token")
-    public ResponseEntity<?> newAccessToken(HttpServletRequest request) {
-        // From the HttpRequest get the claims
-        Claims claims = (Claims) request.getAttribute("claims");
-        System.out.println(claims);
-        Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
-        String token = jwtUtils.doGenerateAccessToken(expectedMap, expectedMap.get("sub").toString());
-        return ResponseEntity.ok(token);
-    }
-
-    private Map<String, Object> getMapFromIoJsonwebtokenClaims( Claims claims) {
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
-        for (Map.Entry<String, Object> entry : claims.entrySet()) {
-            expectedMap.put(entry.getKey(), entry.getValue());
-        }
-        return expectedMap;
     }
 
 }

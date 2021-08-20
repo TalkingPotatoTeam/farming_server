@@ -1,9 +1,7 @@
 package tp.farming_springboot.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.json.simple.JSONObject;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,7 +9,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import tp.farming_springboot.config.JwtUtils;
 import tp.farming_springboot.exception.VerificationException;
-import tp.farming_springboot.response.StatusEnum;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -30,6 +30,15 @@ public class AuthenticateService {
             else throw new VerificationException("Expired Otp");
         }
         else throw new VerificationException("Contact Admin");
+    }
+
+    public List<JSONObject> getNewTokens(String userPhone){
+        List<JSONObject> entities = new ArrayList<JSONObject>();
+        JSONObject entity = new JSONObject();
+        entity.put("access", accessToken(userPhone));
+        entity.put("refresh", refreshToken(userPhone));
+        entities.add(entity);
+        return entities;
     }
 
     public String accessToken(String userPhone){

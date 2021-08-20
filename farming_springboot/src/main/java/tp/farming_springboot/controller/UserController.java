@@ -55,19 +55,6 @@ public class UserController {
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
         return headers;
     }
-    /*
-    //create User
-    @PostMapping("")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Message> create(@RequestBody UserCreateDto newUser) throws UserExistsException {
-        String userPhone = newUser.getPhone();
-        userService.create(userPhone);
-        String access = authenticateService.accessToken(userPhone);
-        JSONObject entity = new JSONObject();
-        entity.put("access", access);
-        Message message = new Message(StatusEnum.OK,"User Created", entity );
-        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
-    }*/
 
     //delete User
     @DeleteMapping("")
