@@ -44,12 +44,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             Collections.unmodifiableList(
                     Arrays.asList(
                             "/auth/request-otp",
-                            "/auth/otp",
+                            "/auth/validate",
                             "/user/sudo",
                             "/auth/tokens",
                             "/user/signup",
-                            "/init",
-                            "/user"
+                            "/init"
                     ));
 
     @Override

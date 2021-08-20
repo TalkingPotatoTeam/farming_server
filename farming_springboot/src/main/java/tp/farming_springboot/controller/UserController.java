@@ -22,6 +22,7 @@ import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.AddressRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.domain.user.service.AddressService;
+import tp.farming_springboot.domain.user.service.AuthenticateService;
 import tp.farming_springboot.domain.user.service.OtpService;
 import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.AddressRemoveException;
@@ -47,29 +48,26 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder encoder;
     private final OtpService otpService;
+    private final AuthenticateService authenticateService;
 
     public HttpHeaders HttpHeaderSetting(){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
         return headers;
     }
-
+    /*
     //create User
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Message> create(@RequestBody UserCreateDto newUser) throws UserExistsException {
         String userPhone = newUser.getPhone();
         userService.create(userPhone);
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userPhone, userPhone));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String access = jwtUtils.generateJwtToken(authentication);
+        String access = authenticateService.accessToken(userPhone);
         JSONObject entity = new JSONObject();
         entity.put("access", access);
         Message message = new Message(StatusEnum.OK,"User Created", entity );
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
-    }
+    }*/
 
     //delete User
     @DeleteMapping("")
@@ -133,7 +131,6 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Message> getUser(Authentication authentication){
         Optional<User> user = userRepository.findByPhone(authentication.getName());
-        if(user.isPresent())System.out.println(user.get().getId());
         List<JSONObject> entities = new ArrayList<JSONObject>();
         JSONObject entity = new JSONObject();
         entity.put("Id", user.get().getId().toString());

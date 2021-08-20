@@ -33,6 +33,12 @@ public class UserService {
 
     private final OtpService otpService;
     //check if user exists
+
+    public boolean checkUserExists(String phone){
+        Optional<User> user = userRepository.findByPhone(phone);
+        if(user.isPresent())return true;
+        return false;
+    }
     //check if user does not exist
     public User findUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RestNullPointerException("Can't find User {id:" + id + "}"));

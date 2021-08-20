@@ -22,6 +22,8 @@ import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.domain.user.service.AuthenticateService;
 import tp.farming_springboot.domain.user.service.OtpService;
 import tp.farming_springboot.domain.user.service.SmsService;
+import tp.farming_springboot.domain.user.service.UserService;
+import tp.farming_springboot.exception.UserExistsException;
 import tp.farming_springboot.exception.VerificationException;
 import tp.farming_springboot.response.StatusEnum;
 import tp.farming_springboot.response.Message;
@@ -41,6 +43,7 @@ public class AuthenticateController {
     private final UserRepository userRepository;
     private final SmsService smsService;
     private final AuthenticateService authenticateService;
+    private final UserService userService;
 
     public HttpHeaders HttpHeaderSetting(){
         HttpHeaders headers = new HttpHeaders();
@@ -85,7 +88,7 @@ public class AuthenticateController {
     //send otp number to user
     @PostMapping("/request-otp")
     @ResponseStatus(HttpStatus.OK)
-    private ResponseEntity<Message> sendMsg(UserAuthenDto user){
+    private ResponseEntity<Message> sendMsg(@RequestBody UserAuthenDto user){
         try {
             String phone = user.getPhone();
             int otp = otpService.generateOTP(phone);
@@ -99,22 +102,28 @@ public class AuthenticateController {
         }
     }
     //verify number and redirect to signup or login
-    @PostMapping("/otp")
-    public ResponseEntity<Message> validateOtp(@RequestBody UserCreateDto newUser) throws VerificationException {
+    @PostMapping("/validate")
+    public ResponseEntity<Message> validateOtp(@RequestBody UserCreateDto newUser) throws VerificationException, UserExistsException {
         String phone = newUser.getPhone();
         int userOtp = newUser.getOtp();
         int serverOtp = otpService.getOtp(phone);
-        String result = authenticateService.verifyOtp(userOtp, serverOtp);
 
-        Optional<User> user = userRepository.findByPhone(phone);
-        if(user.isPresent()) {//login
-            result += " +Continue to Log in";
-        }
-        else { //create user
-            result += "Continue to Sign up";
+        //validate
+        authenticateService.verifyOtp(userOtp, serverOtp);
+        String result = "Authentication was Successful.";
+        //if user does not exist create new user
+        if(!userService.checkUserExists(phone)) {
+            userService.create(phone);
         }
 
-        Message message = new Message(StatusEnum.OK, result);
+        //return tokens
+
+        List<JSONObject> entities = new ArrayList<JSONObject>();
+        JSONObject entity = new JSONObject();
+        entity.put("access", authenticateService.accessToken(phone));
+        entity.put("refresh", authenticateService.refreshToken(phone));
+        entities.add(entity);
+        Message message = new Message(StatusEnum.OK, result, entities);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
