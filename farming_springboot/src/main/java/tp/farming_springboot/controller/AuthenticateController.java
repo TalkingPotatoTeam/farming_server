@@ -117,7 +117,6 @@ public class AuthenticateController {
         }
 
         //return tokens
-
         List<JSONObject> entities = new ArrayList<JSONObject>();
         JSONObject entity = new JSONObject();
         entity.put("access", authenticateService.accessToken(phone));
