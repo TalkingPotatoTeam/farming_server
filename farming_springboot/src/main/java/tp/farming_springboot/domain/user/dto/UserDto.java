@@ -1,29 +1,15 @@
 package tp.farming_springboot.domain.user.dto;
 
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Getter;
+import tp.farming_springboot.domain.user.model.Address;
 
+import java.util.List;
+
+@Getter
+@NoArgsConstructor
 public class UserDto {
-    @Getter
-    public static class UserRegisterDto{
-        private String phone;
-        private String address;
-    }
-    @Getter
-    public static class UserLoginDto{
-        private String phone;
-        private int otp;
-    }
-    @Getter
-    public static class UserRequestOtpDto{
-        private String phone;
-    }
-    @Getter
-    public static class UserAuthDto{
-        private String phone;
-    }
-    @Getter
-    public static class UserNewAddressDto{
-        private String address;
-    }
+    private String phone;
+    private String address;
 }

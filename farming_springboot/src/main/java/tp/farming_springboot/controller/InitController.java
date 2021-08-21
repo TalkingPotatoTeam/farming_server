@@ -1,42 +1,24 @@
 package tp.farming_springboot.controller;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
-import tp.farming_springboot.domain.product.repository.FileRepository;
-import tp.farming_springboot.domain.product.repository.ProductRepository;
-import tp.farming_springboot.domain.product.service.FileService;
 import tp.farming_springboot.domain.review.model.ReviewChoice;
 import tp.farming_springboot.domain.review.repository.ReviewChoiceRepository;
-import tp.farming_springboot.domain.user.model.ERole;
-import tp.farming_springboot.domain.user.model.Role;
-import tp.farming_springboot.domain.user.repository.RoleRepository;
-import tp.farming_springboot.domain.user.repository.UserRepository;
 
 @RestController
 @AllArgsConstructor
 public class InitController {
 
-    private RoleRepository roleRepository;
     private CategoryRepository categoryRepository;
     private ReviewChoiceRepository reviewChoiceRepository;
 
     @GetMapping("/init")
     public void init() {
-        initRoles();
         initCategories();
         initReviewChoice();
-    }
-    private void initRoles(){
-        Role roleUser = new Role();
-        Role roleAdmin = new Role();
-        roleUser.setName(ERole.ROLE_USER);
-        roleRepository.save(roleUser);
-        roleAdmin.setName(ERole.ROLE_ADMIN);
-        roleRepository.save(roleAdmin);
     }
     private void initReviewChoice(){
         // 게시물

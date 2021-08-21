@@ -103,18 +103,5 @@ public class JwtUtils {
             System.out.println("JWT EXPIRED ERROR");
             throw ex;
         }
-        //return false;
-        /*catch (SignatureException e) {
-            logger.error("Invalid JWT signature: {}", e.getMessage());
-        } catch (MalformedJwtException e) {
-            logger.error("Invalid JWT token: {}", e.getMessage());
-        } catch (ExpiredJwtException e) {
-            logger.error("JWT token is expired: {} Should use refresh tokens", e.getMessage());
-            throw new ExpiredJwtException();
-        } catch (UnsupportedJwtException e) {
-            logger.error("JWT token is unsupported: {}", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            logger.error("JWT claims string is empty: {}", e.getMessage());
-        }*/
     }
 }

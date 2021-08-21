@@ -43,12 +43,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDE_URL =
             Collections.unmodifiableList(
                     Arrays.asList(
-                            "/auth/request-otp",
-                            "/auth/otp",
-                            "/user/sudo",
-                            "/auth/tokens",
-                            "/user/signup",
-                            "/init"
+                            "/auth/request-otp", //인증번호 받을때
+                            "/auth/validate", //인증번호 입력할때
+                            "/user/sudo", //임시
+                            "/auth/tokens", //임시
+                            "/init" //디비 초기화용
                     ));
 
     @Override
