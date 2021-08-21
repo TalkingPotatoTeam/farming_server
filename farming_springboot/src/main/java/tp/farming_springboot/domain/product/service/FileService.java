@@ -28,26 +28,16 @@ public class FileService{
         List<String> allowedExtNameList = Arrays.asList(new String[]{"jpg", "gif", "png", "bmp", "rle", "dib", "tif", "tiff"});
         String extensionName = Objects.requireNonNull(origFilename).substring(origFilename.lastIndexOf(".") + 1);
 
-
         try {
             if(!allowedExtNameList.contains( extensionName.toLowerCase())) {
                 throw new IllegalArgumentException("File Extension Not allowed. Only allow Photo File.");
             }
-            String filename = new MD5Generator(origFilename + LocalDateTime.now()).toString(); // file name 암호화
-            String savePath = System.getProperty("user.dir") + "/receipt_photo_files";
 
-            if (!new File(savePath).exists()) {
-                new File(savePath).mkdir();
-            }
-
-            String filePath = savePath + "/" + filename;
-            receiptFile.transferTo(new File(filePath));
-
+            byte[] photoByte = receiptFile.getBytes();
             PhotoFileDto fileDto = new PhotoFileDto();
 
             fileDto.setOrigFilename(origFilename);
-            fileDto.setFilename(filename);
-            fileDto.setFilePath(filePath);
+            fileDto.setPhotoData(photoByte);
 
             PhotoFile receipt = fileRepository.save(fileDto.toEntity());
 
@@ -78,24 +68,13 @@ public class FileService{
                     throw new IllegalArgumentException("File Extension Not allowed. Only allow Photo File.");
                 }
 
-                String filename = new MD5Generator(origFilename + LocalDateTime.now()).toString(); // file name 암호화
-                String savePath = System.getProperty("user.dir") + "/photo_files";
-
-                if (!new File(savePath).exists()) {
-                    new File(savePath).mkdir();
-                }
-                String filePath = savePath + "/" + filename;
-                file.transferTo(new File(filePath));
-
+                byte[] photoByte = file.getBytes();
                 PhotoFileDto fileDto = new PhotoFileDto();
 
                 fileDto.setOrigFilename(origFilename);
-                fileDto.setFilename(filename);
-                fileDto.setFilePath(filePath);
-
+                fileDto.setPhotoData(photoByte);
                 PhotoFile photoFile = fileRepository.save(fileDto.toEntity());
 
-                System.out.println("photoFile = " + photoFile);
                 photoFileList.add(photoFile);
 
             }
@@ -108,37 +87,4 @@ public class FileService{
 
     }
 
-    public void deleteFiles(List<PhotoFile> photoList) throws PhotoFileException {
-
-        if(photoList == null || photoList.size() == 0){
-            return;
-        } else {
-            for (PhotoFile pf : photoList) {
-                try {
-                    Path filePath = Paths.get(pf.getFilePath());
-                    Files.deleteIfExists(filePath);
-                } catch (Exception e) {
-                    throw new PhotoFileException("Can't delete Photo File from file directory.");
-                }
-            }
-        }
-
-    }
-
-
-    public PhotoFile saveFile(PhotoFileDto fileDto) {
-        return fileRepository.save(fileDto.toEntity());
-    }
-
-    @Transactional
-    public PhotoFileDto getFile(Long id) {
-        PhotoFile file = fileRepository.findById(id).get();
-
-        PhotoFileDto fileDto = PhotoFileDto.builder()
-                .origFilename(file.getOrigFilename())
-                .filename(file.getFilename())
-                .filePath(file.getFilePath())
-                .build();
-        return fileDto;
-    }
 }

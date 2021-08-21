@@ -11,24 +11,20 @@ import tp.farming_springboot.domain.product.model.PhotoFile;
 public class PhotoFileDto {
 
     private String origFilename;
-    private String filename;
-    private String filePath;
+    private byte[] photoData;
 
 
     public PhotoFile toEntity() {
         PhotoFile build = PhotoFile.builder()
                 .origFilename(origFilename)
-                .filename(filename)
-                .filePath(filePath)
+                .photoData(photoData)
                 .build();
         return build;
     }
 
     @Builder
-    public PhotoFileDto(String origFilename, String filename, String filePath) {
+    public PhotoFileDto(String origFilename, String filename, String filePath, byte[] photoData) {
         this.origFilename = origFilename;
-        this.filename = filename;
-        this.filePath = filePath;
-
+        this.photoData = photoData;
     }
 }

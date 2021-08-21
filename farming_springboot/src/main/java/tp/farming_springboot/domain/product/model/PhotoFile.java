@@ -23,21 +23,17 @@ public class PhotoFile {
     @Column(nullable = false)
     private String origFilename;
 
-    @Column(nullable = false)
-    private String filename;
-
-    @Column(nullable = false)
-    private String filePath;
-
     @JsonBackReference
     @ManyToOne(cascade = CascadeType.DETACH)
     private Product product;
 
+    @Lob
+    private byte[] photoData;
+
     @Builder
-    public PhotoFile(String origFilename, String filename, String filePath) {
+    public PhotoFile(String origFilename, String filename, String filePath, byte[] photoData) {
         this.origFilename = origFilename;
-        this.filename = filename;
-        this.filePath = filePath;
+        this.photoData = photoData;
     }
 
 }

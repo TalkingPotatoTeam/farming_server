@@ -85,14 +85,6 @@ public class ProductService {
         if(!isUserAuthor(user, product)) {
             throw new UserNotAuthorizedException("Current user and product author is not same.");
         }else {
-            if(product.getPhotoFile().size() != 0) {
-                fileService.deleteFiles(product.getPhotoFile());
-            }
-            if(product.getReceipt() != null) {
-                List<PhotoFile> tempReceiptList = new ArrayList<PhotoFile>();
-                tempReceiptList.add(product.getReceipt());
-                fileService.deleteFiles(tempReceiptList);
-            }
             productRepository.deleteById(id);
         }
     }
@@ -112,18 +104,11 @@ public class ProductService {
         else {
             // 사진 파일 삭제
             if (prod.getPhotoFile().size() > 0) {
-                fileService.deleteFiles(prod.getPhotoFile());
                 fileRepository.deleteRelatedProductId(prod.getId());
             }
 
             // 영수증 파일 삭제
             if (prod.getReceipt() != null) {
-                List<PhotoFile> tempReceiptList = new ArrayList<PhotoFile>();
-                tempReceiptList.add(prod.getReceipt());
-
-                // deleteFiles 메소드에서 인자를 리스트 형태만 받기 때문에, 재활용을 위한 리스트화
-                fileService.deleteFiles(tempReceiptList);
-
                 //orphan removal 설정으로 참조하지 않으면 필드를 자동으로 삭제해줌 => repo를 통한 delete 과정 없어도됨
                 prodDto.setReceipt(null);
             }
