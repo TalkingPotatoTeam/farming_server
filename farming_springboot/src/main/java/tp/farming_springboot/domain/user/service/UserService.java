@@ -90,6 +90,7 @@ public class UserService {
         List<Address> addresses = user.get().getAddresses();
         Optional<Address> toDelete = addressRepository.findById(addressId);
 
+        if(toDelete.isEmpty() || !addresses.contains(toDelete.get())) throw new AddressRemoveException("Address does not exist. Check address Id.");
         if (user.get().getCurrent().getId() == addressId)throw new AddressRemoveException("Current address can not be deleted. Change Address First.");
         if(addresses.size() == 1)throw new AddressRemoveException("User should have at least one address");
 
