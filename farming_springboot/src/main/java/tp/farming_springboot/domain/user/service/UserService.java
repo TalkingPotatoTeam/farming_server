@@ -81,6 +81,7 @@ public class UserService {
         }
         addresses.add(address);
         user.get().setAddresses(addresses);
+        setCurrentAddress(userPhone,address.getId());
         userRepository.save(user.get());
     }
     //delete address

@@ -108,6 +108,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Message> changeCurrentAddress(Authentication authentication, @PathVariable Long id) {
         String userPhone = authentication.getName();
+        System.out.println("userPhone : "+userPhone);
         userService.setCurrentAddress(userPhone, id);
         Message message = new Message(StatusEnum.OK,"Current Address changed" );
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
