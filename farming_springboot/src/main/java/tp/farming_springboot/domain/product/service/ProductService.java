@@ -2,6 +2,8 @@ package tp.farming_springboot.domain.product.service;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
@@ -22,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,17 @@ public class ProductService {
     private final FileRepository fileRepository;
     private final UserService userService;
     private final CategoryRepository categoryRepository;
+
+
+    public List<ProductResponseDto> findProductByPagination(Pageable pageRequest) {
+        Page<Product> productList = productRepository.findAll(pageRequest);
+
+        List<ProductResponseDto> productResponseDtos = productList.stream().map(
+                product -> ProductResponseDto.from(product)
+        ).collect(Collectors.toList());
+
+        return productResponseDtos;
+    }
 
 
     public ProductResponseDto findById(Long id) {

@@ -13,9 +13,9 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    public Iterable<Product> findByUserId(Long id);
+    Iterable<Product> findByUserId(Long id);
 
-    public Optional<Product> findById(Long id);
+    Optional<Product> findById(Long id);
 
     default Product findByIdOrElseThrow(Long id) {
         return this.findById(id).orElseThrow(

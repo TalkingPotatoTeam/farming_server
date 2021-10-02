@@ -4,6 +4,10 @@ package tp.farming_springboot.controller;
 import lombok.RequiredArgsConstructor;
 
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +33,7 @@ import javax.validation.Valid;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @RestController
@@ -40,6 +45,29 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
     private final UserService userService;
+
+    private final ProductRepository productRepository;
+
+    @GetMapping("/home")
+    public List<ProductResponseDto> home(@PageableDefault(size=3, sort="createdDate",direction= Sort.Direction.DESC) Pageable pageRequest){
+        List<ProductResponseDto> productResponseDto = productService.findProductByPagination(pageRequest);
+        return productResponseDto;
+    }
+
+    //서치 미완성
+    @GetMapping("/search")
+    public List<ProductResponseDto> search(
+            @RequestParam String title,
+            @RequestParam String content,
+            @PageableDefault(size=3, sort="createdDate",direction= Sort.Direction.DESC) Pageable pageRequest){
+        Page<Product> productList = productRepository.findAll(pageRequest);
+        List<ProductResponseDto> productResponseDto = productList.stream().map(
+                product -> ProductResponseDto.from(product)
+        ).collect(Collectors.toList());
+
+
+        return productResponseDto;
+    }
 
 
     @PostMapping
