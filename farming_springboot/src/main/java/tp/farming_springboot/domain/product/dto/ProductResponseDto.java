@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductResponseDto {
-
+    private Long id;
     private String title;
     private String content;
     private String price;
@@ -29,6 +29,7 @@ public class ProductResponseDto {
 
     public static ProductResponseDto from(Product product) {
         ProductResponseDto productResponseDto = new ProductResponseDto();
+        productResponseDto.id = product.getId();
         productResponseDto.title = product.getTitle();
         productResponseDto.content = product.getContent();
         productResponseDto.price = product.getPrice();
@@ -36,7 +37,7 @@ public class ProductResponseDto {
         productResponseDto.quantity = product.getQuantity();
         productResponseDto.address = product.getAddress();
         productResponseDto.certified = product.isCertified();
-        productResponseDto.photoFile = product.getPhotoFile();
+        //productResponseDto.photoFile = product.getPhotoFile();
         productResponseDto.receipt = product.getReceipt();
         productResponseDto.category = product.getCategory().getName();
         productResponseDto.buyProductDate = product.getBuyProductDate();

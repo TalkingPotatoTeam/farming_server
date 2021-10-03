@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
 import tp.farming_springboot.domain.product.dto.ProductResponseDto;
 import tp.farming_springboot.domain.product.dto.ProductStatusDto;
+import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
@@ -39,6 +40,16 @@ public class ProductService {
     public List<ProductResponseDto> findProductByPagination(Pageable pageRequest) {
         Page<Product> productList = productRepository.findAll(pageRequest);
 
+        List<ProductResponseDto> productResponseDtos = productList.stream().map(
+                product -> ProductResponseDto.from(product)
+        ).collect(Collectors.toList());
+
+        return productResponseDtos;
+    }
+
+    public List<ProductResponseDto> searchByCategory(String categoryName, Pageable pageRequest) {
+        Category category = categoryRepository.findByNameOrElseThrow(categoryName);
+        Page<Product> productList = productRepository.findByCategory(category, pageRequest);
         List<ProductResponseDto> productResponseDtos = productList.stream().map(
                 product -> ProductResponseDto.from(product)
         ).collect(Collectors.toList());

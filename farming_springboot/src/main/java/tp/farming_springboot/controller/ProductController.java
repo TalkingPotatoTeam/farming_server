@@ -49,24 +49,37 @@ public class ProductController {
     private final ProductRepository productRepository;
 
     @GetMapping("/home")
-    public List<ProductResponseDto> home(@PageableDefault(size=3, sort="createdDate",direction= Sort.Direction.DESC) Pageable pageRequest){
+    public List<ProductResponseDto> home(@PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
         List<ProductResponseDto> productResponseDto = productService.findProductByPagination(pageRequest);
         return productResponseDto;
     }
 
     //서치 미완성
+    //1. 필터 적용해서 키워드로 검색(필터: 카테고리, 인증 푸드, 거리)
+    //2. 필터 없이 키워드로 검색
+
+    // 카테고리 눌렀을 때 해당 카테고리 다 나오게
     @GetMapping("/search")
-    public List<ProductResponseDto> search(
-            @RequestParam String title,
-            @RequestParam String content,
-            @PageableDefault(size=3, sort="createdDate",direction= Sort.Direction.DESC) Pageable pageRequest){
-        Page<Product> productList = productRepository.findAll(pageRequest);
+    @ResponseStatus(HttpStatus.OK)
+    public List<ProductResponseDto> searchByKeywordWithFilter(
+            @RequestParam String keyword,
+            @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
+        Page<Product> productList = productRepository.findByKeyword(keyword, pageRequest);
         List<ProductResponseDto> productResponseDto = productList.stream().map(
                 product -> ProductResponseDto.from(product)
         ).collect(Collectors.toList());
 
-
         return productResponseDto;
+    }
+
+    @GetMapping("/search/category")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ProductResponseDto> searchByCategory(
+            @RequestParam String category,
+            @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest) {
+
+        List<ProductResponseDto> productResponseDtos = productService.searchByCategory(category, pageRequest);
+        return productResponseDtos;
     }
 
 

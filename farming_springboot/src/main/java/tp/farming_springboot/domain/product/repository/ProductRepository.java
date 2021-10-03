@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import org.springframework.stereotype.Repository;
+import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.exception.RestNullPointerException;
 
@@ -24,9 +25,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     }
 
     Page<Product> findAll(Pageable pageable);
+
     @Query(
-            value = "SELECT p FROM Product p WHERE p.title LIKE %:title% OR p.content LIKE %:content%",
-            countQuery = "SELECT COUNT(p.id) FROM Product p WHERE p.title  LIKE %:title% OR p.content LIKE %:content% "
+            value = "SELECT p FROM Product p WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword%",
+            countQuery = "SELECT COUNT(p.id) FROM Product p WHERE p.title  LIKE %:keyword% OR p.content LIKE %:keyword% "
     )
-    Page<Product> findAllSearch(String title, String content, Pageable pageable);
+    Page<Product> findByKeyword(String keyword, Pageable pageable);
+
+
+    Page<Product> findByCategory(Category category, Pageable pageable);
 }

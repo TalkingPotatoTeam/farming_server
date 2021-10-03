@@ -75,14 +75,27 @@ public class UserService {
     //add address
     public void addAddress(String userPhone, Address address){
         Optional<User> user = userRepository.findByPhone(userPhone);
-        List<Address> addresses = new ArrayList<Address>();
+        List<Address> addresses = new ArrayList<>();
         if (user.get().getAddresses() != null){
             addresses = user.get().getAddresses();
         }
-        addresses.add(address);
-        user.get().setAddresses(addresses);
-        setCurrentAddress(userPhone,address.getId());
-        userRepository.save(user.get());
+
+        boolean isExisted = false;
+        for(Address ad  : addresses) {
+            if((ad.getContent()).equals(address.getContent())) {
+                isExisted = true;
+                break;
+            }
+        }
+
+        if(isExisted) {
+            throw new IllegalArgumentException("User already have this address: " + address.getContent());
+        }else {
+            addresses.add(address);
+            user.get().setAddresses(addresses);
+            setCurrentAddress(userPhone, address.getId());
+            userRepository.save(user.get());
+        }
     }
     //delete address
     public void deleteAddress(String userPhone, Long addressId) throws AddressRemoveException{
