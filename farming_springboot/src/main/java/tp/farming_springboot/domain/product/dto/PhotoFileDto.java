@@ -23,7 +23,7 @@ public class PhotoFileDto {
     }
 
     @Builder
-    public PhotoFileDto(String origFilename, String filename, String filePath, byte[] photoData) {
+    public PhotoFileDto(String origFilename,  byte[] photoData) {
         this.origFilename = origFilename;
         this.photoData = photoData;
     }
