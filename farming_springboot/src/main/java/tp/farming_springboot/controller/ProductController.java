@@ -1,6 +1,8 @@
 package tp.farming_springboot.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
 
@@ -16,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
+import tp.farming_springboot.domain.product.dto.ProductFilterDto;
 import tp.farming_springboot.domain.product.dto.ProductResponseDto;
 import tp.farming_springboot.domain.product.dto.ProductStatusDto;
 import tp.farming_springboot.domain.product.model.Product;
@@ -46,8 +49,6 @@ public class ProductController {
     private final CategoryRepository categoryRepository;
     private final UserService userService;
 
-    private final ProductRepository productRepository;
-
     @GetMapping("/home")
     public List<ProductResponseDto> home(@PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
         List<ProductResponseDto> productResponseDto = productService.findProductByPagination(pageRequest);
@@ -63,11 +64,13 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public List<ProductResponseDto> searchByKeywordWithFilter(
             @RequestParam String keyword,
-            @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
-        Page<Product> productList = productRepository.findByKeyword(keyword, pageRequest);
-        List<ProductResponseDto> productResponseDto = productList.stream().map(
-                product -> ProductResponseDto.from(product)
-        ).collect(Collectors.toList());
+            @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest,
+            @RequestBody(required = false) ProductFilterDto productFilterDto) {
+
+        if(productFilterDto == null)
+            productFilterDto = ProductFilterDto.getDefaultInstance();
+
+        List<ProductResponseDto> productResponseDto = productService.searchByKeywordAndFilter(keyword, productFilterDto ,pageRequest);
 
         return productResponseDto;
     }
@@ -86,16 +89,17 @@ public class ProductController {
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     public String create(
-            Authentication authentication, @Valid @RequestPart ProductCreateDto prodDto,
-            @RequestPart (value="PhotoFile", required=false) List<MultipartFile> files,
-            @RequestPart(value = "ReceiptFile", required = false) MultipartFile receiptFile
-            ) throws PhotoFileException, ParseException {
+            Authentication authentication, @RequestParam("prodDto") String prodStr,
+            @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
+            @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile
+    ) throws PhotoFileException, ParseException, JsonProcessingException {
 
         String userPhone = authentication.getName();
+        ObjectMapper objectMapper = new ObjectMapper();
+        ProductCreateDto prodDto = objectMapper.readValue(prodStr, ProductCreateDto.class);
         productService.create(userPhone, prodDto, files, receiptFile);
         return "Product item uploaded.";
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<Message> findByProductId(@PathVariable Long id) {
@@ -108,18 +112,8 @@ public class ProductController {
     public ResponseEntity<Message> findByUserId(@PathVariable Long id) {
         //id 검증 용도
         User user  = userService.findUserById(id);
-        Iterable<Product> prodList = prodRepo.findByUserId(id);
+        List<ProductResponseDto> prodList = productService.findByUserId(id);
         Message message = new Message(StatusEnum.OK,"Finding with user id is Success.", prodList );
-        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
-
-    }
-
-    @GetMapping("/current-login-user")
-    public ResponseEntity<Message> findByLoggedUserId(Authentication authentication) {
-        User user = userService.findUserByPhone(authentication.getName());
-        Iterable<Product> prodList = prodRepo.findByUserId(user.getId());
-        Message message = new Message(StatusEnum.OK, "Finding by current-user is success.", prodList);
-
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
@@ -130,13 +124,15 @@ public class ProductController {
     public String update(
             Authentication authentication,
             @PathVariable Long id,
-            @RequestPart ProductCreateDto prodDto,
-            @RequestPart(value="PhotoFile", required = false) List<MultipartFile> files,
-            @RequestPart(value="ReceiptFile", required = false) MultipartFile ReceiptFile
-            ) throws UserNotAuthorizedException, PhotoFileException, ParseException {
+            @RequestParam("prodDto") String prodStr,
+            @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
+            @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile
+            ) throws UserNotAuthorizedException, PhotoFileException, ParseException, JsonProcessingException {
 
         String userPhone = authentication.getName();
-        productService.update(prodDto, userPhone, id, ReceiptFile, files);
+        ObjectMapper objectMapper = new ObjectMapper();
+        ProductCreateDto prodDto = objectMapper.readValue(prodStr, ProductCreateDto.class);
+        productService.update(prodDto, userPhone, id, receiptFile, files);
 
         return "Updating product success.";
     }

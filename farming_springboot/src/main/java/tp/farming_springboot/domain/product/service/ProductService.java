@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
+import tp.farming_springboot.domain.product.dto.ProductFilterDto;
 import tp.farming_springboot.domain.product.dto.ProductResponseDto;
 import tp.farming_springboot.domain.product.dto.ProductStatusDto;
 import tp.farming_springboot.domain.product.model.Category;
@@ -47,14 +48,32 @@ public class ProductService {
         return productResponseDtos;
     }
 
+    public List<ProductResponseDto> searchByKeywordAndFilter(String keyword, ProductFilterDto productFilterDto, Pageable pageRequest){
+
+
+        List<Category> categoryList = categoryRepository.findByNameIn(productFilterDto.getCategoryNameList());
+        Page<Product> productList = productRepository.findByKeywordInCategoryList(keyword, categoryList, pageRequest);
+        return productList.stream().map(product -> ProductResponseDto.from(product)).collect(Collectors.toList());
+    }
+
     public List<ProductResponseDto> searchByCategory(String categoryName, Pageable pageRequest) {
         Category category = categoryRepository.findByNameOrElseThrow(categoryName);
         Page<Product> productList = productRepository.findByCategory(category, pageRequest);
+
+
         List<ProductResponseDto> productResponseDtos = productList.stream().map(
                 product -> ProductResponseDto.from(product)
         ).collect(Collectors.toList());
 
         return productResponseDtos;
+    }
+
+    public List<ProductResponseDto> findByUserId(Long userId) {
+        List<Product> productList = productRepository.findByUserId(userId);
+
+        return productList.stream().map(
+                product -> ProductResponseDto.from(product)
+        ).collect(Collectors.toList());
     }
 
 
@@ -63,6 +82,7 @@ public class ProductService {
         return ProductResponseDto.from(product);
     }
 
+    @Transactional(rollbackOn = {Exception.class})
     public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException, ParseException {
         User user = userService.findUserByPhone(userPhone);
         List<PhotoFile> photoFileList = new ArrayList<PhotoFile>();
@@ -102,7 +122,7 @@ public class ProductService {
 
 
 
-    @Transactional
+    @Transactional(rollbackOn = {Exception.class})
     public void delete(String userPhone, Long id) throws UserNotAuthorizedException, PhotoFileException {
         User user = userService.findUserByPhone(userPhone);
         Product product = productRepository.findByIdOrElseThrow(id);
@@ -115,7 +135,7 @@ public class ProductService {
     }
 
 
-    @Transactional
+    @Transactional(rollbackOn = {Exception.class})
     public void update(ProductCreateDto prodDto,
                        String userPhone, Long id,
                        MultipartFile ReceiptFile,

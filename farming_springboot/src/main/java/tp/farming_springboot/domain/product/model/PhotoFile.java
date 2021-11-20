@@ -31,7 +31,7 @@ public class PhotoFile {
     private byte[] photoData;
 
     @Builder
-    public PhotoFile(String origFilename, String filename, String filePath, byte[] photoData) {
+    public PhotoFile(String origFilename,  byte[] photoData) {
         this.origFilename = origFilename;
         this.photoData = photoData;
     }

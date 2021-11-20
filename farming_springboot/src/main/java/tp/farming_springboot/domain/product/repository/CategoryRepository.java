@@ -22,6 +22,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
         );
     }
 
+    List<Category> findByNameIn(List<String> categoryName);
 
 
     @Query(

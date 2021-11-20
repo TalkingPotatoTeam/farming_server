@@ -38,7 +38,7 @@ public class ProductResponseDto {
         productResponseDto.address = product.getAddress();
         productResponseDto.certified = product.isCertified();
         //productResponseDto.photoFile = product.getPhotoFile();
-        productResponseDto.receipt = product.getReceipt();
+        //productResponseDto.receipt = product.getReceipt();
         productResponseDto.category = product.getCategory().getName();
         productResponseDto.buyProductDate = product.getBuyProductDate();
         productResponseDto.freshness = product.getFreshness();
