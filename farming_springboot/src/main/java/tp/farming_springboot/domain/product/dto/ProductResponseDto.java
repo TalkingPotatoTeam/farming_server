@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductResponseDto {
@@ -34,7 +34,6 @@ public class ProductResponseDto {
         productResponseDto.content = product.getContent();
         productResponseDto.price = product.getPrice();
         productResponseDto.userId = product.getUser().getId();
-        productResponseDto.quantity = product.getQuantity();
         productResponseDto.address = product.getAddress();
         productResponseDto.certified = product.isCertified();
         //productResponseDto.photoFile = product.getPhotoFile();

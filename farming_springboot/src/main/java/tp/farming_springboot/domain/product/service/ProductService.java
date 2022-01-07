@@ -22,6 +22,7 @@ import tp.farming_springboot.exception.PhotoFileException;
 import tp.farming_springboot.exception.UserNotAuthorizedException;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,8 +50,6 @@ public class ProductService {
     }
 
     public List<ProductResponseDto> searchByKeywordAndFilter(String keyword, ProductFilterDto productFilterDto, Pageable pageRequest){
-
-
         List<Category> categoryList = categoryRepository.findByNameIn(productFilterDto.getCategoryNameList());
         Page<Product> productList = productRepository.findByKeywordInCategoryList(keyword, categoryList, pageRequest);
         return productList.stream().map(product -> ProductResponseDto.from(product)).collect(Collectors.toList());
@@ -59,7 +58,6 @@ public class ProductService {
     public List<ProductResponseDto> searchByCategory(String categoryName, Pageable pageRequest) {
         Category category = categoryRepository.findByNameOrElseThrow(categoryName);
         Page<Product> productList = productRepository.findByCategory(category, pageRequest);
-
 
         List<ProductResponseDto> productResponseDtos = productList.stream().map(
                 product -> ProductResponseDto.from(product)
@@ -76,54 +74,44 @@ public class ProductService {
         ).collect(Collectors.toList());
     }
 
-
     public ProductResponseDto findById(Long id) {
         Product product = productRepository.findByIdOrElseThrow(id);
         return ProductResponseDto.from(product);
     }
 
     @Transactional(rollbackOn = {Exception.class})
-    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException, ParseException {
+    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException, ParseException, IOException {
         User user = userService.findUserByPhone(userPhone);
-        List<PhotoFile> photoFileList = new ArrayList<PhotoFile>();
-
-        if(receiptFile != null){
-            PhotoFile receipt = fileService.photoFileCreate(receiptFile);
-            prodDto.setReceipt(receipt);
-            prodDto.setCertified(true);
-        } else {
-            prodDto.setCertified(false);
-        }
-
-        if(photoFiles != null) {
-            photoFileList = fileService.photoFileListCreate(photoFiles);
-        }
-        prodDto.setUser(user);
-        prodDto.setPhotoFile(photoFileList);
-        prodDto.setCategory(categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName()));
+        Category category = categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName());
 
         Product product = Product.of(
-                prodDto.getUser(),
+                user,
                 prodDto.getTitle(),
                 prodDto.getContent(),
                 prodDto.getPrice(),
-                prodDto.getUser().getCurrent().getContent(),
+                user.getCurrent().getContent(),
                 prodDto.isCertified(),
-                prodDto.getQuantity(),
-                prodDto.getCategory(),
+                category,
                 prodDto.getReceipt(),
-                prodDto.getPhotoFile(),
                 new SimpleDateFormat("yyyy.MM.dd").parse(prodDto.getBuyProductDate()),
                 prodDto.getFreshness()
         );
+
+        if(receiptFile != null){
+            PhotoFile receipt = fileService.photoFileCreate(receiptFile);
+            product.addReceiptFile(receipt);
+        }
+
+        if(photoFiles != null) {
+            fileService.photoFileListCreate(photoFiles, product);
+        }
 
         productRepository.save(product);
     }
 
 
-
     @Transactional(rollbackOn = {Exception.class})
-    public void delete(String userPhone, Long id) throws UserNotAuthorizedException, PhotoFileException {
+    public void delete(String userPhone, Long id) throws UserNotAuthorizedException {
         User user = userService.findUserByPhone(userPhone);
         Product product = productRepository.findByIdOrElseThrow(id);
 
@@ -139,7 +127,7 @@ public class ProductService {
     public void update(ProductCreateDto prodDto,
                        String userPhone, Long id,
                        MultipartFile ReceiptFile,
-                       List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException, ParseException {
+                       List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException, ParseException, IOException {
 
         User user = userService.findUserByPhone(userPhone);
         Product prod = productRepository.findByIdOrElseThrow(id);
@@ -147,39 +135,25 @@ public class ProductService {
         if(!isUserAuthor(user, prod))
             throw new UserNotAuthorizedException("Current user and product author is not same.");
         else {
-            // 사진 파일 삭제
-            if (prod.getPhotoFile().size() > 0) {
-                fileRepository.deleteRelatedProductId(prod.getId());
-            }
-
-            // 영수증 파일 삭제
-            if (prod.getReceipt() != null) {
-                //orphan removal 설정으로 참조하지 않으면 필드를 자동으로 삭제해줌 => repo를 통한 delete 과정 없어도됨
-                prodDto.setReceipt(null);
-            }
+            clearFileFromProduct(prod);
 
             if (ReceiptFile != null) {
-                PhotoFile receiptPhoto = fileService.photoFileCreate(ReceiptFile);
-                prodDto.setReceipt(receiptPhoto);
-                prodDto.setCertified(true);
-
-            } else {
-                prodDto.setCertified(false);
+                PhotoFile receipt = fileService.photoFileCreate(ReceiptFile);
+                prod.addReceiptFile(receipt);
             }
 
             if (photoFiles != null) {
-                List<PhotoFile> photoFileList = fileService.photoFileListCreate(photoFiles);
+                List<PhotoFile> photoFileList = fileService.photoFileListCreate(photoFiles, prod);
                 prodDto.setPhotoFile(photoFileList);
             }
 
-            prodDto.setCategory(categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName()));
+            Category category = categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName());
             prod.update(
                     prodDto.getTitle(),
                     prodDto.getContent(),
                     prodDto.getPrice(),
                     prodDto.isCertified(),
-                    prodDto.getQuantity(),
-                    prodDto.getCategory(),
+                    category,
                     prodDto.getReceipt(),
                     prodDto.getPhotoFile(),
                     new SimpleDateFormat("yyyy.MM.dd").parse(prodDto.getBuyProductDate()),
@@ -188,6 +162,17 @@ public class ProductService {
 
             productRepository.save(prod);
         }
+    }
+
+    private void clearFileFromProduct(Product product) {
+        if (product.getPhotoFile().size() > 0)
+            fileRepository.deleteRelatedProductId(product.getId());
+
+
+        if (product.getReceipt() != null) {
+            fileRepository.deleteById(product.getReceipt().getId());
+        }
+
     }
 
 

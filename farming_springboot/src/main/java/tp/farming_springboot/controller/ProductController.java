@@ -2,6 +2,7 @@ package tp.farming_springboot.controller;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +34,7 @@ import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.List;
@@ -44,10 +46,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductController {
 
-    private final ProductRepository prodRepo;
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
-    private final UserService userService;
 
     @GetMapping("/home")
     public List<ProductResponseDto> home(@PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
@@ -58,7 +58,7 @@ public class ProductController {
     //서치 미완성
     //1. 필터 적용해서 키워드로 검색(필터: 카테고리, 인증 푸드, 거리)
     //2. 필터 없이 키워드로 검색
-    // 카테고리
+
     // 카테고리 눌렀을 때 해당 카테고리 다 나오게
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
@@ -74,7 +74,6 @@ public class ProductController {
             keyword = "";
 
         List<ProductResponseDto> productResponseDto = productService.searchByKeywordAndFilter(keyword, productFilterDto ,pageRequest);
-
         return productResponseDto;
     }
 
@@ -95,12 +94,12 @@ public class ProductController {
             Authentication authentication, @RequestParam("prodDto") String prodStr,
             @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
             @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile
-    ) throws PhotoFileException, ParseException, JsonProcessingException {
+    ) throws PhotoFileException, ParseException, IOException {
 
-        String userPhone = authentication.getName();
         ObjectMapper objectMapper = new ObjectMapper();
         ProductCreateDto prodDto = objectMapper.readValue(prodStr, ProductCreateDto.class);
-        productService.create(userPhone, prodDto, files, receiptFile);
+
+        productService.create(authentication.getName(), prodDto, files, receiptFile);
         return "Product item uploaded.";
     }
 
@@ -113,8 +112,6 @@ public class ProductController {
 
     @GetMapping("/user/{id}")
     public ResponseEntity<Message> findByUserId(@PathVariable Long id) {
-        //id 검증 용도
-        User user  = userService.findUserById(id);
         List<ProductResponseDto> prodList = productService.findByUserId(id);
         Message message = new Message(StatusEnum.OK,"Finding with user id is Success.", prodList );
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
@@ -130,12 +127,11 @@ public class ProductController {
             @RequestParam("prodDto") String prodStr,
             @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
             @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile
-            ) throws UserNotAuthorizedException, PhotoFileException, ParseException, JsonProcessingException {
+            ) throws UserNotAuthorizedException, PhotoFileException, ParseException, IOException {
 
-        String userPhone = authentication.getName();
         ObjectMapper objectMapper = new ObjectMapper();
         ProductCreateDto prodDto = objectMapper.readValue(prodStr, ProductCreateDto.class);
-        productService.update(prodDto, userPhone, id, receiptFile, files);
+        productService.update(prodDto, authentication.getName(), id, receiptFile, files);
 
         return "Updating product success.";
     }

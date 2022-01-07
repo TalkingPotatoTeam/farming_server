@@ -4,9 +4,7 @@ package tp.farming_springboot.domain.product.dto;
 import lombok.*;
 import tp.farming_springboot.domain.product.model.PhotoFile;
 
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
 public class PhotoFileDto {
 
@@ -14,17 +12,12 @@ public class PhotoFileDto {
     private byte[] photoData;
 
 
-    public PhotoFile toEntity() {
-        PhotoFile build = PhotoFile.builder()
-                .origFilename(origFilename)
-                .photoData(photoData)
-                .build();
-        return build;
-    }
-
-    @Builder
     public PhotoFileDto(String origFilename,  byte[] photoData) {
         this.origFilename = origFilename;
         this.photoData = photoData;
+    }
+
+    public static PhotoFileDto from(String origFilename, byte[] photoData) {
+        return new PhotoFileDto(origFilename, photoData);
     }
 }

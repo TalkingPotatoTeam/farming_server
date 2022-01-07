@@ -1,20 +1,18 @@
 package tp.farming_springboot.domain.product.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
-import tp.farming_springboot.domain.user.model.User;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 
 
 @Getter
 @Entity
+@NoArgsConstructor
+@ToString
 public class PhotoFile {
-
-    public PhotoFile() {
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,17 +21,28 @@ public class PhotoFile {
     @Column(nullable = false)
     private String origFilename;
 
-    @JsonBackReference
-    @ManyToOne(cascade = CascadeType.DETACH)
+    @ManyToOne
+    @JoinColumn(name ="product_id")
     private Product product;
 
     @Lob
     private byte[] photoData;
 
-    @Builder
     public PhotoFile(String origFilename,  byte[] photoData) {
         this.origFilename = origFilename;
         this.photoData = photoData;
+    }
+
+    public static PhotoFile of(String origFilename, byte[] photoData) {
+        return new PhotoFile(
+                origFilename,
+                photoData
+        );
+    }
+
+    public void addProduct(Product product) {
+        this.product = product;
+        product.addPhotoFile(this);
     }
 
 }

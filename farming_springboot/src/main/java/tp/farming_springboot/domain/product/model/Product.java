@@ -1,7 +1,5 @@
 package tp.farming_springboot.domain.product.model;
 
-
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import tp.farming_springboot.domain.user.model.User;
@@ -9,10 +7,6 @@ import tp.farming_springboot.domain.user.model.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
-
-
-// db 테이블과 클래스이름을 동일하게 하지 않으면, @Table annotation 사용해야 함.
-// db 접속 using terminal
 
 
 @Entity
@@ -27,10 +21,8 @@ public class Product {
                    String price,
                    String address,
                    boolean certified,
-                   String quantity,
                    Category category,
                    PhotoFile receipt,
-                   List<PhotoFile> photoFileList,
                    Date buyProductDate,
                    String freshness) {
 
@@ -40,11 +32,9 @@ public class Product {
         this.price = price;
         this.address = address;
         this.certified = certified;
-        this.quantity = quantity;
         this.createdDate = LocalDateTime.now();
         this.category = category;
         this.receipt = receipt;
-        this.photoFile = photoFileList;
         this.buyProductDate = buyProductDate;
         this.freshness = freshness;
     }
@@ -55,15 +45,13 @@ public class Product {
                              String price,
                              String address,
                              boolean certified,
-                             String quantity,
                              Category category,
                              PhotoFile receipt,
-                             List<PhotoFile> photoFileList,
                              Date buyProductDate,
                              String freshness
                              ){
 
-        return new Product(user, title, content, price, address, certified, quantity, category, receipt, photoFileList, buyProductDate, freshness);
+        return new Product(user, title, content, price, address, certified, category, receipt, buyProductDate, freshness);
     }
 
     public void update(
@@ -71,7 +59,6 @@ public class Product {
                    String content,
                    String price,
                    boolean certified,
-                   String quantity,
                    Category category,
                    PhotoFile receipt,
                    List<PhotoFile> photoFileList,
@@ -83,7 +70,6 @@ public class Product {
         this.content = content;
         this.price = price;
         this.certified = certified;
-        this.quantity = quantity;
         this.category = category;
         this.receipt = receipt;
         this.photoFile = photoFileList;
@@ -91,14 +77,24 @@ public class Product {
         this.freshness = freshness;
     }
 
+    public void addPhotoFile(PhotoFile photoFile) {
+        if(this.photoFile == null) {
+            this.photoFile = new ArrayList<>();
+        }
+        this.photoFile.add(photoFile);
+    }
+
+    public void addReceiptFile(PhotoFile receipt) {
+        this.certified = true;
+        this.receipt = receipt;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.DETACH)
+    @ManyToOne
     @JoinColumn(name ="user_id")
-    // JoinColumn => 참조하는 (객체 이름_필드이름)
-
     private User user;
 
     private String title;
@@ -107,8 +103,6 @@ public class Product {
 
     private String price;
 
-    private String quantity;
-
     private String address;
 
     private boolean certified;
@@ -116,11 +110,8 @@ public class Product {
     @CreatedDate
     private LocalDateTime createdDate;
 
-    @JsonManagedReference
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name ="product_id")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "product")
     private List<PhotoFile> photoFile;
-
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private PhotoFile receipt;
@@ -130,22 +121,16 @@ public class Product {
     private Category category;
 
     @Getter
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable(
             name="heart",
             joinColumns = @JoinColumn(name="product_id"),
             inverseJoinColumns = @JoinColumn(name="user_id")
     )
-
     private Set<User> likeUsers = new HashSet<>();
+
     private Date buyProductDate;
     private String freshness;
-
-    /*
-    * Setter가 필요한 도메인과 그렇지 않은 도메인 구분
-    *
-    *
-     */
 
     @Setter
     private String productStatus = "판매중";

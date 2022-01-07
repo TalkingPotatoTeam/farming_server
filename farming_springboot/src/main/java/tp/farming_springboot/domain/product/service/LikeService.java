@@ -1,10 +1,8 @@
 package tp.farming_springboot.domain.product.service;
 
-
 import lombok.RequiredArgsConstructor;
 import java.util.*;
 
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import tp.farming_springboot.domain.product.dto.ProductResponseDto;
 import tp.farming_springboot.domain.product.model.Product;
@@ -20,7 +18,6 @@ import tp.farming_springboot.exception.UserNotLikeProductException;
 public class LikeService {
     private final UserService userService;
     private final ProductRepository productRepository;
-    private final FileService fileService;
 
     public void create(String userPhone, Long productId) throws UserAlreadyLikeProductException {
         User user = userService.findUserByPhone(userPhone);
@@ -64,9 +61,7 @@ public class LikeService {
 
         user.getLikeProducts().forEach(
                 product -> {
-
                     productResponseDtos.add(ProductResponseDto.from(product));
-
                 }
         );
 
