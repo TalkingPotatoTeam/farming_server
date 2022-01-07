@@ -36,7 +36,6 @@ public class User  {
     @Getter @Setter
     private Address current; //현재 주소
 
-
     @OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name="user_id")
     @Getter @Setter
@@ -46,14 +45,14 @@ public class User  {
     @ManyToMany(mappedBy = "likeUsers")
     private Set<Product> likeProducts = new HashSet<>();
 
-    public User (String phone ){//생성자
+    public User(String phone){//생성자
         this.password=phone;
         this.phone=phone;
     }
 
     public void addAddress(Address address) {
         if( addresses == null){
-            addresses = new ArrayList<Address>();
+            addresses = new ArrayList<>();
         }
         addresses.add(address);
     }

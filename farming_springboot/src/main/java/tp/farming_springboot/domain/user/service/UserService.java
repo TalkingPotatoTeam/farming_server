@@ -23,16 +23,10 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
-
     private final AddressRepository addressRepository;
-
-
     private final JwtUtils jwtUtils;
-
     private final AuthenticationManager authenticationManager;
-
     private final OtpService otpService;
-    //check if user exists
 
     public boolean checkUserExists(String phone){
         Optional<User> user = userRepository.findByPhone(phone);

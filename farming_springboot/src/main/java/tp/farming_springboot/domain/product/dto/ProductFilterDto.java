@@ -1,13 +1,14 @@
 package tp.farming_springboot.domain.product.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
-@Getter
+@Data
 public class ProductFilterDto {
 
     private List<String> categoryNameList;

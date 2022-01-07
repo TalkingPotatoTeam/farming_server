@@ -11,19 +11,16 @@ import java.util.List;
 
 
 @AllArgsConstructor
-@Getter
-@Setter
 @NoArgsConstructor
+@Data
 public class ProductCreateDto {
 
-    private User user;
     @NotBlank(message="Product title can't be blank.")
     private String title;
     @NotBlank(message="Product content can't be blank.")
     private String content;
     @NotBlank(message="Product price can't be blank.")
     private String price;
-    private String quantity;
 
     private boolean certified;
     private List<PhotoFile> photoFile;
