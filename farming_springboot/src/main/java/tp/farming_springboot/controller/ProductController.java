@@ -48,7 +48,6 @@ public class ProductController {
 
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
-    private final UserService userService;
 
     @GetMapping("/home")
     public List<ProductResponseDto> home(@PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
@@ -59,16 +58,20 @@ public class ProductController {
     //서치 미완성
     //1. 필터 적용해서 키워드로 검색(필터: 카테고리, 인증 푸드, 거리)
     //2. 필터 없이 키워드로 검색
+
     // 카테고리 눌렀을 때 해당 카테고리 다 나오게
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
     public List<ProductResponseDto> searchByKeywordWithFilter(
-            @RequestParam String keyword,
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest,
             @RequestBody(required = false) ProductFilterDto productFilterDto) {
 
         if(productFilterDto == null)
             productFilterDto = ProductFilterDto.getDefaultInstance();
+
+        if(keyword == null)
+            keyword = "";
 
         List<ProductResponseDto> productResponseDto = productService.searchByKeywordAndFilter(keyword, productFilterDto ,pageRequest);
         return productResponseDto;
