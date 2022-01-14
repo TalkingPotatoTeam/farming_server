@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import tp.farming_springboot.domain.user.repository.UserRepository;
 
 public class AuthTokenFilter extends OncePerRequestFilter {
+
     @Autowired
     private JwtUtils jwtUtils;
 
@@ -33,9 +36,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private JwtAuthEntryPoint jwtAuthEntryPoint;
+
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -49,6 +51,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                             "/auth/tokens", //임시
                             "/init" //디비 초기화용
                     ));
+
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

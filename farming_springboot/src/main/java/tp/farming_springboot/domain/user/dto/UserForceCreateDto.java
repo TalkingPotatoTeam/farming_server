@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class UserDto {
+public class UserForceCreateDto {
     private String phone;
     private String address;
 }

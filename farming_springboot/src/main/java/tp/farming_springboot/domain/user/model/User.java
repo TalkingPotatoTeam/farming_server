@@ -14,6 +14,8 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 @Table(name="users",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "phone")
@@ -21,33 +23,27 @@ import java.util.*;
 public class User  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter @Setter
     private Long id;
 
     @Column(length = 100, nullable = true)
-    @Getter @Setter
-    private String password; //password = phone ??????
+    private String password;
 
     @Column(length=15, nullable=false)
-    @Getter @Setter
     private String phone;
 
-    @OneToOne(fetch=FetchType.EAGER, cascade =CascadeType.ALL)
-    @Getter @Setter
+    @OneToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
     private Address current; //현재 주소
 
-    @OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name="user_id")
-    @Getter @Setter
-    private List<Address> addresses = new ArrayList<Address>(); //여러 주소 가질 수 있음
+    private List<Address> addresses = new ArrayList<>(); //여러 주소 가질 수 있음
 
-    @Getter
     @ManyToMany(mappedBy = "likeUsers")
     private Set<Product> likeProducts = new HashSet<>();
 
-    public User(String phone){//생성자
-        this.password=phone;
+    public User(String phone, String password){//생성자
         this.phone=phone;
+        this.password=password;
     }
 
     public void addAddress(Address address) {

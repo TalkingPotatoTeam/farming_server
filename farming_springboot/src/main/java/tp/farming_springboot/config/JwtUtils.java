@@ -1,25 +1,24 @@
 package tp.farming_springboot.config;
 
-import java.nio.file.AccessDeniedException;
+
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 
+import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
-
 
 import io.jsonwebtoken.*;
 
-import javax.servlet.http.HttpServletRequest;
 //토큰을 생성하고 검증하는 컴포넌트 실제로 이 컴포넌트를 이용하는 것은 인증 작업을 진행하는 Filter 입니다.
 @Component
 public class JwtUtils {
-    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     @Value("${jwtSecret}")
     private String jwtSecret;
@@ -34,33 +33,23 @@ public class JwtUtils {
     private String jwtRefreshSecret;
 
     public String generateJwtToken(Authentication authentication) {
-
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-
-        return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                .compact();
+        return getToken(authentication, jwtSecret, jwtExpirationMs);
     }
 
-    public String doGenerateAccessToken(Map<String, Object> claims, String subject) {
-
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
-
-    }
     public String generateJwtRefreshToken(Authentication authentication) {
+        return getToken(authentication, jwtRefreshSecret, jwtRefreshExpirationMs);
+    }
 
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+    private String getToken(Authentication authentication, String secret, int expiration) {
+        Claims claims = Jwts.claims().setSubject(authentication.getName());
+        Date now = new Date();
+        Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
         return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
-                .setIssuedAt(new Date())
-                //.setExpiration(new Date((new Date()).getTime() + jwtRefreshExpirationMs)) // 평생감
-                .signWith(SignatureAlgorithm.HS512, jwtRefreshSecret)
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + expiration))
+                .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
 
@@ -74,10 +63,7 @@ public class JwtUtils {
         return Jwts.parser().setSigningKey(jwtRefreshSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
-    // Request의 Header에서 token 값을 가져옵니다. "X-AUTH-TOKEN" : "TOKEN값'
-    //public String resolveToken(HttpServletRequest request) {
-    //    return request.getHeader("X-AUTH-TOKEN");
-    //}
+
     public boolean validateJwtRefresh(String authToken){
         try {
             Jwts.parser().setSigningKey(jwtRefreshSecret).parseClaimsJws(authToken);
@@ -89,7 +75,6 @@ public class JwtUtils {
             throw ex;
         }
     }
-
 
     public boolean validateJwtToken(String authToken){
         try {
