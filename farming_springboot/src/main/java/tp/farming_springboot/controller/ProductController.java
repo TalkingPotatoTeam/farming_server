@@ -52,7 +52,6 @@ public class ProductController {
 
     // 카테고리 눌렀을 때 해당 카테고리 다 나오게
     @GetMapping("/search")
-    @ResponseStatus(HttpStatus.OK)
     public List<ProductDetailResDto> searchByKeywordWithFilter(
             @RequestParam(required = false) String keyword,
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest,
@@ -69,7 +68,6 @@ public class ProductController {
     }
 
     @GetMapping("/search/category")
-    @ResponseStatus(HttpStatus.OK)
     public List<ProductDetailResDto> searchByCategory(
             @RequestParam String category,
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest) {
@@ -80,7 +78,6 @@ public class ProductController {
 
 
     @PostMapping
-    @ResponseStatus(HttpStatus.OK)
     public String create(
             Authentication authentication, @RequestParam("prodDto") String prodStr,
             @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
@@ -111,7 +108,6 @@ public class ProductController {
 
     // 게시물 id로 수정하기
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public String update(
             Authentication authentication,
             @PathVariable Long id,
@@ -130,21 +126,18 @@ public class ProductController {
 
     //자동으로 사진도 삭제.
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public String delete(Authentication authentication, @PathVariable Long id) throws UserNotAuthorizedException, PhotoFileException {
+    public String delete(Authentication authentication, @PathVariable Long id) throws UserNotAuthorizedException {
         productService.delete(authentication.getName(), id);
         return "Deleting product success.";
     }
 
     @PutMapping(value="/status/{productId}")
-    @ResponseStatus(HttpStatus.OK)
     public String changeStatusOfProduct(Authentication authentication, @PathVariable Long productId,
                                         @RequestBody ProductStatusDto productStatus) throws UserNotAuthorizedException {
 
         productService.changeStatusOfProduct(authentication.getName(), productId, productStatus);
         return "Updating Status Of Product is Success.";
     }
-
 
     @GetMapping("/categories")
     public ResponseEntity<Message> showCategories(){

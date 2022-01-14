@@ -17,6 +17,7 @@ import tp.farming_springboot.domain.product.repository.CategoryRepository;
 import tp.farming_springboot.domain.product.repository.FileRepository;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
 import tp.farming_springboot.domain.user.model.User;
+import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.PhotoFileException;
 import tp.farming_springboot.exception.UserNotAuthorizedException;
@@ -37,6 +38,7 @@ public class ProductService {
     private final FileRepository fileRepository;
     private final UserService userService;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
 
     public List<ProductDetailResDto> findProductByPagination(Pageable pageRequest) {
@@ -81,7 +83,7 @@ public class ProductService {
 
     @Transactional(rollbackOn = {Exception.class})
     public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException, ParseException, IOException {
-        User user = userService.findUserByPhone(userPhone);
+        User user = userRepository.findByPhoneElseThrow(userPhone);
         Category category = categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName());
 
         Product product = Product.of(
@@ -112,7 +114,7 @@ public class ProductService {
 
     @Transactional(rollbackOn = {Exception.class})
     public void delete(String userPhone, Long id) throws UserNotAuthorizedException {
-        User user = userService.findUserByPhone(userPhone);
+        User user = userRepository.findByPhoneElseThrow(userPhone);
         Product product = productRepository.findByIdOrElseThrow(id);
 
         if(!isUserAuthor(user, product)) {
@@ -129,7 +131,7 @@ public class ProductService {
                        MultipartFile ReceiptFile,
                        List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException, ParseException, IOException {
 
-        User user = userService.findUserByPhone(userPhone);
+        User user = userRepository.findByPhoneElseThrow(userPhone);
         Product prod = productRepository.findByIdOrElseThrow(id);
 
         if(!isUserAuthor(user, prod))
@@ -177,7 +179,7 @@ public class ProductService {
 
 
     public void changeStatusOfProduct(String userPhone, Long productId, ProductStatusDto productStatus) throws UserNotAuthorizedException {
-        User user = userService.findUserByPhone(userPhone);
+        User user = userRepository.findByPhoneElseThrow(userPhone);
         Product product = productRepository.findByIdOrElseThrow(productId);
 
         if(!isUserAuthor(user, product)) {

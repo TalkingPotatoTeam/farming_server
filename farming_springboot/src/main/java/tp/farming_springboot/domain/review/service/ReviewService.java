@@ -9,6 +9,7 @@ import tp.farming_springboot.domain.review.model.ReviewChoice;
 import tp.farming_springboot.domain.review.repository.ReviewChoiceRepository;
 import tp.farming_springboot.domain.review.repository.ReviewRepository;
 import tp.farming_springboot.domain.user.model.User;
+import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.RestNullPointerException;
 import tp.farming_springboot.exception.UserNotAuthorizedException;
@@ -19,13 +20,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReviewService {
 
-    private final UserService userService;
     private final ReviewRepository reviewRepository;
     private final ReviewChoiceRepository reviewChoiceRepository;
+    private final UserRepository userRepository;
 
     public void create(String userPhone, Long revieweeId, ReviewCreateDto reviewDto) throws UserNotAuthorizedException {
-        User reviewer = userService.findUserByPhone(userPhone);
-        User reviewee = userService.findUserById(revieweeId);
+        User reviewer = userRepository.findByPhoneElseThrow(userPhone);
+        User reviewee = userRepository.findByIdElseThrow(revieweeId);
 
         if(reviewer.getId() == reviewee.getId()) {
             throw new UserNotAuthorizedException("Can't review your self.");

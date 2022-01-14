@@ -11,9 +11,9 @@ import tp.farming_springboot.domain.user.model.Address;
 public class UserResDto {
     private Long id;
     private String phone;
-    private Address currentAddress;
+    private String currentAddress;
 
-    public static UserResDto of(Long id, String phone, Address currentAddress) {
+    public static UserResDto of(Long id, String phone, String currentAddress) {
         return new UserResDto(id, phone, currentAddress);
     }
 }

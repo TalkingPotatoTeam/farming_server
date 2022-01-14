@@ -9,18 +9,19 @@ import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
 import tp.farming_springboot.domain.user.dto.LikeUserResDto;
 import tp.farming_springboot.domain.user.model.User;
-import tp.farming_springboot.domain.user.service.UserService;
+import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.exception.UserAlreadyLikeProductException;
 import tp.farming_springboot.exception.UserNotLikeProductException;
 
 @Service
 @RequiredArgsConstructor
 public class LikeService {
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
     public void create(String userPhone, Long productId) throws UserAlreadyLikeProductException {
-        User user = userService.findUserByPhone(userPhone);
+        User user = userRepository.findByPhoneElseThrow(userPhone);
+
         Product product = productRepository.findByIdOrElseThrow(productId);
 
         if(product.getLikeUsers().contains(user)){
@@ -33,7 +34,7 @@ public class LikeService {
     }
 
     public void delete(String userPhone, Long productId) throws UserNotLikeProductException {
-        User user = userService.findUserByPhone(userPhone);
+        User user = userRepository.findByPhoneElseThrow(userPhone);
         Product product = productRepository.findByIdOrElseThrow(productId);
 
         if(product.getLikeUsers().contains(user)){
@@ -55,7 +56,7 @@ public class LikeService {
     }
 
     public Set<ProductDetailResDto> getLikelistByUser(Long userId) {
-        User user = userService.findUserById(userId);
+        User user = userRepository.findByIdElseThrow(userId);
 
         Set<ProductDetailResDto> productResponseDtos = new HashSet<>();
 

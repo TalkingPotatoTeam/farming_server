@@ -3,17 +3,23 @@ package tp.farming_springboot.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tp.farming_springboot.config.JwtUtils;
+import tp.farming_springboot.domain.user.dto.TokenDto;
+import tp.farming_springboot.domain.user.dto.UserForceCreateDto;
+import tp.farming_springboot.domain.user.dto.UserResDto;
 import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.AddressRepository;
 import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.exception.AddressRemoveException;
-import tp.farming_springboot.exception.RestNullPointerException;
 import tp.farming_springboot.exception.UserExistsException;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,32 +30,24 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     private final AddressRepository addressRepository;
+    private final JwtUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
 
-
-    public boolean checkUserExists(String phone){
+    public boolean checkUserExists(String phone) {
         Optional<User> user = userRepository.findByPhone(phone);
-        if(user.isPresent())return true;
+        if (user.isPresent()) return true;
         return false;
     }
 
-    public User findUserById(Long id) {
-        return userRepository.findByIdElseThrow(id);
-    }
 
-    public User findUserByPhone(String phone) {
-        return userRepository.findByPhoneElseThrow(phone);
-    }
-
-    //create
-    public void create(String userPhone)throws UserExistsException {
+    public void create(String userPhone) throws UserExistsException {
         Optional<User> user = userRepository.findByPhone(userPhone);
         if (user.isPresent()) throw new UserExistsException("User already exists");
-        User newUser = new User(userPhone);
-        newUser.setPassword(encoder.encode(userPhone));
+        User newUser = new User(userPhone, encoder.encode(userPhone));
         userRepository.save(newUser);
     }
-    //update Phone num
-    public void updatePhone(String userPhone, String newPhone)throws UserExistsException{
+
+    public void updatePhone(String userPhone, String newPhone) throws UserExistsException {
         Optional<User> user = userRepository.findByPhone(userPhone);
         Optional<User> newUser = userRepository.findByPhone(newPhone);
         if (newUser.isPresent()) throw new UserExistsException("This phone number is already taken");
@@ -57,56 +55,82 @@ public class UserService {
         userRepository.save(user.get());
     }
 
-    //delete
-    public void delete(String userPhone){
+    public void delete(String userPhone) {
         Optional<User> user = userRepository.findByPhone(userPhone);
         userRepository.deleteById(user.get().getId());
     }
-    //add address
-    public void addAddress(String userPhone, Address address){
+
+    public void addAddress(String userPhone, Address address) {
         Optional<User> user = userRepository.findByPhone(userPhone);
         List<Address> addresses = new ArrayList<>();
-        if (user.get().getAddresses() != null){
+        if (user.get().getAddresses() != null) {
             addresses = user.get().getAddresses();
         }
 
         boolean isExisted = false;
-        for(Address ad  : addresses) {
-            if((ad.getContent()).equals(address.getContent())) {
+        for (Address ad : addresses) {
+            if ((ad.getContent()).equals(address.getContent())) {
                 isExisted = true;
                 break;
             }
         }
 
-        if(isExisted) {
+        if (isExisted) {
             throw new IllegalArgumentException("User already have this address: " + address.getContent());
-        }else {
+        } else {
             addresses.add(address);
             user.get().setAddresses(addresses);
             setCurrentAddress(userPhone, address.getId());
             userRepository.save(user.get());
         }
     }
-    //delete address
-    public void deleteAddress(String userPhone, Long addressId) throws AddressRemoveException{
+
+    public void deleteAddress(String userPhone, Long addressId) throws AddressRemoveException {
         Optional<User> user = userRepository.findByPhone(userPhone);
         List<Address> addresses = user.get().getAddresses();
         Optional<Address> toDelete = addressRepository.findById(addressId);
 
-        if(!toDelete.isPresent() || !addresses.contains(toDelete.get())) throw new AddressRemoveException("Address does not exist. Check address Id.");
-        if (user.get().getCurrent().getId() == addressId)throw new AddressRemoveException("Current address can not be deleted. Change Address First.");
-        if(addresses.size() == 1)throw new AddressRemoveException("User should have at least one address");
+        if (!toDelete.isPresent() || !addresses.contains(toDelete.get()))
+            throw new AddressRemoveException("Address does not exist. Check address Id.");
+        if (user.get().getCurrent().getId() == addressId)
+            throw new AddressRemoveException("Current address can not be deleted. Change Address First.");
+        if (addresses.size() == 1) throw new AddressRemoveException("User should have at least one address");
 
         user.get().deleteAddress(toDelete.get());
         userRepository.save(user.get());
     }
 
-    //set current address
-    public void setCurrentAddress(String userPhone, Long addressId){
+    public void setCurrentAddress(String userPhone, Long addressId) {
         Optional<User> user = userRepository.findByPhone(userPhone);
         Optional<Address> toCurrent = addressRepository.findById(addressId);
         user.get().setCurrent(toCurrent.get());
         userRepository.save(user.get());
     }
 
+    @Transactional(rollbackOn = Exception.class)
+    public TokenDto createUserForce(UserForceCreateDto userDto) {
+        User user = new User(userDto.getPhone(), encoder.encode(userDto.getPhone()));
+        Address address = Address.of(user.getId(), userDto.getAddress(), 32.7, 32.8);
+
+        user.addAddress(address);
+        user.setCurrent(address);
+        userRepository.save(user);
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getPhone(), user.getPhone()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String access = jwtUtils.generateJwtToken(authentication);
+
+        TokenDto tokenDto = new TokenDto(access, null);
+        return tokenDto;
+    }
+
+    public UserResDto getUserInfo(String userPhone) {
+        System.out.println("테스트용123");
+        User user = userRepository.findByPhoneElseThrow(userPhone);
+        System.out.println("테스트용");
+        return UserResDto.of(user.getId(), user.getPhone(), user.getCurrent().getContent());
+    }
 }
+
+
