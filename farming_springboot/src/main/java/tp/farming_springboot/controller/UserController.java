@@ -17,6 +17,7 @@ import tp.farming_springboot.config.JwtUtils;
 import tp.farming_springboot.domain.user.dto.AddressDto;
 import tp.farming_springboot.domain.user.dto.UserCreateDto;
 import tp.farming_springboot.domain.user.dto.UserDto;
+import tp.farming_springboot.domain.user.dto.UserResDto;
 import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.AddressRepository;
@@ -47,14 +48,8 @@ public class UserController {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder encoder;
-    private final OtpService otpService;
-    private final AuthenticateService authenticateService;
 
-    public HttpHeaders HttpHeaderSetting(){
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        return headers;
-    }
+
 
     //delete User
     @DeleteMapping("")
@@ -119,14 +114,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Message> getUser(Authentication authentication){
         Optional<User> user = userRepository.findByPhone(authentication.getName());
-        List<JSONObject> entities = new ArrayList<JSONObject>();
-        JSONObject entity = new JSONObject();
-        entity.put("Id", user.get().getId().toString());
-        entity.put("Phone", user.get().getPhone());
-        entity.put("Current Address", user.get().getCurrent());
-        entity.put("All Addresses", user.get().getAddresses());
-        entities.add(entity);
-        Message message = new Message(StatusEnum.OK, "User", entities);
+
+        UserResDto userResDto = UserResDto.of(user.get().getId(), user.get().getPhone(), user.get().getCurrent());
+
+        Message message = new Message(StatusEnum.OK, "User", userResDto);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
@@ -141,7 +132,7 @@ public class UserController {
     }
 
     @PostMapping("/sudo") //테스트할때 문자인증 없이 회원가입용
-    public ResponseEntity<?> createUser(@RequestBody UserDto user){
+    public ResponseEntity<?> createUserForce(@RequestBody UserDto user){
         User newUser = new User(user.getPhone());
         //번호로 비밀번호 생성
         newUser.setPassword(encoder.encode(newUser.getPhone()));
@@ -154,14 +145,26 @@ public class UserController {
         //유저 롤 추가
         newUser.setCurrent(newAddress);
         userRepository.save(newUser);
+
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(newUser.getPhone(), newUser.getPhone()));
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String access = jwtUtils.generateJwtToken(authentication);
+
+
+
+
         JSONObject entity = new JSONObject();
         entity.put("access", access);
         return new ResponseEntity<Object>(entity, HttpStatus.OK);
+    }
+
+
+    public HttpHeaders HttpHeaderSetting(){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+        return headers;
     }
 
 }

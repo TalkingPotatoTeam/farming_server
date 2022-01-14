@@ -7,10 +7,23 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
-//기본적인 Create, Read, Update, Delete가 자동으로 생성됩니다!
+
     Optional<User> findByPhone(String phone);
-    //@Transactional
-    //public UserDetails loadUserByUsername(String username) ;
-    Boolean existsByPhone(String phone);
+
+
+    default User findByPhoneElseThrow(String phone) {
+        return findByPhone(phone).orElseThrow(
+                () -> new NullPointerException("사용자를 찾을 수 없어요.")
+        );
+    }
+
+
+    Optional<User> findById(Long id);
+
+    default User findByIdElseThrow(Long id) {
+        return this.findById(id).orElseThrow(
+                () -> new NullPointerException("사용자를 찾을 수 없어요.")
+        );
+    }
 
 }

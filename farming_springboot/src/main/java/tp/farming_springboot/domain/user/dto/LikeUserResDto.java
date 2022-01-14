@@ -1,21 +1,19 @@
 package tp.farming_springboot.domain.user.dto;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import tp.farming_springboot.domain.user.model.Address;
 import tp.farming_springboot.domain.user.model.User;
 
 
 @Data
-@Getter
-@Setter
-public class UserResponseDto {
+@AllArgsConstructor
+@NoArgsConstructor
+public class LikeUserResDto {
     private Long id;
     private Address currentAddress;
 
-    public static UserResponseDto from(User user) {
-        UserResponseDto userResponseDto = new UserResponseDto();
+    public static LikeUserResDto from(User user) {
+        LikeUserResDto userResponseDto = new LikeUserResDto();
         userResponseDto.id = user.getId();
         userResponseDto.currentAddress = user.getCurrent();
 

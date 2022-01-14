@@ -24,24 +24,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     private final AddressRepository addressRepository;
-    private final JwtUtils jwtUtils;
-    private final AuthenticationManager authenticationManager;
-    private final OtpService otpService;
+
 
     public boolean checkUserExists(String phone){
         Optional<User> user = userRepository.findByPhone(phone);
         if(user.isPresent())return true;
         return false;
     }
-    //check if user does not exist
+
     public User findUserById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RestNullPointerException("Can't find User {id:" + id + "}"));
-        return user;
+        return userRepository.findByIdElseThrow(id);
     }
 
     public User findUserByPhone(String phone) {
-        User user = userRepository.findByPhone(phone).orElseThrow(() -> new RestNullPointerException("Can't find User {phone:" + phone + "}"));
-        return user;
+        return userRepository.findByPhoneElseThrow(phone);
     }
 
     //create

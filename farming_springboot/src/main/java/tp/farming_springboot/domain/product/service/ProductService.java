@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
 import tp.farming_springboot.domain.product.dto.ProductFilterDto;
-import tp.farming_springboot.domain.product.dto.ProductResponseDto;
+import tp.farming_springboot.domain.product.dto.ProductDetailResDto;
 import tp.farming_springboot.domain.product.dto.ProductStatusDto;
 import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.product.model.PhotoFile;
@@ -39,44 +39,44 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
 
 
-    public List<ProductResponseDto> findProductByPagination(Pageable pageRequest) {
+    public List<ProductDetailResDto> findProductByPagination(Pageable pageRequest) {
         Page<Product> productList = productRepository.findAll(pageRequest);
 
-        List<ProductResponseDto> productResponseDtos = productList.stream().map(
-                product -> ProductResponseDto.from(product)
+        List<ProductDetailResDto> productResponseDtos = productList.stream().map(
+                product -> ProductDetailResDto.from(product)
         ).collect(Collectors.toList());
 
         return productResponseDtos;
     }
 
-    public List<ProductResponseDto> searchByKeywordAndFilter(String keyword, ProductFilterDto productFilterDto, Pageable pageRequest){
+    public List<ProductDetailResDto> searchByKeywordAndFilter(String keyword, ProductFilterDto productFilterDto, Pageable pageRequest){
         List<Category> categoryList = categoryRepository.findByNameIn(productFilterDto.getCategoryNameList());
         Page<Product> productList = productRepository.findByKeywordInCategoryList(keyword, categoryList, pageRequest);
-        return productList.stream().map(product -> ProductResponseDto.from(product)).collect(Collectors.toList());
+        return productList.stream().map(product -> ProductDetailResDto.from(product)).collect(Collectors.toList());
     }
 
-    public List<ProductResponseDto> searchByCategory(String categoryName, Pageable pageRequest) {
+    public List<ProductDetailResDto> searchByCategory(String categoryName, Pageable pageRequest) {
         Category category = categoryRepository.findByNameOrElseThrow(categoryName);
         Page<Product> productList = productRepository.findByCategory(category, pageRequest);
 
-        List<ProductResponseDto> productResponseDtos = productList.stream().map(
-                product -> ProductResponseDto.from(product)
+        List<ProductDetailResDto> productResponseDtos = productList.stream().map(
+                product -> ProductDetailResDto.from(product)
         ).collect(Collectors.toList());
 
         return productResponseDtos;
     }
 
-    public List<ProductResponseDto> findByUserId(Long userId) {
+    public List<ProductDetailResDto> findByUserId(Long userId) {
         List<Product> productList = productRepository.findByUserId(userId);
 
         return productList.stream().map(
-                product -> ProductResponseDto.from(product)
+                product -> ProductDetailResDto.from(product)
         ).collect(Collectors.toList());
     }
 
-    public ProductResponseDto findById(Long id) {
+    public ProductDetailResDto findById(Long id) {
         Product product = productRepository.findByIdOrElseThrow(id);
-        return ProductResponseDto.from(product);
+        return ProductDetailResDto.from(product);
     }
 
     @Transactional(rollbackOn = {Exception.class})

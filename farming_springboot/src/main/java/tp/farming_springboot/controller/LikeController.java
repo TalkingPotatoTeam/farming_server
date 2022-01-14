@@ -8,9 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import tp.farming_springboot.domain.product.dto.ProductResponseDto;
+import tp.farming_springboot.domain.product.dto.ProductDetailResDto;
 import tp.farming_springboot.domain.product.service.LikeService;
-import tp.farming_springboot.domain.user.dto.UserResponseDto;
+import tp.farming_springboot.domain.user.dto.LikeUserResDto;
 import tp.farming_springboot.exception.UserAlreadyLikeProductException;
 import tp.farming_springboot.exception.UserNotLikeProductException;
 import tp.farming_springboot.response.Message;
@@ -44,7 +44,7 @@ public class LikeController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{productId}")
     public ResponseEntity<Message> getLikeUserList(@PathVariable Long productId) {
-        Set<UserResponseDto> userSet = likeService.getLikeUserSet(productId);
+        Set<LikeUserResDto> userSet = likeService.getLikeUserSet(productId);
         Message message = new Message(StatusEnum.OK, "", userSet);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
@@ -52,7 +52,7 @@ public class LikeController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/product/{userId}")
     public ResponseEntity<Message> getLikelistByUser(@PathVariable Long userId) {
-        Set<ProductResponseDto> productSet = likeService.getLikelistByUser(userId);
+        Set<ProductDetailResDto> productSet = likeService.getLikelistByUser(userId);
         Message message = new Message(StatusEnum.OK, "", productSet);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }

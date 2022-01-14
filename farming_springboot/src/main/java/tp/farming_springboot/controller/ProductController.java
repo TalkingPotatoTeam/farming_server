@@ -1,13 +1,10 @@
 package tp.farming_springboot.controller;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -20,25 +17,19 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.dto.ProductCreateDto;
 import tp.farming_springboot.domain.product.dto.ProductFilterDto;
-import tp.farming_springboot.domain.product.dto.ProductResponseDto;
+import tp.farming_springboot.domain.product.dto.ProductDetailResDto;
 import tp.farming_springboot.domain.product.dto.ProductStatusDto;
-import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
 import tp.farming_springboot.domain.product.service.ProductService;
-import tp.farming_springboot.domain.user.model.User;
-import tp.farming_springboot.domain.product.repository.ProductRepository;
-import tp.farming_springboot.domain.user.service.UserService;
 import tp.farming_springboot.exception.PhotoFileException;
 import tp.farming_springboot.exception.UserNotAuthorizedException;
 import tp.farming_springboot.response.Message;
 import tp.farming_springboot.response.StatusEnum;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @RestController
@@ -50,8 +41,8 @@ public class ProductController {
     private final CategoryRepository categoryRepository;
 
     @GetMapping("/home")
-    public List<ProductResponseDto> home(@PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
-        List<ProductResponseDto> productResponseDto = productService.findProductByPagination(pageRequest);
+    public List<ProductDetailResDto> home(@PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
+        List<ProductDetailResDto> productResponseDto = productService.findProductByPagination(pageRequest);
         return productResponseDto;
     }
 
@@ -62,7 +53,7 @@ public class ProductController {
     // 카테고리 눌렀을 때 해당 카테고리 다 나오게
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public List<ProductResponseDto> searchByKeywordWithFilter(
+    public List<ProductDetailResDto> searchByKeywordWithFilter(
             @RequestParam(required = false) String keyword,
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest,
             @RequestBody(required = false) ProductFilterDto productFilterDto) {
@@ -73,17 +64,17 @@ public class ProductController {
         if(keyword == null)
             keyword = "";
 
-        List<ProductResponseDto> productResponseDto = productService.searchByKeywordAndFilter(keyword, productFilterDto ,pageRequest);
+        List<ProductDetailResDto> productResponseDto = productService.searchByKeywordAndFilter(keyword, productFilterDto ,pageRequest);
         return productResponseDto;
     }
 
     @GetMapping("/search/category")
     @ResponseStatus(HttpStatus.OK)
-    public List<ProductResponseDto> searchByCategory(
+    public List<ProductDetailResDto> searchByCategory(
             @RequestParam String category,
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest) {
 
-        List<ProductResponseDto> productResponseDtos = productService.searchByCategory(category, pageRequest);
+        List<ProductDetailResDto> productResponseDtos = productService.searchByCategory(category, pageRequest);
         return productResponseDtos;
     }
 
@@ -105,14 +96,14 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Message> findByProductId(@PathVariable Long id) {
-        ProductResponseDto prod = productService.findById(id);
+        ProductDetailResDto prod = productService.findById(id);
         Message message = new Message(StatusEnum.OK, "Finding with product id is Success.", prod);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
     @GetMapping("/user/{id}")
     public ResponseEntity<Message> findByUserId(@PathVariable Long id) {
-        List<ProductResponseDto> prodList = productService.findByUserId(id);
+        List<ProductDetailResDto> prodList = productService.findByUserId(id);
         Message message = new Message(StatusEnum.OK,"Finding with user id is Success.", prodList );
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
