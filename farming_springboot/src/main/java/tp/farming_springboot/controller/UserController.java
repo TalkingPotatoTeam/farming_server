@@ -35,7 +35,9 @@ public class UserController {
 
     @DeleteMapping
     public String delete(Authentication authentication){
+        System.out.println("userPhone = " + authentication.getName());
         userService.delete( authentication.getName());
+
         return "user deleted.";
     }
 
@@ -67,6 +69,7 @@ public class UserController {
     @DeleteMapping("/address/{id}") //주소 삭제
     public ResponseEntity<Message> deleteAddress(Authentication authentication, @PathVariable Long id ) throws AddressRemoveException {
         String userPhone = authentication.getName();
+
         userService.deleteAddress(userPhone, id);
         addressService.delete(id);
         return new ResponseEntity<>(new Message(StatusEnum.OK,"Address deleted" ), HttpHeaderSetting(), HttpStatus.OK);
