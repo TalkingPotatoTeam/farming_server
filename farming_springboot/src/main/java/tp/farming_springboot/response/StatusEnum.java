@@ -1,6 +1,8 @@
 package tp.farming_springboot.response;
 
+import lombok.Getter;
 
+@Getter
 public enum StatusEnum {
 
     OK(200, "OK"),
@@ -8,6 +10,10 @@ public enum StatusEnum {
     PARAMETER_LACKED(4001, "PARAMETER_LACKED"),
 
     UNAUTHORIZED(401, "UNAUTHORIZED"),
+    TOKEN_NOT_VALID(4011, "유효하지 않은 토큰입니다."),
+    TOKEN_EXPIRED(4012, "토큰 유효시간이 만료되었습니다."),
+
+
     UNMATCH(402, "UNMATCH"),
     NOT_FOUND(404, "NOT_FOUND"),
 

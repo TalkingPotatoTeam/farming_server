@@ -1,24 +1,16 @@
 package tp.farming_springboot.controller;
 
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import net.nurigo.java_sdk.exceptions.CoolsmsException;
-import org.json.simple.JSONObject;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import tp.farming_springboot.config.JwtUtils;
+import tp.farming_springboot.domain.user.dto.TokenDto;
 import tp.farming_springboot.domain.user.dto.UserAuthenDto;
 import tp.farming_springboot.domain.user.dto.UserCreateDto;
-import tp.farming_springboot.domain.user.model.User;
-import tp.farming_springboot.domain.user.repository.UserRepository;
 import tp.farming_springboot.domain.user.service.AuthenticateService;
 import tp.farming_springboot.domain.user.service.OtpService;
 import tp.farming_springboot.domain.user.service.SmsService;
@@ -27,16 +19,14 @@ import tp.farming_springboot.exception.UserExistsException;
 import tp.farming_springboot.exception.VerificationException;
 import tp.farming_springboot.response.StatusEnum;
 import tp.farming_springboot.response.Message;
-import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.Charset;
-import java.util.*;
+
 @CrossOrigin
 @RestController
 @EnableAutoConfiguration
 @RequiredArgsConstructor
 @RequestMapping(value = "/auth")
 public class AuthenticateController {
-
     private final OtpService otpService;
     private final SmsService smsService;
     private final AuthenticateService authenticateService;
@@ -51,18 +41,12 @@ public class AuthenticateController {
     //renew tokens for free
     @GetMapping("/tokens")
     public ResponseEntity<?> temp(@RequestBody UserAuthenDto logger){
-        List<JSONObject> entities = authenticateService.getNewTokens(logger.getPhone());
-        Message message = new Message(StatusEnum.OK,"",entities);
+        TokenDto tokenDto = authenticateService.getNewTokens(logger.getPhone());
+        Message message = new Message(StatusEnum.OK,"Generating token success.", tokenDto);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
     //renew tokens
-    @GetMapping("/renew-tokens")
-    public ResponseEntity<?> renew(@RequestBody UserAuthenDto logger){
-        List<JSONObject> entities = authenticateService.getNewTokens(logger.getPhone());
-        Message message = new Message(StatusEnum.OK,"",entities);
-        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
-    }
 
     //send otp number to user
     @PostMapping("/request-otp")
@@ -96,8 +80,8 @@ public class AuthenticateController {
         }
 
         //return tokens
-        List<JSONObject> entities = authenticateService.getNewTokens(phone);
-        Message message = new Message(StatusEnum.OK, result, entities);
+        TokenDto tokenDto = authenticateService.getNewTokens(phone);
+        Message message = new Message(StatusEnum.OK, result, tokenDto);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
