@@ -11,12 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,7 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import tp.farming_springboot.domain.user.repository.UserRepository;
+import tp.farming_springboot.domain.user.service.UserService;
 
 public class AuthTokenFilter extends OncePerRequestFilter {
 
@@ -33,7 +30,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private UserService userService;
 
     @Autowired
     private JwtAuthEntryPoint jwtAuthEntryPoint;
@@ -53,7 +50,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     ));
 
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -63,12 +59,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             if (jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-                Authentication authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                jwtUtils.createAuthentication(username);
                 filterChain.doFilter(request, response);
             }
             else {
@@ -76,31 +67,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             }
         }
         catch (ExpiredJwtException ex) {
-            System.out.println("Expired Exception caught!");
-            String refresh = request.getHeader("Refresh");
-            String requestURL = request.getRequestURL().toString();
-            // allow for Refresh Token creation if following conditions are true.
-            try{
-            if(refresh == null) throw new BadCredentialsException("JWT EXPIRED. TRY WITH REFRESH TOKEN");
-            //try {
-                if (jwtUtils.validateJwtRefresh(refresh)) {
-                    allowForRefreshToken(ex, request);
-                    //근데 요청을 보낼때마다 리프레시토큰 보내는건 이상함
-                    String username = jwtUtils.getUserNameFromJwtRefreshToken(refresh);
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    Authentication authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername());
+            // 토큰 만료 오류를 내보내고, 클라이언트에서 재요청을 통한 access token 갱신 절차 진행
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    filterChain.doFilter(request, response);
-                } else
-                    request.setAttribute("exception", ex);
-            }catch(AuthenticationException e){
-                System.out.println("Refresh token exception caught");
-                request.setAttribute("exception",e);
-                SecurityContextHolder.clearContext();
-                jwtAuthEntryPoint.commence(request, response, e);
-            }
         } catch(AuthenticationException authenticationException) {
             request.setAttribute("exception",authenticationException);
             SecurityContextHolder.clearContext();

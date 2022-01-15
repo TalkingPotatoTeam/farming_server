@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import tp.farming_springboot.config.JwtUtils;
+import tp.farming_springboot.domain.user.dto.TokenDto;
 import tp.farming_springboot.exception.VerificationException;
 
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import java.util.List;
 @Service
 public class AuthenticateService {
 
-    private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
 
     public void verifyOtp(int userOtp, int serverOtp) throws VerificationException{
@@ -32,28 +32,15 @@ public class AuthenticateService {
         else throw new VerificationException("Contact Admin");
     }
 
-    public List<JSONObject> getNewTokens(String userPhone){
-        List<JSONObject> entities = new ArrayList<JSONObject>();
-        JSONObject entity = new JSONObject();
-        entity.put("access", accessToken(userPhone));
-        entity.put("refresh", refreshToken(userPhone));
-        entities.add(entity);
-        return entities;
+    public TokenDto getNewTokens(String userPhone){
+        return TokenDto.of(accessToken(userPhone), refreshToken(userPhone));
     }
 
     public String accessToken(String userPhone){
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userPhone, userPhone));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String access = jwtUtils.generateJwtToken(authentication);
-        return access;
+        return jwtUtils.generateJwtToken(userPhone);
     }
     public String refreshToken(String userPhone){
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userPhone, userPhone));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String refresh = jwtUtils.generateJwtRefreshToken(authentication);
-        return refresh;
+        return jwtUtils.generateJwtRefreshToken(userPhone);
     }
 
 }

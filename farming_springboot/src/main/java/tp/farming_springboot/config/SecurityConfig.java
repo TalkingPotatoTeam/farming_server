@@ -1,10 +1,8 @@
 package tp.farming_springboot.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
@@ -25,6 +23,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import tp.farming_springboot.domain.user.service.UserService;
 
 import java.util.List;
 
@@ -32,16 +31,10 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableWebSocketMessageBroker
-@EnableGlobalMethodSecurity(
-        // securedEnabled = true,
-        // jsr250Enabled = true,
-        prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebSocketMessageBrokerConfigurer {
 
-
-    private final UserDetailsServiceImpl userDetailsService;
+    private final UserService userService;
     private final JwtAuthEntryPoint unauthorizedHandler;
-
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -50,7 +43,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebS
 
     @Override
     public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+        authenticationManagerBuilder.userDetailsService(userService);
     }
 
     @Bean
@@ -59,10 +52,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebS
         return super.authenticationManagerBean();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

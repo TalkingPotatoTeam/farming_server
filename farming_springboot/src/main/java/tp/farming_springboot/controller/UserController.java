@@ -37,10 +37,8 @@ public class UserController {
     public String delete(Authentication authentication){
         System.out.println("userPhone = " + authentication.getName());
         userService.delete( authentication.getName());
-
         return "user deleted.";
     }
-
 
     @GetMapping("/address") //내 주소들 보기
     public ResponseEntity<Message> getAddress(Authentication authentication){

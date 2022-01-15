@@ -27,8 +27,8 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 100, nullable = true)
-    private String password;
+//    @Column(length = 100, nullable = true)
+//    private String password;
 
     @Column(length=15, nullable=false)
     private String phone;
@@ -43,9 +43,8 @@ public class User implements UserDetails {
     @ManyToMany(mappedBy = "likeUsers")
     private Set<Product> likeProducts = new HashSet<>();
 
-    public User(String phone, String password){//생성자
+    public User(String phone){//생성자
         this.phone=phone;
-        this.password=password;
     }
 
     public void addAddress(Address address) {
@@ -66,7 +65,7 @@ public class User implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return null;
     }
 
     @Override

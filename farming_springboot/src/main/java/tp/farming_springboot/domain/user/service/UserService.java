@@ -6,6 +6,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tp.farming_springboot.config.JwtUtils;
@@ -26,12 +29,10 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-    private final PasswordEncoder encoder;
     private final AddressRepository addressRepository;
     private final JwtUtils jwtUtils;
-    private final AuthenticationManager authenticationManager;
 
     public boolean checkUserExists(String phone) {
         Optional<User> user = userRepository.findByPhone(phone);
@@ -43,7 +44,7 @@ public class UserService {
     public void create(String userPhone) throws UserExistsException {
         Optional<User> user = userRepository.findByPhone(userPhone);
         if (user.isPresent()) throw new UserExistsException("User already exists");
-        User newUser = new User(userPhone, encoder.encode(userPhone));
+        User newUser = new User(userPhone);
         userRepository.save(newUser);
     }
 
@@ -109,17 +110,14 @@ public class UserService {
 
     @Transactional(rollbackOn = Exception.class)
     public TokenDto createUserForce(UserForceCreateDto userDto) {
-        User user = new User(userDto.getPhone(), encoder.encode(userDto.getPhone()));
+        User user = new User(userDto.getPhone());
         Address address = Address.of(user.getId(), userDto.getAddress(), 32.7, 32.8);
 
         user.addAddress(address);
         user.setCurrent(address);
         userRepository.save(user);
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getPhone(), user.getPhone()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String access = jwtUtils.generateJwtToken(authentication);
+        String access = jwtUtils.generateJwtToken(user.getUsername());
 
         TokenDto tokenDto = new TokenDto(access, null);
         return tokenDto;
@@ -131,6 +129,16 @@ public class UserService {
         System.out.println("테스트용");
         return UserResDto.of(user.getId(), user.getPhone(), user.getCurrent().getContent());
     }
+
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByPhone(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with phone num: " + username));
+
+        return user;
+    }
+
 }
 
 

@@ -1,24 +1,25 @@
 package tp.farming_springboot.config;
-
-
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
-import java.util.Map;
-
 import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.*;
+import tp.farming_springboot.domain.user.repository.UserRepository;
 
-//토큰을 생성하고 검증하는 컴포넌트 실제로 이 컴포넌트를 이용하는 것은 인증 작업을 진행하는 Filter 입니다.
 @Component
+@RequiredArgsConstructor
 public class JwtUtils {
+    private final UserRepository userRepository;
+
 
     @Value("${jwtSecret}")
     private String jwtSecret;
@@ -32,16 +33,16 @@ public class JwtUtils {
     @Value("${jwtRefreshSecret}")
     private String jwtRefreshSecret;
 
-    public String generateJwtToken(Authentication authentication) {
-        return getToken(authentication, jwtSecret, jwtExpirationMs);
+    public String generateJwtToken(String userPhone) {
+        return getToken(userPhone, jwtSecret, jwtExpirationMs);
     }
 
-    public String generateJwtRefreshToken(Authentication authentication) {
-        return getToken(authentication, jwtRefreshSecret, jwtRefreshExpirationMs);
+    public String generateJwtRefreshToken(String userPhone) {
+        return getToken(userPhone, jwtRefreshSecret, jwtRefreshExpirationMs);
     }
 
-    private String getToken(Authentication authentication, String secret, int expiration) {
-        Claims claims = Jwts.claims().setSubject(authentication.getName());
+    private String getToken(String userPhone, String secret, int expiration) {
+        Claims claims = Jwts.claims().setSubject(userPhone);
         Date now = new Date();
         Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
@@ -88,5 +89,11 @@ public class JwtUtils {
             System.out.println("JWT EXPIRED ERROR");
             throw ex;
         }
+    }
+
+
+    public void createAuthentication(String userName) {
+        UserDetails userDetails = userRepository.findByPhoneElseThrow(userName);
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities()));
     }
 }
