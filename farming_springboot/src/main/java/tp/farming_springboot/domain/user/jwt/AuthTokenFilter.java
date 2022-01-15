@@ -1,44 +1,30 @@
-package tp.farming_springboot.config;
+package tp.farming_springboot.domain.user.jwt;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import io.jsonwebtoken.ExpiredJwtException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import tp.farming_springboot.domain.user.service.UserService;
+import tp.farming_springboot.response.StatusEnum;
 
+
+@RequiredArgsConstructor
+@Component
 public class AuthTokenFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
+    private final JwtAuthEntryPoint jwtAuthEntryPoint;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private JwtAuthEntryPoint jwtAuthEntryPoint;
-
-
-    private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
-
-    //exclude 할 url 지정
     private static final List<String> EXCLUDE_URL =
             Collections.unmodifiableList(
                     Arrays.asList(
@@ -52,54 +38,44 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+            throws IOException {
         try {
             String jwt = parseJwt(request);
-            if(jwt == null) throw new BadCredentialsException("TOKEN REQUIRED");
             if (jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
-
                 jwtUtils.createAuthentication(username);
                 filterChain.doFilter(request, response);
             }
-            else {
-                System.out.println("Cannot set the Security Context");
-            }
         }
-        catch (ExpiredJwtException ex) {
-            // 토큰 만료 오류를 내보내고, 클라이언트에서 재요청을 통한 access token 갱신 절차 진행
-
-        } catch(AuthenticationException authenticationException) {
-            request.setAttribute("exception",authenticationException);
+        catch(BadCredentialsException e) {
+            request.setAttribute("exception", StatusEnum.TOKEN_NOT_VALID);
             SecurityContextHolder.clearContext();
-            jwtAuthEntryPoint.commence(request, response, authenticationException);
-
-        } catch (Exception ex) {
-            System.out.println("what");
-            logger.error("user authentication error: {}", ex);
-            System.out.println(ex);
-            throw ex;
+            jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("유효하지 않은 토큰입니다."));
         }
-        //filterChain.doFilter(request, response);
+        catch (ExpiredJwtException e) {
+            request.setAttribute("exception", StatusEnum.TOKEN_EXPIRED);
+            SecurityContextHolder.clearContext();
+            jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("토큰 유효시간이 만료되었습니다."));
+
+        } catch (Exception e) {
+            request.setAttribute("exception", StatusEnum.INTERNAL_SERVER_ERROR);
+            SecurityContextHolder.clearContext();
+            jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("토큰 검증 중 알 수 없는 에러가 발생했습니다."));
+        }
     }
 
     private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
         System.out.println("allowing for refresh tokens");
-        // create a UsernamePasswordAuthenticationToken with null values.
+
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                 null, null, null);
-        // After setting the Authentication in the context, we specify
-        // that the current user is authenticated. So it passes the
-        // Spring Security Configurations successfully.
         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-        // Set the claims so that in controller we will be using it to create
-        // new JWT
         request.setAttribute("claims", ex.getClaims());
 
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         return EXCLUDE_URL.stream().anyMatch(exclude -> exclude.equalsIgnoreCase(request.getServletPath()));
     }
 
@@ -107,8 +83,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         String headerAuth = request.getHeader("Authorization");
 
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7, headerAuth.length());
+            return headerAuth.substring(7);
+        } else {
+            throw new BadCredentialsException("토큰 정보가 헤더에 없습니다.");
         }
-        return null;
+
     }
 }
