@@ -1,0 +1,50 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+ 
+    - name: Make Secret File
+      env:
+        DB_URL: ${{ secrets.DB_URL }}
+        DB_USERNAME:  ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD:  ${{ secrets.DB_PASSWORD }}
+        JWT_SECRET: ${{secrets.JWT_SECRET }}
+        JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET }}
+        SECRET_DIR: src/main/resources
+        FILE_NAME: application-dev.yml
+      run: |
+        echo "DB_URL=$DB_URL" >> $SECRET_DIR/$FILE_NAME
+        echo "DB_USERNAME=$DB_USERNAME" >> $SECRET_DIR/$FILE_NAME
+        echo "DB_PASSWORD=$DB_PASSWORD" >> $SECRET_DIR/$FILE_NAME
+        echo "JWT_SECRET=$JWT_SECRET" >> $SECRET_DIR/$FILE_NAME
+        echo "JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET" >> $SECRET_DIR/$FILE_NAME
+        
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build with Gradle
+      run: ./gradlew bootJar
+      
