@@ -43,4 +43,4 @@ out/
 photo_files
 receipt_photo_files
 
-./src/main/resources/application-dev.properties
+**/application-dev.properties
