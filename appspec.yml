@@ -1,0 +1,12 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/ec2-user/app/farming
+    overwrite: yes
+
+hooks:
+  ApplicationStart:
+    - location: scripts/docker.sh
+      timeout: 120
+      runas: ec2-user
