@@ -35,7 +35,7 @@ public class UserService implements UserDetailsService {
         return false;
     }
 
-
+    @Transactional(rollbackOn = Exception.class)
     public void create(String userPhone) throws UserExistsException {
         Optional<User> user = userRepository.findByPhone(userPhone);
         if (user.isPresent()) throw new UserExistsException("User already exists");
@@ -43,24 +43,27 @@ public class UserService implements UserDetailsService {
         userRepository.save(newUser);
     }
 
+    @Transactional(rollbackOn = Exception.class)
     public void updatePhone(String userPhone, String newPhone) throws UserExistsException {
-        Optional<User> user = userRepository.findByPhone(userPhone);
+        User user = userRepository.findByPhoneElseThrow(userPhone);
         Optional<User> newUser = userRepository.findByPhone(newPhone);
         if (newUser.isPresent()) throw new UserExistsException("This phone number is already taken");
-        user.get().setPhone(newPhone);
-        userRepository.save(user.get());
+        user.updatePhone(newPhone);
+        userRepository.save(user);
     }
 
+    @Transactional(rollbackOn = Exception.class)
     public void delete(String userPhone) {
         Optional<User> user = userRepository.findByPhone(userPhone);
         userRepository.deleteById(user.get().getId());
     }
 
+    @Transactional(rollbackOn = Exception.class)
     public void addAddress(String userPhone, Address address) {
-        Optional<User> user = userRepository.findByPhone(userPhone);
+        User user = userRepository.findByPhoneElseThrow(userPhone);
         List<Address> addresses = new ArrayList<>();
-        if (user.get().getAddresses() != null) {
-            addresses = user.get().getAddresses();
+        if (user.getAddresses() != null) {
+            addresses = user.getAddresses();
         }
 
         boolean isExisted = false;
@@ -75,12 +78,14 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("User already have this address: " + address.getContent());
         } else {
             addresses.add(address);
-            user.get().setAddresses(addresses);
+            user.setAddresses(addresses);
+
             setCurrentAddress(userPhone, address.getId());
-            userRepository.save(user.get());
+            userRepository.save(user);
         }
     }
 
+    @Transactional(rollbackOn = Exception.class)
     public void deleteAddress(String userPhone, Long addressId) throws AddressRemoveException {
         Optional<User> user = userRepository.findByPhone(userPhone);
         List<Address> addresses = user.get().getAddresses();
@@ -96,11 +101,13 @@ public class UserService implements UserDetailsService {
         userRepository.save(user.get());
     }
 
+    @Transactional(rollbackOn = Exception.class)
     public void setCurrentAddress(String userPhone, Long addressId) {
-        Optional<User> user = userRepository.findByPhone(userPhone);
+        User user = userRepository.findByPhoneElseThrow(userPhone);
         Optional<Address> toCurrent = addressRepository.findById(addressId);
-        user.get().setCurrent(toCurrent.get());
-        userRepository.save(user.get());
+
+        user.updateCurrentAddress(toCurrent.get());
+        userRepository.save(user);
     }
 
     @Transactional(rollbackOn = Exception.class)
@@ -109,7 +116,7 @@ public class UserService implements UserDetailsService {
         Address address = Address.of(user.getId(), userDto.getAddress(), 32.7, 32.8);
 
         user.addAddress(address);
-        user.setCurrent(address);
+        user.updateCurrentAddress(address);
         userRepository.save(user);
 
         String access = jwtUtils.generateJwtToken(user.getUsername());
@@ -119,9 +126,7 @@ public class UserService implements UserDetailsService {
     }
 
     public UserResDto getUserInfo(String userPhone) {
-        System.out.println("테스트용123");
         User user = userRepository.findByPhoneElseThrow(userPhone);
-        System.out.println("테스트용");
         return UserResDto.of(user.getId(), user.getPhone(), user.getCurrent().getContent());
     }
 

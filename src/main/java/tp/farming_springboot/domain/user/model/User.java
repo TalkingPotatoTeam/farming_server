@@ -15,9 +15,7 @@ import java.util.*;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Getter
-@Setter
 @Table(name="users",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "phone")
@@ -27,8 +25,6 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @Column(length = 100, nullable = true)
-//    private String password;
 
     @Column(length=15, nullable=false)
     private String phone;
@@ -38,6 +34,7 @@ public class User implements UserDetails {
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name="user_id")
+    @Setter
     private List<Address> addresses = new ArrayList<>(); //여러 주소 가질 수 있음
 
     @ManyToMany(mappedBy = "likeUsers")
@@ -57,6 +54,14 @@ public class User implements UserDetails {
         addresses.remove(address);
     }
 
+    public void updatePhone(String phone) {
+        this.phone = phone;
+    }
+
+
+    public void updateCurrentAddress(Address address) {
+
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
