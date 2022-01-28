@@ -65,3 +65,43 @@ jobs:
 
     - name: push to docker hub
       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/farming-api:latest
+      
+    - name: Make Deploy Dir
+      run: mkdir -p deploy
+
+    - name: Copy appspec yml
+      run: cp appspec.yml ./deploy
+      
+    - name: make excutable
+      run : chmod +x ./scripts/*.sh
+
+    - name : Copy scripts
+      run : cp -r ./scripts ./deploy
+     
+    - name: Make zip
+      run: zip -r ./farming-api.zip ./deploy
+      
+      
+    
+    - name : Check zip file
+      run : ls
+           
+    - name: Aws credential config
+      uses: aws-actions/configure-aws-credentials@v1
+      with: 
+        aws-access-key-id: ${{ secrets.AWS_IAM_ACCESS_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_IAM_ACCESS_KEY }}
+        aws-region: ap-northeast-2
+         
+    - name: Upload S3
+      run: aws s3 cp --region ap-northeast-2 --acl private  ./farming-api.zip s3://hs-deploy-test-buc/
+      
+  
+    - name: Code Deploy
+      run: |
+        aws deploy create-deployment \
+        --application-name test-codedeploy \
+        --deployment-config-name CodeDeployDefault.AllAtOnce \
+        --deployment-group-name deploy-test-group \
+        --s3-location bucket=hs-deploy-test-buc,bundleType=zip,key=deploy-test.zip \
+        --region ap-northeast-2
