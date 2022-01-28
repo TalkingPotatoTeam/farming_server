@@ -1,6 +1,6 @@
 package tp.farming_springboot.domain.chat.service;
+import lombok.RequiredArgsConstructor;
 import org.apache.velocity.exception.ResourceNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -14,13 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ChatMessageService {
-    @Autowired
-    private ChatMessageRepository repository;
-    @Autowired
-    private ChatRoomService chatRoomService;
-    @Autowired
-    private MongoOperations mongoOperations;
+    private final ChatMessageRepository repository;
+    private final ChatRoomService chatRoomService;
+    private final MongoOperations mongoOperations;
 
     public ChatMessage save(ChatMessage chatMessage) {
         chatMessage.setStatus(MessageStatus.RECEIVED);

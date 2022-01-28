@@ -42,3 +42,5 @@ out/
 #file dir
 photo_files
 receipt_photo_files
+
+./src/main/resources/application-dev.properties
