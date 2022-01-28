@@ -24,7 +24,8 @@
 # API 문서
 https://documenter.getpostman.com/view/15247030/Tzm6nGJi
 
-
+# 배포 자동화 전략 아키텍쳐
+![배포자동화 아키텍쳐](https://user-images.githubusercontent.com/33655186/151618758-f448ad8f-4c0e-492a-92a5-c176f7b52b78.png)
 
 # 실행 가이드
 
