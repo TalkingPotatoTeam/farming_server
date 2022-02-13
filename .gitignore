@@ -44,3 +44,4 @@ photo_files
 receipt_photo_files
 
 **/application-dev.properties
+**/application-aws.properties

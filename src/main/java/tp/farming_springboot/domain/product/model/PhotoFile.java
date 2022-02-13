@@ -21,22 +21,24 @@ public class PhotoFile {
     @Column(nullable = false)
     private String origFilename;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="product_id")
     private Product product;
 
-    @Lob
-    private byte[] photoData;
+    private String url;
+    private String hashFilename;
 
-    public PhotoFile(String origFilename,  byte[] photoData) {
+    public PhotoFile(String origFilename, String url, String hashFilename) {
         this.origFilename = origFilename;
-        this.photoData = photoData;
+        this.url = url;
+        this.hashFilename = hashFilename;
     }
 
-    public static PhotoFile of(String origFilename, byte[] photoData) {
+    public static PhotoFile of(String origFilename, String url, String hashFilename) {
         return new PhotoFile(
                 origFilename,
-                photoData
+                url,
+                hashFilename
         );
     }
 

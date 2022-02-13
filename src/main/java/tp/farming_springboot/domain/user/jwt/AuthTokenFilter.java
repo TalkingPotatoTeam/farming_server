@@ -5,10 +5,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +22,7 @@ import tp.farming_springboot.response.StatusEnum;
 
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
@@ -38,13 +41,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws IOException {
+            throws IOException, ServletException {
         try {
             String jwt = parseJwt(request);
             if (jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 jwtUtils.createAuthentication(username);
-                filterChain.doFilter(request, response);
             }
         }
         catch(BadCredentialsException e) {
@@ -62,6 +64,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
             jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("토큰 검증 중 알 수 없는 에러가 발생했습니다."));
         }
+        filterChain.doFilter(request, response);
     }
 
     private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {

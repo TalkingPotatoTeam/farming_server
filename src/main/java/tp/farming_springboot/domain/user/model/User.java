@@ -60,7 +60,7 @@ public class User implements UserDetails {
 
 
     public void updateCurrentAddress(Address address) {
-
+        this.current = address;
     }
 
     @Override

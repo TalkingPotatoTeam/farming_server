@@ -18,6 +18,8 @@ public class UserFakerController {
     private UserService userService;
 
 
+
+
     @Test
     public void faker() {
         Faker faker = new Faker();
@@ -28,4 +30,6 @@ public class UserFakerController {
             userService.createUserForce(userForceCreateDto);
         }
     }
+    
+
 }
