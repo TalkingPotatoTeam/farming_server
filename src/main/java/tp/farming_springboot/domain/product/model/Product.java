@@ -86,16 +86,25 @@ public class Product {
         this.photoFile.add(photoFile);
     }
 
+    public void deletePhotoFile() {
+        this.photoFile = new ArrayList<>();
+    }
+
+
     public void addReceiptAndCertified(PhotoFile receipt) {
         this.certified = true;
         this.receipt = receipt;
+    }
+    public void deleteReceiptAndCertified() {
+        this.certified = false;
+        this.receipt = null;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="user_id")
     private User user;
 
@@ -118,15 +127,15 @@ public class Product {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "product")
     private List<PhotoFile> photoFile;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private PhotoFile receipt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="category_id")
     private Category category;
 
     @Getter
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="heart",
             joinColumns = @JoinColumn(name="product_id"),

@@ -106,7 +106,6 @@ public class ProductService {
         if(receiptFile != null){
             PhotoFile receipt = fileService.photoFileCreate(receiptFile);
             product.addReceiptAndCertified(receipt);
-
         }
 
         if(photoFiles != null) {
@@ -129,6 +128,8 @@ public class ProductService {
 
             if(product.getReceipt() != null)
                 s3UploaderService.deleteS3(product.getReceipt().getHashFilename());
+
+            //fileService.clearFileFromProduct(product);
 
             productRepository.deleteById(id);
         }

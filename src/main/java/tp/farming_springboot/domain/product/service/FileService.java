@@ -2,6 +2,7 @@ package tp.farming_springboot.domain.product.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import tp.farming_springboot.domain.product.model.PhotoFile;
@@ -49,18 +50,19 @@ public class FileService{
 
         return photoFileList;
     }
-
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public void clearFileFromProduct(Product product) {
-        if (product.getPhotoFile().size() > 0) {
-            List<PhotoFile> photoFile = product.getPhotoFile();
+        List<PhotoFile> photoFile = product.getPhotoFile();
+        PhotoFile receipt = product.getReceipt();
+        if (photoFile.size() > 0) {
             photoFile.forEach(f -> s3UploaderService.deleteS3(f.getHashFilename()));
+            product.deletePhotoFile();;
             fileRepository.deleteRelatedProductId(product.getId());
         }
 
-        if (product.getReceipt() != null) {
-            s3UploaderService.deleteS3(product.getReceipt().getHashFilename());
-            fileRepository.deleteById(product.getReceipt().getId());
+        if (receipt != null) {
+            s3UploaderService.deleteS3(receipt.getHashFilename());
+            product.deleteReceiptAndCertified();;
         }
 
     }

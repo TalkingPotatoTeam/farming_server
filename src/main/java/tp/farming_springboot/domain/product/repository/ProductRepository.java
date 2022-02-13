@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.exception.RestNullPointerException;
@@ -17,7 +18,12 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByUserId(Long id);
 
+    @Transactional
+    @Query(
+            value = "SELECT p FROM Product p LEFT JOIN FETCH p.photoFile LEFT JOIN FETCH p.receipt LEFT JOIN FETCH p.user LEFT JOIN FETCH p.category WHERE p.id = :id"
+    )
     Optional<Product> findById(Long id);
+
 
     default Product findByIdOrElseThrow(Long id) {
         return this.findById(id).orElseThrow(
