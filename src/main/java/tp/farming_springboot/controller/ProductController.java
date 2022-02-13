@@ -41,7 +41,8 @@ public class ProductController {
     private final CategoryRepository categoryRepository;
 
     @GetMapping("/home")
-    public List<ProductDetailResDto> home(@PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
+    public List<ProductDetailResDto> home(
+            @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
         List<ProductDetailResDto> productResponseDto = productService.findProductByPagination(pageRequest);
         return productResponseDto;
     }

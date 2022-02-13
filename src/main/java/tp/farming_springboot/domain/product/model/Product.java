@@ -2,6 +2,8 @@ package tp.farming_springboot.domain.product.model;
 
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import tp.farming_springboot.domain.user.model.User;
 
 import javax.persistence.*;
@@ -12,7 +14,8 @@ import java.util.*;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+@Table(name="product", indexes = @Index(name = "i_title", columnList = "title"))
 public class Product {
 
     public Product(User user,
@@ -32,7 +35,6 @@ public class Product {
         this.price = price;
         this.address = address;
         this.certified = certified;
-        this.createdDate = LocalDateTime.now();
         this.category = category;
         this.receipt = receipt;
         this.buyProductDate = buyProductDate;
@@ -84,7 +86,7 @@ public class Product {
         this.photoFile.add(photoFile);
     }
 
-    public void addReceiptFile(PhotoFile receipt) {
+    public void addReceiptAndCertified(PhotoFile receipt) {
         this.certified = true;
         this.receipt = receipt;
     }
@@ -108,7 +110,10 @@ public class Product {
     private boolean certified;
 
     @CreatedDate
-    private LocalDateTime createdDate;
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "product")
     private List<PhotoFile> photoFile;
