@@ -45,13 +45,13 @@ jobs:
         
     - name: Make AWS properties
       env:
-        aws-access-key: ${{ secrets.AWS_IAM_ACCESS_ID }}
-        aws-secret-key: ${{ secrets.AWS_IAM_ACCESS_KEY }}
+        AWS_ACCESS_KEY: ${{ secrets.AWS_IAM_ACCESS_ID }}
+        AWS_SECRET_KEY: ${{ secrets.AWS_IAM_ACCESS_KEY }}
         SECRET_DIR: src/main/resources
         FILE_NAME: application-aws.properties
       run: |
-        echo "cloud.aws.credentials.accessKey=$aws-access-key" >> $SECRET_DIR/$FILE_NAME
-        echo "cloud.aws.credentials.secretKey=$aws-secret-key" >> $SECRET_DIR/$FILE_NAME
+        echo "cloud.aws.credentials.accessKey=$AWS_ACCESS_KEY" >> $SECRET_DIR/$FILE_NAME
+        echo "cloud.aws.credentials.secretKey=$AWS_SECRET_KEY" >> $SECRET_DIR/$FILE_NAME
         echo "cloud.aws.s3.bucket=farming-image-bucket" >> $SECRET_DIR/$FILE_NAME
         echo "cloud.aws.region.static=ap-northeast-2" >> $SECRET_DIR/$FILE_NAME
         echo "cloud.aws.stack.auto=false" >> $SECRET_DIR/$FILE_NAME
