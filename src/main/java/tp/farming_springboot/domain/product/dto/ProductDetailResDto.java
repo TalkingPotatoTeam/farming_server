@@ -6,6 +6,7 @@ import tp.farming_springboot.domain.product.model.Product;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
@@ -16,11 +17,10 @@ public class ProductDetailResDto {
     private String content;
     private String price;
     private Long userId;
-    private String quantity;
     private String address;
     private boolean certified;
-    private List<PhotoFile> photoFile;
-    private PhotoFile receipt;
+    private List<PhotoFileDto> photoFile;
+    private PhotoFileDto receipt;
     private String category;
     private Date buyProductDate;
     private String freshness;
@@ -35,8 +35,13 @@ public class ProductDetailResDto {
         productResponseDto.userId = product.getUser().getId();
         productResponseDto.address = product.getAddress();
         productResponseDto.certified = product.isCertified();
-        //productResponseDto.photoFile = product.getPhotoFile();
-        //productResponseDto.receipt = product.getReceipt();
+        productResponseDto.photoFile = product.getPhotoFile().stream().map(
+                f -> PhotoFileDto.of(f.getOrigFilename(), f.getUrl())
+        ).collect(Collectors.toList());
+
+        if(product.getReceipt() != null)
+            productResponseDto.receipt = PhotoFileDto.of(product.getReceipt().getOrigFilename(), product.getReceipt().getUrl());
+
         productResponseDto.category = product.getCategory().getName();
         productResponseDto.buyProductDate = product.getBuyProductDate();
         productResponseDto.freshness = product.getFreshness();

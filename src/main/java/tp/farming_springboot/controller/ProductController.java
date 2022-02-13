@@ -28,6 +28,7 @@ import tp.farming_springboot.response.StatusEnum;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -83,7 +84,7 @@ public class ProductController {
             Authentication authentication, @RequestParam("prodDto") String prodStr,
             @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
             @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile
-    ) throws PhotoFileException, ParseException, IOException {
+    ) throws PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
 
         ObjectMapper objectMapper = new ObjectMapper();
         ProductCreateDto prodDto = objectMapper.readValue(prodStr, ProductCreateDto.class);
@@ -115,7 +116,7 @@ public class ProductController {
             @RequestParam("prodDto") String prodStr,
             @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
             @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile
-            ) throws UserNotAuthorizedException, PhotoFileException, ParseException, IOException {
+            ) throws UserNotAuthorizedException, PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
 
         ObjectMapper objectMapper = new ObjectMapper();
         ProductCreateDto prodDto = objectMapper.readValue(prodStr, ProductCreateDto.class);

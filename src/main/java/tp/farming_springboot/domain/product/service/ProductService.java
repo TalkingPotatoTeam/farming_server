@@ -16,7 +16,6 @@ import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.model.Product;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
-import tp.farming_springboot.domain.product.repository.FileRepository;
 import tp.farming_springboot.domain.product.repository.ProductRepository;
 import tp.farming_springboot.domain.user.model.User;
 import tp.farming_springboot.domain.user.repository.UserRepository;
@@ -25,6 +24,7 @@ import tp.farming_springboot.exception.UserNotAuthorizedException;
 
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,9 +37,10 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepository;
     private final FileService fileService;
-    private final FileRepository fileRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final S3UploaderService s3UploaderService;
+
 
     @Transactional(readOnly = true)
     public List<ProductDetailResDto> findProductByPagination(Pageable pageRequest) {
@@ -85,7 +86,7 @@ public class ProductService {
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException, ParseException, IOException {
+    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
         User user = userRepository.findByPhoneElseThrow(userPhone);
         Category category = categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName());
 
@@ -105,6 +106,7 @@ public class ProductService {
         if(receiptFile != null){
             PhotoFile receipt = fileService.photoFileCreate(receiptFile);
             product.addReceiptAndCertified(receipt);
+
         }
 
         if(photoFiles != null) {
@@ -123,6 +125,11 @@ public class ProductService {
         if(!isUserAuthor(user, product)) {
             throw new UserNotAuthorizedException("Current user and product author is not same.");
         }else {
+            product.getPhotoFile().forEach(f -> s3UploaderService.deleteS3(f.getHashFilename()));
+
+            if(product.getReceipt() != null)
+                s3UploaderService.deleteS3(product.getReceipt().getHashFilename());
+
             productRepository.deleteById(id);
         }
     }
@@ -132,7 +139,7 @@ public class ProductService {
     public void update(ProductCreateDto prodDto,
                        String userPhone, Long id,
                        MultipartFile ReceiptFile,
-                       List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException, ParseException, IOException {
+                       List<MultipartFile> photoFiles) throws UserNotAuthorizedException, PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
 
         User user = userRepository.findByPhoneElseThrow(userPhone);
         Product prod = productRepository.findByIdOrElseThrow(id);
@@ -140,7 +147,7 @@ public class ProductService {
         if(!isUserAuthor(user, prod))
             throw new UserNotAuthorizedException("Current user and product author is not same.");
         else {
-            clearFileFromProduct(prod);
+            fileService.clearFileFromProduct(prod);
 
             if (ReceiptFile != null) {
                 PhotoFile receipt = fileService.photoFileCreate(ReceiptFile);
@@ -169,16 +176,6 @@ public class ProductService {
         }
     }
 
-    private void clearFileFromProduct(Product product) {
-        if (product.getPhotoFile().size() > 0)
-            fileRepository.deleteRelatedProductId(product.getId());
-
-
-        if (product.getReceipt() != null) {
-            fileRepository.deleteById(product.getReceipt().getId());
-        }
-
-    }
 
     @Transactional(rollbackFor = Exception.class)
     public void changeStatusOfProduct(String userPhone, Long productId, ProductStatusDto productStatus) throws UserNotAuthorizedException {

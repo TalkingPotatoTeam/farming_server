@@ -28,7 +28,6 @@ public class ProductFilterDto {
                         "즉석식품",
                         "간식·베이커리",
                         "기타"
-
                 ));
         return new ProductFilterDto(categoryNameList, false, 1000000);
     }

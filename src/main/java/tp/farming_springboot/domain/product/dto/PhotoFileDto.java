@@ -9,15 +9,15 @@ import tp.farming_springboot.domain.product.model.PhotoFile;
 public class PhotoFileDto {
 
     private String origFilename;
-    private byte[] photoData;
+    private String url;
 
 
-    public PhotoFileDto(String origFilename,  byte[] photoData) {
+    public PhotoFileDto(String origFilename,  String url) {
         this.origFilename = origFilename;
-        this.photoData = photoData;
+        this.url = url;
     }
 
-    public static PhotoFileDto from(String origFilename, byte[] photoData) {
-        return new PhotoFileDto(origFilename, photoData);
+    public static PhotoFileDto of(String origFilename, String url) {
+        return new PhotoFileDto(origFilename, url);
     }
 }
