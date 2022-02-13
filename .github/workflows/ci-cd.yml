@@ -26,7 +26,7 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
  
-    - name: Make Secret File
+    - name: Make Dev properties
       env:
         DB_URL: ${{ secrets.DB_URL }}
         DB_USERNAME:  ${{ secrets.DB_USERNAME }}
@@ -42,8 +42,25 @@ jobs:
         echo "JWT_SECRET=$JWT_SECRET" >> $SECRET_DIR/$FILE_NAME
         echo "JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET" >> $SECRET_DIR/$FILE_NAME
         
-    - name: Secret File Context Check
-      run: cat src/main/resources/application-dev.properties
+        
+    - name: Make AWS properties
+      env:
+        aws-access-key: ${{ secrets.AWS_IAM_ACCESS_ID }}
+        aws-secret-key: ${{ secrets.AWS_IAM_ACCESS_KEY }}
+        SECRET_DIR: src/main/resources
+        FILE_NAME: application-aws.properties
+      run: |
+        echo "cloud.aws.credentials.accessKey=$aws-access-key" >> $SECRET_DIR/$FILE_NAME
+        echo "cloud.aws.credentials.secretKey=$aws-secret-key" >> $SECRET_DIR/$FILE_NAME
+        echo "cloud.aws.s3.bucket=farming-image-bucket" >> $SECRET_DIR/$FILE_NAME
+        echo "cloud.aws.region.static=ap-northeast-2" >> $SECRET_DIR/$FILE_NAME
+        echo "cloud.aws.stack.auto=false" >> $SECRET_DIR/$FILE_NAME
+        
+    - name: Dev Secret File Context Check
+      run: cat src/main/resources/application-dev.properties 
+      
+    - name: AWS File Context Check
+      run: cat src/main/resources/application-aws.properties 
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
