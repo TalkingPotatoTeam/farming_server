@@ -1,5 +1,7 @@
 package tp.farming_springboot.domain.user.jwt;
 
+import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.AuthenticationException;
@@ -13,14 +15,12 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Component
+@Slf4j
 public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
-
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthEntryPoint.class);
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException e) throws IOException {
-
 
         String exception = String.valueOf(request.getAttribute("exception"));
 
@@ -31,7 +31,7 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         else
             sendResponse(response, StatusEnum.UNAUTHORIZED, e.getMessage());
 
-        logger.error("토큰 필터에서 발생: {}", e.getMessage());
+        log.error("토큰 필터에서 발생: {}", e.getMessage());
 
     }
 
@@ -39,10 +39,12 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        response.getWriter().println(
-                "{ " +   "\"timestamp\" : \"" + LocalDateTime.now()
-                + "\", \"status\" : \"" + code.getStatusCode()
-                + "\", \"message\" : \"" + message + "\" \n }");
+        JSONObject responseJson = new JSONObject();
+        responseJson.put("timestamp", LocalDateTime.now());
+        responseJson.put("status", code.getStatusCode());
+        responseJson.put("message", message);
+        response.getWriter().print(responseJson);
+
     }
 
 
