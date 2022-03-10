@@ -48,11 +48,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 jwtUtils.createAuthentication(username);
             }
+
+            filterChain.doFilter(request, response);
         }
         catch(BadCredentialsException e) {
             request.setAttribute("exception", StatusEnum.TOKEN_NOT_VALID);
             SecurityContextHolder.clearContext();
-            jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("유효하지 않은 토큰입니다."));
+            jwtAuthEntryPoint.commence(request, response, e);
+
         }
         catch (ExpiredJwtException e) {
             request.setAttribute("exception", StatusEnum.TOKEN_EXPIRED);
@@ -64,7 +67,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
             jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("토큰 검증 중 알 수 없는 에러가 발생했습니다."));
         }
-        filterChain.doFilter(request, response);
+
     }
 
     private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
