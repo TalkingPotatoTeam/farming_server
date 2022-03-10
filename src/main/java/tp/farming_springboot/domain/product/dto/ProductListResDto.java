@@ -5,42 +5,39 @@ import lombok.NoArgsConstructor;
 import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.model.Product;
 
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
-public class ProductListResDto {
 
+/*
+ * 홈 화면 게시물 리스트를 위한 DTO입니다.
+ */
+public class ProductListResDto {
     private Long id;
     private String title;
-    private String content;
     private String price;
-    private Long userId;
-    private String quantity;
-    private String address;
     private boolean certified;
-    private PhotoFile photoFile;
-    private String category;
-    private Date buyProductDate;
-    private String freshness;
-    private String productStatus;
+    private PhotoFileDto photoFile; // 대표 사진 1개
+    private LocalDateTime createdAt;
 
     public static ProductListResDto from(Product product) {
-        ProductListResDto productResponseDto = new ProductListResDto();
-        productResponseDto.id = product.getId();
-        productResponseDto.title = product.getTitle();
-        productResponseDto.content = product.getContent();
-        productResponseDto.price = product.getPrice();
-        productResponseDto.userId = product.getUser().getId();
-        productResponseDto.address = product.getAddress();
-        productResponseDto.certified = product.isCertified();
-        //productResponseDto.photoFile = product.getPhotoFile();
-        productResponseDto.category = product.getCategory().getName();
-        productResponseDto.buyProductDate = product.getBuyProductDate();
-        productResponseDto.freshness = product.getFreshness();
-        productResponseDto.productStatus = product.getProductStatus();
+        ProductListResDto productListResDto = new ProductListResDto();
+        productListResDto.id = product.getId();
+        productListResDto.title = product.getTitle();
+        productListResDto.price = product.getPrice();
+        productListResDto.certified = product.isCertified();
 
-        return productResponseDto;
+        Optional<PhotoFile> thumbnail = product.getPhotoFile().stream().findFirst();
+
+        if(thumbnail.isPresent()) {
+            productListResDto.photoFile = PhotoFileDto.of(thumbnail.get().getOrigFilename(), thumbnail.get().getUrl());
+        }
+
+        productListResDto.createdAt = product.getCreatedAt();
+        return productListResDto;
     }
 
 }

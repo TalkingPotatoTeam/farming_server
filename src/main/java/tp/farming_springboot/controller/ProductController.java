@@ -15,10 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tp.farming_springboot.domain.product.dto.ProductCreateDto;
-import tp.farming_springboot.domain.product.dto.ProductFilterDto;
-import tp.farming_springboot.domain.product.dto.ProductDetailResDto;
-import tp.farming_springboot.domain.product.dto.ProductStatusDto;
+import tp.farming_springboot.domain.product.dto.*;
 import tp.farming_springboot.domain.product.repository.CategoryRepository;
 import tp.farming_springboot.domain.product.service.ProductService;
 import tp.farming_springboot.exception.PhotoFileException;
@@ -42,9 +39,9 @@ public class ProductController {
     private final CategoryRepository categoryRepository;
 
     @GetMapping("/home")
-    public List<ProductDetailResDto> home(
+    public List<ProductListResDto> home(
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
-        List<ProductDetailResDto> productResponseDto = productService.findProductByPagination(pageRequest);
+        List<ProductListResDto> productResponseDto = productService.findProductByPagination(pageRequest);
         return productResponseDto;
     }
 
@@ -54,7 +51,7 @@ public class ProductController {
 
     // 카테고리 눌렀을 때 해당 카테고리 다 나오게
     @GetMapping("/search")
-    public List<ProductDetailResDto> searchByKeywordWithFilter(
+    public List<ProductListResDto> searchByKeywordWithFilter(
             @RequestParam(required = false) String keyword,
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest,
             @RequestBody(required = false) ProductFilterDto productFilterDto) {
@@ -65,16 +62,16 @@ public class ProductController {
         if(keyword == null)
             keyword = "";
 
-        List<ProductDetailResDto> productResponseDto = productService.searchByKeywordAndFilter(keyword, productFilterDto ,pageRequest);
+        List<ProductListResDto> productResponseDto = productService.searchByKeywordAndFilter(keyword, productFilterDto ,pageRequest);
         return productResponseDto;
     }
 
     @GetMapping("/search/category")
-    public List<ProductDetailResDto> searchByCategory(
+    public List<ProductListResDto> searchByCategory(
             @RequestParam String category,
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest) {
 
-        List<ProductDetailResDto> productResponseDtos = productService.searchByCategory(category, pageRequest);
+        List<ProductListResDto> productResponseDtos = productService.searchByCategory(category, pageRequest);
         return productResponseDtos;
     }
 

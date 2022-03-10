@@ -8,10 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import tp.farming_springboot.domain.product.dto.ProductCreateDto;
-import tp.farming_springboot.domain.product.dto.ProductFilterDto;
-import tp.farming_springboot.domain.product.dto.ProductDetailResDto;
-import tp.farming_springboot.domain.product.dto.ProductStatusDto;
+import tp.farming_springboot.domain.product.dto.*;
 import tp.farming_springboot.domain.product.model.Category;
 import tp.farming_springboot.domain.product.model.PhotoFile;
 import tp.farming_springboot.domain.product.model.Product;
@@ -41,35 +38,41 @@ public class ProductService {
     private final UserRepository userRepository;
     private final S3UploaderService s3UploaderService;
 
-
+    /*
+     * Pagination이 적용된 게시물 조회 로직입니다.
+     */
     @Transactional(readOnly = true)
-    public List<ProductDetailResDto> findProductByPagination(Pageable pageRequest) {
+    public List<ProductListResDto> findProductByPagination(Pageable pageRequest) {
         Page<Product> productList = productRepository.findAll(pageRequest);
 
-        List<ProductDetailResDto> productResponseDtos = productList.stream().map(
-                product -> ProductDetailResDto.from(product)
-        ).collect(Collectors.toList());
+        List<ProductListResDto> productResponseDtos = productList.stream().map(product -> ProductListResDto.from(product)).collect(Collectors.toList());
 
         return productResponseDtos;
     }
+
     @Transactional(readOnly = true)
-    public List<ProductDetailResDto> searchByKeywordAndFilter(String keyword, ProductFilterDto productFilterDto, Pageable pageRequest){
+    public List<ProductListResDto> searchByKeywordAndFilter(String keyword, ProductFilterDto productFilterDto, Pageable pageRequest){
         List<Category> categoryList = categoryRepository.findByNameIn(productFilterDto.getCategoryNameList());
         Page<Product> productList = productRepository.findByKeywordInCategoryList(keyword, categoryList, pageRequest);
-        return productList.stream().map(product -> ProductDetailResDto.from(product)).collect(Collectors.toList());
+        return productList.stream().map(product -> ProductListResDto.from(product)).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<ProductDetailResDto> searchByCategory(String categoryName, Pageable pageRequest) {
+    public List<ProductListResDto> searchByCategory(String categoryName, Pageable pageRequest) {
         Category category = categoryRepository.findByNameOrElseThrow(categoryName);
         Page<Product> productList = productRepository.findByCategory(category, pageRequest);
 
-        List<ProductDetailResDto> productResponseDtos = productList.stream().map(
-                product -> ProductDetailResDto.from(product)
+        List<ProductListResDto> productResponseDtos = productList.stream().map(
+                product -> ProductListResDto.from(product)
         ).collect(Collectors.toList());
 
         return productResponseDtos;
     }
+
+
+    /*
+     * Pagination이 적용되지 않은 게시물 조회 로직입니다.
+     */
     @Transactional(readOnly = true)
     public List<ProductDetailResDto> findByUserId(Long userId) {
         List<Product> productList = productRepository.findByUserId(userId);
