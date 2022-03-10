@@ -11,6 +11,10 @@ import java.util.stream.Collectors;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+
+/*
+ * 게시물 상세 화면을 위한 DTO입니다.
+ */
 public class ProductDetailResDto {
     private Long id;
     private String title;

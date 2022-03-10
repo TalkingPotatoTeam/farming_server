@@ -2,8 +2,6 @@ package tp.farming_springboot.domain.user.jwt;
 
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -39,11 +37,11 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        JSONObject responseJson = new JSONObject();
-        responseJson.put("timestamp", LocalDateTime.now());
-        responseJson.put("status", code.getStatusCode());
-        responseJson.put("message", message);
-        response.getWriter().print(responseJson);
+        JSONObject body = new JSONObject();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("status", code.getStatusCode());
+        body.put("message", message);
+        response.getWriter().print(body);
 
     }
 
