@@ -43,15 +43,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
         try {
-            log.info("jwt 파싱 전");
             String jwt = parseJwt(request);
-            log.info("여기 {}", jwt);
             if (jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 jwtUtils.createAuthentication(username);
             }
 
-            log.info("filter 실행 전");
             filterChain.doFilter(request, response);
         }
         catch(BadCredentialsException e) {
