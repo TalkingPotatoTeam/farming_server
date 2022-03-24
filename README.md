@@ -7,6 +7,7 @@
   <tr>
     <td align="center"><a href="https://github.com/ammerss"><img src="https://avatars.githubusercontent.com/u/29909348?v=4" width="75px;"/><br/><sub><b>윤연경</b></sub></a></td>
      <td align="center"><a href="https://github.com/Youhoseong"><img src="https://avatars.githubusercontent.com/u/33655186?v=4" width="75px;"/><br/><sub><b>유호성</b></sub></a></td>
+         <td align="center"><a href="https://github.com/ilene97"><img src="https://avatars.githubusercontent.com/u/33650014?v=44" width="75px;"/><br/><sub><b>박진선</b></sub></a></td>
   </tr>
 </table>
 
