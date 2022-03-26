@@ -16,7 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import tp.farming_springboot.application.dto.response.StatusEnum;
+import tp.farming_springboot.api.ResultCode;
 
 
 @RequiredArgsConstructor
@@ -51,18 +51,18 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }
         catch(BadCredentialsException e) {
-            request.setAttribute("exception", StatusEnum.TOKEN_NOT_VALID);
+            request.setAttribute("exception", ResultCode.TOKEN_NOT_VALID);
             SecurityContextHolder.clearContext();
             jwtAuthEntryPoint.commence(request, response, e);
 
         }
         catch (ExpiredJwtException e) {
-            request.setAttribute("exception", StatusEnum.TOKEN_EXPIRED);
+            request.setAttribute("exception", ResultCode.TOKEN_EXPIRED);
             SecurityContextHolder.clearContext();
             jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("토큰 유효시간이 만료되었습니다."));
 
         } catch (Exception e) {
-            request.setAttribute("exception", StatusEnum.INTERNAL_SERVER_ERROR);
+            request.setAttribute("exception", ResultCode.INTERNAL_SERVER_ERROR);
             SecurityContextHolder.clearContext();
             jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("토큰 검증 중 알 수 없는 에러가 발생했습니다."));
         }

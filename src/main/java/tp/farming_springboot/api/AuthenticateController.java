@@ -17,8 +17,7 @@ import tp.farming_springboot.infra.SmsService;
 import tp.farming_springboot.application.UserService;
 import tp.farming_springboot.domain.exception.UserExistsException;
 import tp.farming_springboot.domain.exception.VerificationException;
-import tp.farming_springboot.application.dto.response.StatusEnum;
-import tp.farming_springboot.application.dto.response.Message;
+
 import java.nio.charset.Charset;
 
 @CrossOrigin
@@ -42,7 +41,7 @@ public class AuthenticateController {
     @GetMapping("/tokens")
     public ResponseEntity<?> temp(@RequestBody UserAuthenDto logger){
         TokenDto tokenDto = authenticateService.getNewTokens(logger.getPhone());
-        Message message = new Message(StatusEnum.OK,"Generating token success.", tokenDto);
+        ApiResponse message = new ApiResponse(ResultCode.OK,"Generating token success.", tokenDto);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
@@ -51,23 +50,23 @@ public class AuthenticateController {
     //send otp number to user
     @PostMapping("/request-otp")
     @ResponseStatus(HttpStatus.OK)
-    private ResponseEntity<Message> sendMsg(@RequestBody UserAuthenDto user){
+    private ResponseEntity<ApiResponse> sendMsg(@RequestBody UserAuthenDto user){
         try {
             String phone = user.getPhone();
             int otp = otpService.generateOTP(phone);
             String result = smsService.sendSMS(String.valueOf(otp), phone);
-            Message message = new Message(StatusEnum.OK,"User Created", result );
+            ApiResponse message = new ApiResponse(ResultCode.OK,"User Created", result );
             return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
         }
         catch(CoolsmsException e){
-            Message message = new Message(StatusEnum.BAD_REQUEST, e.getMessage());
+            ApiResponse message = new ApiResponse(ResultCode.BAD_REQUEST, e.getMessage());
             return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
         }
     }
 
     //verify number and redirect to signup or login
     @PostMapping("/validate")
-    public ResponseEntity<Message> validateOtp(@RequestBody UserCreateDto newUser) throws VerificationException, UserExistsException {
+    public ResponseEntity<ApiResponse> validateOtp(@RequestBody UserCreateDto newUser) throws VerificationException, UserExistsException {
         String phone = newUser.getPhone();
 
         //validate
@@ -81,7 +80,7 @@ public class AuthenticateController {
 
         //return tokens
         TokenDto tokenDto = authenticateService.getNewTokens(phone);
-        Message message = new Message(StatusEnum.OK, result, tokenDto);
+        ApiResponse message = new ApiResponse(ResultCode.OK, result, tokenDto);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 

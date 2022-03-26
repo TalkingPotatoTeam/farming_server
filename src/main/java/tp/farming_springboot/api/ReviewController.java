@@ -17,7 +17,6 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-
     @PostMapping("/{revieweeId}")
     public String create(Authentication authentication,
                                           @RequestBody ReviewCreateDto reviewDto,

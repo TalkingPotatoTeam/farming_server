@@ -1,6 +1,7 @@
 package tp.farming_springboot.api;
 
 
+import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,10 @@ import java.util.Optional;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/home")
+@RequiredArgsConstructor
 public class LoginTestController {
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
+
     @GetMapping("/all")
     public String allAccess() {
         return "Public Content.";
