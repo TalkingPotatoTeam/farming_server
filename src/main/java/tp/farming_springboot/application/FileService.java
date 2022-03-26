@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import tp.farming_springboot.domain.dao.PhotoFile;
-import tp.farming_springboot.domain.dao.Product;
+import tp.farming_springboot.domain.entity.PhotoFile;
+import tp.farming_springboot.domain.entity.Product;
 
 import tp.farming_springboot.domain.repository.FileRepository;
 import tp.farming_springboot.infra.S3UploaderService;

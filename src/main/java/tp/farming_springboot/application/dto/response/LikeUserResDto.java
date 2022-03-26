@@ -1,8 +1,8 @@
 package tp.farming_springboot.application.dto.response;
 
 import lombok.*;
-import tp.farming_springboot.domain.dao.Address;
-import tp.farming_springboot.domain.dao.User;
+import tp.farming_springboot.domain.entity.Address;
+import tp.farming_springboot.domain.entity.User;
 
 
 @Data

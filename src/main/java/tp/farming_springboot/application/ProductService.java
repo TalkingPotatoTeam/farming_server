@@ -1,6 +1,7 @@
 package tp.farming_springboot.application;
 
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -13,13 +14,13 @@ import tp.farming_springboot.application.dto.request.ProductFilterDto;
 import tp.farming_springboot.application.dto.request.ProductStatusDto;
 import tp.farming_springboot.application.dto.response.ProductDetailResDto;
 import tp.farming_springboot.application.dto.response.ProductListResDto;
-import tp.farming_springboot.domain.dao.Category;
-import tp.farming_springboot.domain.dao.PhotoFile;
-import tp.farming_springboot.domain.dao.Product;
+import tp.farming_springboot.domain.entity.Category;
+import tp.farming_springboot.domain.entity.PhotoFile;
+import tp.farming_springboot.domain.entity.Product;
 import tp.farming_springboot.domain.repository.CategoryRepository;
 import tp.farming_springboot.domain.repository.ProductRepository;
 import tp.farming_springboot.infra.S3UploaderService;
-import tp.farming_springboot.domain.dao.User;
+import tp.farming_springboot.domain.entity.User;
 import tp.farming_springboot.domain.repository.UserRepository;
 import tp.farming_springboot.domain.exception.PhotoFileException;
 import tp.farming_springboot.domain.exception.UserNotAuthorizedException;
@@ -42,6 +43,8 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final S3UploaderService s3UploaderService;
+    private final List<String> productStatusList = List.of("판매중", "예약중", "판매완료");
+
 
     /*
      * Pagination이 적용된 게시물 조회 로직입니다.
@@ -57,6 +60,11 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductListResDto> searchByKeywordAndFilter(String keyword, ProductFilterDto productFilterDto, Pageable pageRequest){
+
+        if(productFilterDto == null) {
+            productFilterDto = ProductFilterDto.getDefaultInstance();
+        }
+
         List<Category> categoryList = categoryRepository.findByNameIn(productFilterDto.getCategoryNameList());
         Page<Product> productList = productRepository.findByKeywordInCategoryList(keyword, categoryList, pageRequest);
         return productList.stream().map(product -> ProductListResDto.from(product)).collect(Collectors.toList());
@@ -74,7 +82,6 @@ public class ProductService {
         return productResponseDtos;
     }
 
-
     /*
      * Pagination이 적용되지 않은 게시물 조회 로직입니다.
      */
@@ -91,6 +98,18 @@ public class ProductService {
     public ProductDetailResDto findById(Long id) {
         Product product = productRepository.findByIdOrElseThrow(id);
         return ProductDetailResDto.from(product);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void registerReceipt(Long productId, MultipartFile receiptFile) throws IOException, NoSuchAlgorithmException {
+        Product product = productRepository.findByIdOrElseThrow(productId);
+
+        if(product.isCertified()) {
+            throw new IllegalArgumentException("Product receipt already certified.");
+        }
+
+        PhotoFile receipt = fileService.photoFileCreate(receiptFile);
+        product.addReceiptAndCertified(receipt);
     }
 
     @Transactional(rollbackFor = {Exception.class})
@@ -136,8 +155,6 @@ public class ProductService {
 
             if(product.getReceipt() != null)
                 s3UploaderService.deleteS3(product.getReceipt().getHashFilename());
-
-            //fileService.clearFileFromProduct(product);
 
             productRepository.deleteById(id);
         }
@@ -194,13 +211,7 @@ public class ProductService {
         if(!isUserAuthor(user, product)) {
             throw new UserNotAuthorizedException("Current user and product author is not same.");
         } else {
-            List<String> productStatusList = new ArrayList<>();
-            productStatusList.add("판매중");
-            productStatusList.add("예약중");
-            productStatusList.add("판매완료");
-
             if(!productStatusList.contains(productStatus.getProductStatus())) {
-                System.out.println(" = " + productStatus);
                 throw new IllegalArgumentException("Product Status is not existed.");
             } else {
                 product.setProductStatus(productStatus.getProductStatus());
@@ -209,7 +220,7 @@ public class ProductService {
         }
     }
 
-    public boolean isUserAuthor(User user, Product product) {
+    private boolean isUserAuthor(User user, Product product) {
         if(user.getId() == product.getUser().getId())
             return true;
         else

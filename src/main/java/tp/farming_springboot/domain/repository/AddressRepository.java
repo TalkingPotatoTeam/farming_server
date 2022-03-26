@@ -2,7 +2,7 @@ package tp.farming_springboot.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
-import tp.farming_springboot.domain.dao.Address;
+import tp.farming_springboot.domain.entity.Address;
 
 
 @Component

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import tp.farming_springboot.domain.dao.PhotoFile;
+import tp.farming_springboot.domain.entity.PhotoFile;
 
 
 

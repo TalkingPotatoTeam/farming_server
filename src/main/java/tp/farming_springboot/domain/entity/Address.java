@@ -1,4 +1,4 @@
-package tp.farming_springboot.domain.dao;
+package tp.farming_springboot.domain.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

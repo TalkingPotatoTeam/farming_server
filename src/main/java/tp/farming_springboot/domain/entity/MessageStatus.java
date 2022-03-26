@@ -1,4 +1,4 @@
-package tp.farming_springboot.domain.dao;
+package tp.farming_springboot.domain.entity;
 
 public enum MessageStatus {
     RECEIVED, DELIVERED

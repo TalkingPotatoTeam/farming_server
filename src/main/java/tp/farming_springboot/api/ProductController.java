@@ -52,19 +52,12 @@ public class ProductController {
     //서치 미완성
     //1. 필터 적용해서 키워드로 검색(필터: 카테고리, 인증 푸드, 거리)
     //2. 필터 없이 키워드로 검색
-
     // 카테고리 눌렀을 때 해당 카테고리 다 나오게
     @GetMapping("/search")
     public List<ProductListResDto> searchByKeywordWithFilter(
-            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "") String keyword,
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest,
             @RequestBody(required = false) ProductFilterDto productFilterDto) {
-
-        if(productFilterDto == null)
-            productFilterDto = ProductFilterDto.getDefaultInstance();
-
-        if(keyword == null)
-            keyword = "";
 
         List<ProductListResDto> productResponseDto = productService.searchByKeywordAndFilter(keyword, productFilterDto ,pageRequest);
         return productResponseDto;
@@ -77,6 +70,15 @@ public class ProductController {
 
         List<ProductListResDto> productResponseDtos = productService.searchByCategory(category, pageRequest);
         return productResponseDtos;
+    }
+
+
+    @PostMapping("/receipt/{productId}")
+    public String registerReceipt(@PathVariable Long productId,
+                                  @RequestParam(value = "ReceiptFile") MultipartFile receiptFile) throws IOException, NoSuchAlgorithmException {
+
+        productService.registerReceipt(productId, receiptFile);
+        return String.format("Receipt Upload Success. ProductId=%d", productId);
     }
 
 

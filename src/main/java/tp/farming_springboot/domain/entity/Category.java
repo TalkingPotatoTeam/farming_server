@@ -1,12 +1,9 @@
-package tp.farming_springboot.domain.dao;
+package tp.farming_springboot.domain.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Table;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Setter
 @Getter

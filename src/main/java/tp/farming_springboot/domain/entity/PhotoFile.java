@@ -1,4 +1,4 @@
-package tp.farming_springboot.domain.dao;
+package tp.farming_springboot.domain.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,6 +44,10 @@ public class PhotoFile {
     public void addProduct(Product product) {
         this.product = product;
         product.addPhotoFile(this);
+    }
+
+    public void addProductToReceipt(Product product) {
+        this.product = product;
     }
 
 }

@@ -5,9 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import tp.farming_springboot.domain.dao.Review;
-import tp.farming_springboot.domain.dao.ReviewChoice;
-import tp.farming_springboot.domain.dao.User;
+import tp.farming_springboot.domain.entity.Review;
+import tp.farming_springboot.domain.entity.ReviewChoice;
+import tp.farming_springboot.domain.entity.User;
 
 import javax.validation.constraints.NotBlank;
 

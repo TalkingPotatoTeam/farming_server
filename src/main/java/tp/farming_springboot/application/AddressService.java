@@ -2,7 +2,7 @@ package tp.farming_springboot.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import tp.farming_springboot.domain.dao.Address;
+import tp.farming_springboot.domain.entity.Address;
 import tp.farming_springboot.domain.repository.AddressRepository;
 
 @Service

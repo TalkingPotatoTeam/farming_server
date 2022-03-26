@@ -5,10 +5,10 @@ import java.util.*;
 
 import org.springframework.stereotype.Service;
 import tp.farming_springboot.application.dto.response.ProductDetailResDto;
-import tp.farming_springboot.domain.dao.Product;
+import tp.farming_springboot.domain.entity.Product;
 import tp.farming_springboot.domain.repository.ProductRepository;
 import tp.farming_springboot.application.dto.response.LikeUserResDto;
-import tp.farming_springboot.domain.dao.User;
+import tp.farming_springboot.domain.entity.User;
 import tp.farming_springboot.domain.repository.UserRepository;
 import tp.farming_springboot.domain.exception.UserAlreadyLikeProductException;
 import tp.farming_springboot.domain.exception.UserNotLikeProductException;
