@@ -1,10 +1,5 @@
 package tp.farming_springboot.api;
 
-
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -12,10 +7,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import tp.farming_springboot.domain.exception.*;
-import tp.farming_springboot.application.dto.response.Message;
-import tp.farming_springboot.application.dto.response.StatusEnum;
-
-import java.nio.charset.Charset;
 
 @RestControllerAdvice
 public class ControllerAdvice {
@@ -33,28 +24,18 @@ public class ControllerAdvice {
             VerificationException.class,
             MethodArgumentNotValidException.class,
     })
-    public ResponseEntity<Message> handler(Exception e) {
-        Message message = new Message(StatusEnum.BAD_REQUEST, e.getMessage());
-        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.BAD_REQUEST);
+    public ApiResponse<?> handle(Exception e) {
+        return ApiResponse.failure(ResultCode.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(UserNotAuthorizedException.class)
-    public ResponseEntity<Message> handle(UserNotAuthorizedException e) {
-        Message message = new Message(StatusEnum.UNAUTHORIZED, e.getMessage());
-        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.UNAUTHORIZED);
+    public ApiResponse<?> handle(UserNotAuthorizedException e) {
+        return ApiResponse.failure(ResultCode.UNAUTHORIZED, e.getMessage());
     }
 
     @ExceptionHandler(PhotoFileException.class)
-    public ResponseEntity<Message> handle(PhotoFileException e) {
-        Message message = new Message(StatusEnum.INTERNAL_SERVER_ERROR, e.getMessage());
-        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.INTERNAL_SERVER_ERROR);
+    public ApiResponse<?> handle(PhotoFileException e) {
+        return ApiResponse.failure(ResultCode.INTERNAL_SERVER_ERROR, e.getMessage());
     }
-
-    public HttpHeaders HttpHeaderSetting(){
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        return headers;
-    }
-
 
 }

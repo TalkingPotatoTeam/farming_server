@@ -13,8 +13,7 @@ import tp.farming_springboot.application.LikeService;
 import tp.farming_springboot.application.dto.response.LikeUserResDto;
 import tp.farming_springboot.domain.exception.UserAlreadyLikeProductException;
 import tp.farming_springboot.domain.exception.UserNotLikeProductException;
-import tp.farming_springboot.application.dto.response.Message;
-import tp.farming_springboot.application.dto.response.StatusEnum;
+
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -25,43 +24,26 @@ import java.util.*;
 public class LikeController {
     private final LikeService likeService;
 
-    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/{productId}")
-    public String create(Authentication authentication,  @PathVariable Long productId) throws UserAlreadyLikeProductException {
+    public ApiResponse<?> create(Authentication authentication,  @PathVariable Long productId) throws UserAlreadyLikeProductException {
         likeService.create(authentication.getName(), productId);
-        return "Like is Added to product {" + productId + "}.";
+        return ApiResponse.success();
     }
 
-
-    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{productId}")
-    public String delete(Authentication authentication,  @PathVariable Long productId) throws UserNotLikeProductException {
+    public ApiResponse<?> delete(Authentication authentication, @PathVariable Long productId) throws UserNotLikeProductException {
         likeService.delete(authentication.getName(), productId);
-        return "Like is deleted to product {" + productId + "}.";
+        return ApiResponse.success();
     }
 
-
-    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{productId}")
-    public ResponseEntity<Message> getLikeUserList(@PathVariable Long productId) {
-        Set<LikeUserResDto> userSet = likeService.getLikeUserSet(productId);
-        Message message = new Message(StatusEnum.OK, "", userSet);
-        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
+    public ApiResponse<?> getLikeUserList(@PathVariable Long productId) {
+        return ApiResponse.success(likeService.getLikeUserSet(productId));
     }
 
-    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/product/{userId}")
-    public ResponseEntity<Message> getLikelistByUser(@PathVariable Long userId) {
-        Set<ProductDetailResDto> productSet = likeService.getLikelistByUser(userId);
-        Message message = new Message(StatusEnum.OK, "", productSet);
-        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
+    public ApiResponse<?> getLikelistByUser(@PathVariable Long userId) {
+        return ApiResponse.success(likeService.getLikelistByUser(userId));
     }
 
-
-
-    public HttpHeaders HttpHeaderSetting(){
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        return headers;
-    }
 }

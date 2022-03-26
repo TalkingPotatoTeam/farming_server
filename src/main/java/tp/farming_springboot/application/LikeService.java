@@ -2,6 +2,7 @@ package tp.farming_springboot.application;
 
 import lombok.RequiredArgsConstructor;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import tp.farming_springboot.application.dto.response.ProductDetailResDto;
@@ -25,8 +26,8 @@ public class LikeService {
         Product product = productRepository.findByIdOrElseThrow(productId);
 
         if(product.getLikeUsers().contains(user)){
-            throw new UserAlreadyLikeProductException("User { id: " + user.getId() + " }" + " already liked this product.");
-        }else {
+            throw new UserAlreadyLikeProductException(String.format("User { id: %d } already liked this product.", user.getId()));
+        } else {
             product.getLikeUsers().add(user);
             productRepository.save(product);
         }
@@ -41,30 +42,29 @@ public class LikeService {
             product.getLikeUsers().remove(user);
             productRepository.save(product);
         } else {
-            throw new UserNotLikeProductException("User { id: " + user.getId() + " }" + " not included in like user list.");
+            throw new UserNotLikeProductException(String.format("User { id: %d } not included in like user list.", user.getId()));
         }
     }
 
     public Set<LikeUserResDto> getLikeUserSet(Long productId) {
         Product product = productRepository.findByIdOrElseThrow(productId);
 
-        Set<LikeUserResDto> userResponseDtos = new HashSet<>();
-        product.getLikeUsers().forEach(
-                user -> userResponseDtos.add(LikeUserResDto.from(user))
-        );
-        return userResponseDtos;
+        Set<LikeUserResDto> userSet = product.getLikeUsers()
+                .stream()
+                .map(LikeUserResDto::from)
+                .collect(Collectors.toSet());
+
+        return userSet;
     }
 
     public Set<ProductDetailResDto> getLikelistByUser(Long userId) {
         User user = userRepository.findByIdElseThrow(userId);
 
-        Set<ProductDetailResDto> productResponseDtos = new HashSet<>();
+        Set<ProductDetailResDto> productResponseDtos = user.getLikeProducts()
+                                .stream()
+                                .map(ProductDetailResDto::from)
+                                .collect(Collectors.toSet());
 
-        user.getLikeProducts().forEach(
-                product -> {
-                    productResponseDtos.add(ProductDetailResDto.from(product));
-                }
-        );
 
         return productResponseDtos;
     }

@@ -1,7 +1,5 @@
 package tp.farming_springboot.application;
 
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,8 +28,8 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,7 +51,10 @@ public class ProductService {
     public List<ProductListResDto> findProductByPagination(Pageable pageRequest) {
         Page<Product> productList = productRepository.findAll(pageRequest);
 
-        List<ProductListResDto> productResponseDtos = productList.stream().map(product -> ProductListResDto.from(product)).collect(Collectors.toList());
+        List<ProductListResDto> productResponseDtos = productList
+                .stream()
+                .map(ProductListResDto::from)
+                .collect(Collectors.toList());
 
         return productResponseDtos;
     }
@@ -67,7 +68,10 @@ public class ProductService {
 
         List<Category> categoryList = categoryRepository.findByNameIn(productFilterDto.getCategoryNameList());
         Page<Product> productList = productRepository.findByKeywordInCategoryList(keyword, categoryList, pageRequest);
-        return productList.stream().map(product -> ProductListResDto.from(product)).collect(Collectors.toList());
+        return productList
+                .stream()
+                .map(ProductListResDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -75,11 +79,10 @@ public class ProductService {
         Category category = categoryRepository.findByNameOrElseThrow(categoryName);
         Page<Product> productList = productRepository.findByCategory(category, pageRequest);
 
-        List<ProductListResDto> productResponseDtos = productList.stream().map(
-                product -> ProductListResDto.from(product)
-        ).collect(Collectors.toList());
-
-        return productResponseDtos;
+        return productList
+                .stream()
+                .map(ProductListResDto::from)
+                .collect(Collectors.toList());
     }
 
     /*
@@ -89,9 +92,10 @@ public class ProductService {
     public List<ProductDetailResDto> findByUserId(Long userId) {
         List<Product> productList = productRepository.findByUserId(userId);
 
-        return productList.stream().map(
-                product -> ProductDetailResDto.from(product)
-        ).collect(Collectors.toList());
+        return productList
+                .stream()
+                .map(product -> ProductDetailResDto.from(product))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -221,7 +225,7 @@ public class ProductService {
     }
 
     private boolean isUserAuthor(User user, Product product) {
-        if(user.getId() == product.getUser().getId())
+        if(Objects.equals(user.getId(), product.getUser().getId()))
             return true;
         else
             return false;
