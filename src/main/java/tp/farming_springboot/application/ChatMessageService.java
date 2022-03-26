@@ -6,8 +6,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
-import tp.farming_springboot.domain.dao.ChatMessage;
-import tp.farming_springboot.domain.dao.MessageStatus;
+import tp.farming_springboot.domain.entity.ChatMessage;
+import tp.farming_springboot.domain.entity.MessageStatus;
 import tp.farming_springboot.domain.repository.ChatMessageRepository;
 
 import java.util.ArrayList;

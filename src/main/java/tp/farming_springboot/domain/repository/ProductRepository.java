@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import tp.farming_springboot.domain.dao.Category;
-import tp.farming_springboot.domain.dao.Product;
+import tp.farming_springboot.domain.entity.Category;
+import tp.farming_springboot.domain.entity.Product;
 import tp.farming_springboot.domain.exception.RestNullPointerException;
 
 import java.util.List;

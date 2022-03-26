@@ -1,4 +1,4 @@
-package tp.farming_springboot.domain.dao;
+package tp.farming_springboot.domain.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -93,6 +93,7 @@ public class Product {
     public void addReceiptAndCertified(PhotoFile receipt) {
         this.certified = true;
         this.receipt = receipt;
+        receipt.addProductToReceipt(this);
     }
     public void deleteReceiptAndCertified() {
         this.certified = false;

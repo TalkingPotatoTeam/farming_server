@@ -1,4 +1,4 @@
-package tp.farming_springboot.domain.dao;
+package tp.farming_springboot.domain.entity;
 
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;

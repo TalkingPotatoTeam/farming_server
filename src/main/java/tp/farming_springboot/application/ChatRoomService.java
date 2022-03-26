@@ -3,7 +3,7 @@ package tp.farming_springboot.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import tp.farming_springboot.domain.dao.ChatRoom;
+import tp.farming_springboot.domain.entity.ChatRoom;
 import tp.farming_springboot.domain.repository.ChatRoomRepository;
 
 import java.util.Optional;

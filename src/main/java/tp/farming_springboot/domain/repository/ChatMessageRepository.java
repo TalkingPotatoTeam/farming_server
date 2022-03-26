@@ -1,8 +1,8 @@
 package tp.farming_springboot.domain.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import tp.farming_springboot.domain.dao.ChatMessage;
-import tp.farming_springboot.domain.dao.MessageStatus;
+import tp.farming_springboot.domain.entity.ChatMessage;
+import tp.farming_springboot.domain.entity.MessageStatus;
 
 import java.util.List;
 

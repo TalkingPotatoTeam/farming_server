@@ -1,4 +1,4 @@
-package tp.farming_springboot.domain.dao;
+package tp.farming_springboot.domain.entity;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

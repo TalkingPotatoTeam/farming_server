@@ -2,8 +2,8 @@ package tp.farming_springboot.application.dto.response;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tp.farming_springboot.domain.dao.PhotoFile;
-import tp.farming_springboot.domain.dao.Product;
+import tp.farming_springboot.domain.entity.PhotoFile;
+import tp.farming_springboot.domain.entity.Product;
 
 import java.time.LocalDateTime;
 import java.util.Optional;

@@ -3,7 +3,7 @@ package tp.farming_springboot.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import tp.farming_springboot.domain.dao.ReviewChoice;
+import tp.farming_springboot.domain.entity.ReviewChoice;
 
 import java.util.Optional;
 

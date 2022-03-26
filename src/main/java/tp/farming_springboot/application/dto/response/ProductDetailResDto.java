@@ -1,7 +1,7 @@
 package tp.farming_springboot.application.dto.response;
 
 import lombok.*;
-import tp.farming_springboot.domain.dao.Product;
+import tp.farming_springboot.domain.entity.Product;
 
 import java.util.Date;
 import java.util.List;

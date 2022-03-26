@@ -3,7 +3,7 @@ package tp.farming_springboot.domain.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import tp.farming_springboot.domain.dao.Category;
+import tp.farming_springboot.domain.entity.Category;
 import tp.farming_springboot.domain.exception.RestNullPointerException;
 
 import java.util.List;
