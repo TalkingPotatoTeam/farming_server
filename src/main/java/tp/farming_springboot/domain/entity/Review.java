@@ -4,21 +4,26 @@ package tp.farming_springboot.domain.entity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import tp.farming_springboot.domain.ReviewAnswer;
 
 import javax.persistence.*;
 
 @Entity
 public class Review {
     @Builder
-    public Review(Long questionId, User reviewer, User reviewee, ReviewChoice reviewContent) {
+    public Review(Long questionId, User reviewer, User reviewee, ReviewAnswer reviewAnswer) {
         this.questionId = questionId;
         this.reviewer = reviewer;
         this.reviewee = reviewee;
-        this.reviewContent = reviewContent;
+        this.reviewAnswer = reviewAnswer;
     }
 
     public Review(){
 
+    }
+
+    public static Review of (Long questionId, User reviewer, User reviewee, ReviewAnswer reviewAnswer){
+        return new Review(questionId, reviewer, reviewee, reviewAnswer);
     }
 
     @Id
@@ -29,7 +34,6 @@ public class Review {
 
     @Getter @Setter
     private Long questionId;
-
 
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name ="reviewer_id")
@@ -45,12 +49,8 @@ public class Review {
     @Setter
     private User reviewee;
 
-
     @Getter
-    @Setter
-    @ManyToOne
-    private ReviewChoice reviewContent;
-
-
+    @Enumerated(EnumType.STRING)
+    private ReviewAnswer reviewAnswer;
 
 }
