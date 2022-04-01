@@ -14,6 +14,8 @@ import tp.farming_springboot.application.dto.request.UserAuthenDto;
 import tp.farming_springboot.application.dto.request.UserCreateDto;
 import tp.farming_springboot.application.AuthenticateService;
 import tp.farming_springboot.application.OtpService;
+import tp.farming_springboot.domain.entity.User;
+import tp.farming_springboot.domain.repository.UserRepository;
 import tp.farming_springboot.infra.SmsService;
 import tp.farming_springboot.application.UserService;
 import tp.farming_springboot.domain.exception.UserExistsException;
@@ -53,7 +55,7 @@ public class AuthenticateController {
     public ResponseEntity<?> sendTokens(Authentication authentication){
         Optional<User> user = userRepository.findByPhone(authentication.getName());
         TokenDto tokenDto = authenticateService.getNewTokens(user.get().getPhone());
-        Message message = new Message(StatusEnum.OK,"Generating token success.", tokenDto);
+        ApiResponse message = new ApiResponse(ResultCode.OK,"Generating token success.", tokenDto);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
     }
 
