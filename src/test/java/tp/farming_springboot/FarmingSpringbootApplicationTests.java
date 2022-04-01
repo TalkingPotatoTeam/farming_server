@@ -2,11 +2,10 @@ package tp.farming_springboot;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import tp.farming_springboot.domain.user.model.User;
-import tp.farming_springboot.domain.user.repository.UserRepository;
+import tp.farming_springboot.domain.entity.User;
+import tp.farming_springboot.domain.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.Collections;

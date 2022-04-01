@@ -8,9 +8,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import tp.farming_springboot.domain.user.jwt.AuthTokenFilter;
-import tp.farming_springboot.domain.user.jwt.JwtAuthEntryPoint;
-import tp.farming_springboot.domain.user.service.UserService;
+import tp.farming_springboot.config.jwt.AuthTokenFilter;
+import tp.farming_springboot.config.jwt.JwtAuthEntryPoint;
+import tp.farming_springboot.application.UserService;
 
 @RequiredArgsConstructor
 @Configuration
