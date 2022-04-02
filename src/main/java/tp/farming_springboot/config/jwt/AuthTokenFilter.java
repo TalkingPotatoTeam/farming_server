@@ -34,7 +34,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                             "/auth/validate", //인증번호 입력할때
                             "/user/sudo", //임시
                             "/auth/tokens", //임시
-                            "/init" //디비 초기화용
+                            "/init", //디비 초기화용
+                            "/health-check",
+                            "/v2/api-docs"
                     ));
 
 
@@ -81,7 +83,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return EXCLUDE_URL.stream().anyMatch(exclude -> exclude.equalsIgnoreCase(request.getServletPath()));
+        return EXCLUDE_URL.stream().anyMatch(exclude -> {
+            if(exclude.equalsIgnoreCase(request.getServletPath()) || request.getServletPath().contains("swagger")) {
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
     private String parseJwt(HttpServletRequest request) {
