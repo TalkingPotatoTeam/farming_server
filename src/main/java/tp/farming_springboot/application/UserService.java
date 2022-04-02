@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import tp.farming_springboot.application.dto.request.AddressDto;
 import tp.farming_springboot.config.jwt.JwtUtils;
 import tp.farming_springboot.application.dto.response.TokenDto;
 import tp.farming_springboot.application.dto.request.UserForceCreateDto;
@@ -27,6 +28,7 @@ import java.util.Optional;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
+    private final AddressService addressService;
     private final JwtUtils jwtUtils;
 
     public boolean checkUserExists(String phone) {
@@ -59,7 +61,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(rollbackOn = Exception.class)
-    public void addAddress(String userPhone, Address address) {
+    public void addAddress(String userPhone, AddressDto addressDto) {
         User user = userRepository.findByPhoneElseThrow(userPhone);
         List<Address> addresses = new ArrayList<>();
         if (user.getAddresses() != null) {
@@ -68,15 +70,16 @@ public class UserService implements UserDetailsService {
 
         boolean isExisted = false;
         for (Address ad : addresses) {
-            if ((ad.getContent()).equals(address.getContent())) {
+            if ((ad.getContent()).equals(addressDto.getContent())) {
                 isExisted = true;
                 break;
             }
         }
 
         if (isExisted) {
-            throw new IllegalArgumentException("User already have this address: " + address.getContent());
+            throw new IllegalArgumentException("User already have this address: " + addressDto.getContent());
         } else {
+            Address address = addressService.create(user.getId(), addressDto.getContent(), addressDto.getLat(), addressDto.getLon());
             addresses.add(address);
             user.setAddresses(addresses);
 
