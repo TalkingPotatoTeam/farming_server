@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tp.farming_springboot.api.ResultCode;
-
+import java.util.HashMap;
 
 @RequiredArgsConstructor
 @Component
@@ -44,12 +44,19 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException {
         try {
-            String jwt = parseJwt(request);
-            if (jwtUtils.validateJwtToken(jwt)) {
+            HashMap<String, String> map = parseJwt(request);
+            if(map.containsKey("access")){
+                String jwt = map.get("access");
+                jwtUtils.validateJwtToken(jwt);
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 jwtUtils.createAuthentication(username);
             }
-
+            else if(map.containsKey("refresh")){
+                String jwt = map.get("refresh");
+                jwtUtils.validateJwtRefresh(jwt);
+                String username = jwtUtils.getUserNameFromJwtRefreshToken(jwt);
+                jwtUtils.createAuthentication(username);
+            }
             filterChain.doFilter(request, response);
         }
         catch(BadCredentialsException e) {
@@ -92,14 +99,19 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         });
     }
 
-    private String parseJwt(HttpServletRequest request) {
+    private HashMap<String, String> parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
-
+        HashMap<String, String> map = new HashMap<>();
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7);
-        } else {
+            map.put("access",headerAuth.substring(7));
+        }
+        else if(StringUtils.hasText(headerAuth) && headerAuth.startsWith("Refresh ")){
+            map.put("refresh",headerAuth.substring(8));
+        }
+        else {
             throw new BadCredentialsException("토큰 정보가 헤더에 없습니다.");
         }
-
+        return map;
     }
+
 }

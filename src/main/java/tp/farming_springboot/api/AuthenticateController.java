@@ -7,18 +7,22 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import tp.farming_springboot.application.dto.response.TokenDto;
 import tp.farming_springboot.application.dto.request.UserAuthenDto;
 import tp.farming_springboot.application.dto.request.UserCreateDto;
 import tp.farming_springboot.application.AuthenticateService;
 import tp.farming_springboot.application.OtpService;
+import tp.farming_springboot.domain.entity.User;
+import tp.farming_springboot.domain.repository.UserRepository;
 import tp.farming_springboot.infra.SmsService;
 import tp.farming_springboot.application.UserService;
 import tp.farming_springboot.domain.exception.UserExistsException;
 import tp.farming_springboot.domain.exception.VerificationException;
 
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 @CrossOrigin
 @RestController
@@ -30,6 +34,7 @@ public class AuthenticateController {
     private final SmsService smsService;
     private final AuthenticateService authenticateService;
     private final UserService userService;
+    private final UserRepository userRepository;
 
     public HttpHeaders HttpHeaderSetting(){
         HttpHeaders headers = new HttpHeaders();
@@ -46,6 +51,13 @@ public class AuthenticateController {
     }
 
     //renew tokens
+    @GetMapping("/gen-tokens")
+    public ResponseEntity<?> sendTokens(Authentication authentication){
+        Optional<User> user = userRepository.findByPhone(authentication.getName());
+        TokenDto tokenDto = authenticateService.getNewTokens(user.get().getPhone());
+        ApiResponse message = new ApiResponse(ResultCode.OK,"Generating token success.", tokenDto);
+        return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);
+    }
 
     //send otp number to user
     @PostMapping("/request-otp")
