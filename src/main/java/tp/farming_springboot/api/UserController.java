@@ -63,12 +63,9 @@ public class UserController {
 
     @PostMapping("/address")
     @ApiOperation(value = "유저 주소 추가 API", authorizations = {@Authorization(value = "jwt")})
-    public ResponseEntity<ApiResponse> addAddress(Authentication authentication, @RequestBody AddressDto Address){
+    public ResponseEntity<ApiResponse> addAddress(Authentication authentication, @RequestBody AddressDto addressDto){
         String userPhone = authentication.getName();
-        Optional<User> user = userRepository.findByPhone(authentication.getName());
-        Address newAddress = addressService.create(user.get().getId(), Address.getContent(), Address.getLat(), Address.getLon());
-        userService.addAddress(userPhone, newAddress);
-
+        userService.addAddress(userPhone, addressDto);
         return new ResponseEntity<>(new ApiResponse(ResultCode.OK,"Address added" ), HttpHeaderSetting(), HttpStatus.OK);
     }
 
