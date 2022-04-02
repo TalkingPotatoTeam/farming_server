@@ -1,5 +1,6 @@
 package tp.farming_springboot.api;
 
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.springframework.http.HttpHeaders;
@@ -36,6 +37,10 @@ public class UserController {
 
 
     @DeleteMapping
+    @ApiOperation(value = "유저 회원 탈퇴 API")
+    @ApiResponses({
+            @io.swagger.annotations.ApiResponse(code = 200, message = "user deleted.", response = ApiResponse.class)
+    })
     public String delete(Authentication authentication){
         System.out.println("userPhone = " + authentication.getName());
         userService.delete( authentication.getName());
@@ -43,6 +48,7 @@ public class UserController {
     }
 
     @GetMapping("/address") //내 주소들 보기
+    @ApiOperation(value = "유저의 등록된 모든 주소 확인 API", authorizations = {@Authorization(value = "jwt")})
     public ResponseEntity<ApiResponse> getAddress(Authentication authentication){
         Optional<User> user = userRepository.findByPhone(authentication.getName());
         List<JSONObject> entities = new ArrayList<>();
@@ -56,6 +62,7 @@ public class UserController {
 
 
     @PostMapping("/address")
+    @ApiOperation(value = "유저 주소 추가 API", authorizations = {@Authorization(value = "jwt")})
     public ResponseEntity<ApiResponse> addAddress(Authentication authentication, @RequestBody AddressDto Address){
         String userPhone = authentication.getName();
         Optional<User> user = userRepository.findByPhone(authentication.getName());
@@ -67,6 +74,7 @@ public class UserController {
 
     //delete Address
     @DeleteMapping("/address/{id}") //주소 삭제
+    @ApiOperation(value = "유저 주소 삭제 API", authorizations = {@Authorization(value = "jwt")})
     public ResponseEntity<ApiResponse> deleteAddress(Authentication authentication, @PathVariable Long id ) throws AddressRemoveException {
         String userPhone = authentication.getName();
 
@@ -77,6 +85,7 @@ public class UserController {
 
     //set User's Current Address
     @PutMapping("/address/{id}")
+    @ApiOperation(value = "유저 대표 주소 변경 API", authorizations = {@Authorization(value = "jwt")})
     public ResponseEntity<ApiResponse> changeCurrentAddress(Authentication authentication, @PathVariable Long id) {
         String userPhone = authentication.getName();
         userService.setCurrentAddress(userPhone, id);
@@ -85,6 +94,7 @@ public class UserController {
 
 
     @GetMapping
+    @ApiOperation(value = "유저 정보 확인 API", authorizations = {@Authorization(value = "jwt")})
     public ResponseEntity<ApiResponse> getUser(Authentication authentication){
         UserResDto userDto = userService.getUserInfo(authentication.getName());
         return new ResponseEntity<>(new ApiResponse(ResultCode.OK, "User", userDto), HttpHeaderSetting(), HttpStatus.OK);
@@ -92,6 +102,7 @@ public class UserController {
 
 
     @PutMapping
+    @ApiOperation(value = "유저 핸드폰 번호 변경 API", authorizations = {@Authorization(value = "jwt")})
     public ResponseEntity<ApiResponse> updateUserPhone(Authentication authentication, @RequestBody UserCreateDto newUser) throws UserExistsException{
         String userPhone = authentication.getName();
         userService.updatePhone(userPhone, newUser.getPhone());
@@ -99,6 +110,7 @@ public class UserController {
     }
 
     @PostMapping("/sudo")
+    @ApiOperation(value = "강제 회원 가입 API (테스트용)")
     public ResponseEntity<?> createUserForce(@RequestBody UserForceCreateDto userDto){
         TokenDto tokenDto = userService.createUserForce(userDto);
         return new ResponseEntity<Object>(tokenDto, HttpStatus.OK);

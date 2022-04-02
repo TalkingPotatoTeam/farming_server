@@ -27,7 +27,7 @@ services:
 
 
   springboot:
-    image: farming_springboot:0.0.1
+    build: .
     ports:
       - "8080:8080"
     volumes:
