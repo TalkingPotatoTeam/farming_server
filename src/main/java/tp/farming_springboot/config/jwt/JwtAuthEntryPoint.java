@@ -22,9 +22,9 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
 
         String exception = String.valueOf(request.getAttribute("exception"));
 
-        if(exception.equals("TOKEN_NOT_VALID"))
+        if("TOKEN_NOT_VALID".equals(exception))
             sendResponse(response, ResultCode.TOKEN_NOT_VALID, e.getMessage());
-        else if(exception.equals("TOKEN_EXPIRED"))
+        else if("TOKEN_EXPIRED".equals(exception))
             sendResponse(response, ResultCode.TOKEN_EXPIRED, e.getMessage());
         else
             sendResponse(response, ResultCode.UNAUTHORIZED, e.getMessage());
