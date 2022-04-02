@@ -5,7 +5,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import tp.farming_springboot.application.dto.response.ProductDetailResDto;
+import tp.farming_springboot.api.ResultCode;
+import tp.farming_springboot.application.dto.response.ProductListResDto;
 import tp.farming_springboot.domain.entity.Product;
 import tp.farming_springboot.domain.repository.ProductRepository;
 import tp.farming_springboot.application.dto.response.LikeUserResDto;
@@ -26,7 +27,7 @@ public class LikeService {
         Product product = productRepository.findByIdOrElseThrow(productId);
 
         if(product.getLikeUsers().contains(user)){
-            throw new UserAlreadyLikeProductException(String.format("User { id: %d } already liked this product.", user.getId()));
+            throw new UserAlreadyLikeProductException(ResultCode.USER_ALREADY_IN_LIKE.getMessage());
         } else {
             product.getLikeUsers().add(user);
             productRepository.save(product);
@@ -42,7 +43,7 @@ public class LikeService {
             product.getLikeUsers().remove(user);
             productRepository.save(product);
         } else {
-            throw new UserNotLikeProductException(String.format("User { id: %d } not included in like user list.", user.getId()));
+            throw new UserNotLikeProductException(ResultCode.USER_NOT_INCLUDED_IN_LIKE.getMessage());
         }
     }
 
@@ -57,12 +58,12 @@ public class LikeService {
         return userSet;
     }
 
-    public Set<ProductDetailResDto> getLikelistByUser(Long userId) {
-        User user = userRepository.findByIdElseThrow(userId);
+    public Set<ProductListResDto> getLikeProductByUser(String userPhone) {
+        User user = userRepository.findByPhoneElseThrow(userPhone);
 
-        Set<ProductDetailResDto> productResponseDtos = user.getLikeProducts()
+        Set<ProductListResDto> productResponseDtos = user.getLikeProducts()
                                 .stream()
-                                .map(ProductDetailResDto::from)
+                                .map(ProductListResDto::from)
                                 .collect(Collectors.toSet());
 
 

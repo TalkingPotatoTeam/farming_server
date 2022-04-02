@@ -38,12 +38,8 @@ public class UserController {
 
     @DeleteMapping
     @ApiOperation(value = "유저 회원 탈퇴 API")
-    @ApiResponses({
-            @io.swagger.annotations.ApiResponse(code = 200, message = "user deleted.", response = ApiResponse.class)
-    })
     public String delete(Authentication authentication){
-        System.out.println("userPhone = " + authentication.getName());
-        userService.delete( authentication.getName());
+        userService.delete(authentication.getName());
         return "user deleted.";
     }
 
