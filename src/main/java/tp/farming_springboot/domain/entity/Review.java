@@ -3,11 +3,13 @@ package tp.farming_springboot.domain.entity;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import tp.farming_springboot.domain.ReviewAnswer;
 
 import javax.persistence.*;
 
+@NoArgsConstructor
 @Entity
 public class Review {
     @Builder
@@ -16,10 +18,6 @@ public class Review {
         this.reviewer = reviewer;
         this.reviewee = reviewee;
         this.reviewAnswer = reviewAnswer;
-    }
-
-    public Review(){
-
     }
 
     public static Review of (Long questionId, User reviewer, User reviewee, ReviewAnswer reviewAnswer){
