@@ -12,7 +12,7 @@ import javax.validation.constraints.NotBlank;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReviewCreateRequestDto {
+public class ReviewCreateReqDto {
     //1 : 게시물 2: 전반적 매너 3: 시간약속
     @NotBlank(message="Review question Id can't be blank.")
     private Long questionId;

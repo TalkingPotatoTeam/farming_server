@@ -3,8 +3,8 @@ package tp.farming_springboot.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import tp.farming_springboot.application.dto.request.ReviewCreateRequestDto;
-import tp.farming_springboot.application.dto.response.ReviewDto;
+import tp.farming_springboot.application.dto.request.ReviewCreateReqDto;
+import tp.farming_springboot.application.dto.response.ReviewResDto;
 import tp.farming_springboot.domain.entity.Review;
 import tp.farming_springboot.domain.entity.User;
 import tp.farming_springboot.domain.exception.UserNotAuthorizedException;
@@ -18,9 +18,9 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
 
-    public ReviewDto create(Authentication authentication, ReviewCreateRequestDto reviewCreateRequestDto) throws UserNotAuthorizedException {
+    public ReviewResDto create(Authentication authentication, ReviewCreateReqDto reviewCreateReqDto) throws UserNotAuthorizedException {
         String userPhone = authentication.getName();
-        Long revieweeId = reviewCreateRequestDto.getRevieweeId();
+        Long revieweeId = reviewCreateReqDto.getRevieweeId();
 
         User reviewer = userRepository.findByPhoneElseThrow(userPhone);
         User reviewee = userRepository.findByIdElseThrow(revieweeId);
@@ -30,12 +30,12 @@ public class ReviewService {
         }
 
         Review review = Review.of(
-                reviewCreateRequestDto.getQuestionId(),
+                reviewCreateReqDto.getQuestionId(),
                 reviewer,
                 reviewee,
-                reviewCreateRequestDto.getReviewAnswer()
+                reviewCreateReqDto.getReviewAnswer()
         );
 
-        return ReviewDto.toEntity(this.reviewRepository.save(review));
+        return ReviewResDto.toEntity(this.reviewRepository.save(review));
     }
 }

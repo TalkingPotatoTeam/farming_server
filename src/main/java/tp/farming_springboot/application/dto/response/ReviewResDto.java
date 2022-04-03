@@ -9,15 +9,15 @@ import tp.farming_springboot.domain.entity.Review;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReviewDto {
+public class ReviewResDto {
     private Long id;
     private Long questionId;
     private Long reviewerId;
     private Long revieweeId;
     private ReviewAnswer reviewAnswer;
 
-    public static ReviewDto toEntity(Review review){
-        ReviewDto v = new ReviewDto();
+    public static ReviewResDto toEntity(Review review){
+        ReviewResDto v = new ReviewResDto();
         v.id = review.getId();
         v.questionId = review.getQuestionId();
         v.reviewerId = review.getReviewer().getId();
