@@ -12,13 +12,10 @@ import tp.farming_springboot.application.dto.request.ProductFilterDto;
 import tp.farming_springboot.application.dto.request.ProductStatusDto;
 import tp.farming_springboot.application.dto.response.ProductDetailResDto;
 import tp.farming_springboot.application.dto.response.ProductListResDto;
-import tp.farming_springboot.domain.entity.Category;
-import tp.farming_springboot.domain.entity.PhotoFile;
-import tp.farming_springboot.domain.entity.Product;
+import tp.farming_springboot.domain.entity.*;
 import tp.farming_springboot.domain.repository.CategoryRepository;
 import tp.farming_springboot.domain.repository.ProductRepository;
 import tp.farming_springboot.infra.S3UploaderService;
-import tp.farming_springboot.domain.entity.User;
 import tp.farming_springboot.domain.repository.UserRepository;
 import tp.farming_springboot.domain.exception.PhotoFileException;
 import tp.farming_springboot.domain.exception.UserNotAuthorizedException;
@@ -112,14 +109,14 @@ public class ProductService {
             throw new IllegalArgumentException("Product receipt already certified.");
         }
 
-        PhotoFile receipt = fileService.photoFileCreate(receiptFile);
+        PhotoFile receipt = fileService.createPhoto(receiptFile);
         product.addReceiptAndCertified(receipt);
     }
 
     @Transactional(rollbackFor = {Exception.class})
-    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photoFiles, MultipartFile receiptFile) throws PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
+    public void create(String userPhone, ProductCreateDto prodDto, List<MultipartFile> photos, MultipartFile receipt) throws PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
         User user = userRepository.findByPhoneElseThrow(userPhone);
-        Category category = categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName());
+        Category category = categoryRepository.findByIdOrElseThrow(prodDto.getCategoryId());
 
         Product product = Product.of(
                 user,
@@ -129,18 +126,16 @@ public class ProductService {
                 user.getCurrent().getContent(),
                 prodDto.isCertified(),
                 category,
-                prodDto.getReceipt(),
-                new SimpleDateFormat("yyyy.MM.dd").parse(prodDto.getBuyProductDate()),
-                prodDto.getFreshness()
+                prodDto.getBuyProductDate() == null ? null : new SimpleDateFormat("yyyy.MM.dd").parse(prodDto.getBuyProductDate()),
+                Freshness.fromId(prodDto.getFreshnessId())
         );
 
-        if(receiptFile != null){
-            PhotoFile receipt = fileService.photoFileCreate(receiptFile);
-            product.addReceiptAndCertified(receipt);
+        if(receipt != null){
+            product.addReceiptAndCertified(fileService.createPhoto(receipt));
         }
 
-        if(photoFiles != null) {
-            fileService.photoFileListCreate(photoFiles, product);
+        if(photos != null) {
+            product.addPhotos(fileService.createPhotos(photos, product));
         }
 
         productRepository.save(product);
@@ -180,26 +175,23 @@ public class ProductService {
             fileService.clearFileFromProduct(prod);
 
             if (ReceiptFile != null) {
-                PhotoFile receipt = fileService.photoFileCreate(ReceiptFile);
+                PhotoFile receipt = fileService.createPhoto(ReceiptFile);
                 prod.addReceiptAndCertified(receipt);
             }
 
             if (photoFiles != null) {
-                List<PhotoFile> photoFileList = fileService.photoFileListCreate(photoFiles, prod);
-                prodDto.setPhotoFile(photoFileList);
+                List<PhotoFile> photoFileList = fileService.createPhotos(photoFiles, prod);
+                prod.addPhotos(photoFileList);
             }
 
-            Category category = categoryRepository.findByNameOrElseThrow(prodDto.getCategoryName());
+            Category category = categoryRepository.findByIdOrElseThrow(prodDto.getCategoryId());
             prod.update(
                     prodDto.getTitle(),
                     prodDto.getContent(),
                     prodDto.getPrice(),
-                    prodDto.isCertified(),
                     category,
-                    prodDto.getReceipt(),
-                    prodDto.getPhotoFile(),
-                    new SimpleDateFormat("yyyy.MM.dd").parse(prodDto.getBuyProductDate()),
-                    prodDto.getFreshness()
+                    prodDto.getBuyProductDate() == null ? null : new SimpleDateFormat("yyyy.MM.dd").parse(prodDto.getBuyProductDate()),
+                    Freshness.fromId(prodDto.getFreshnessId())
             );
 
             productRepository.save(prod);
@@ -215,12 +207,8 @@ public class ProductService {
         if(!isUserAuthor(user, product)) {
             throw new UserNotAuthorizedException("Current user and product author is not same.");
         } else {
-            if(!productStatusList.contains(productStatus.getProductStatus())) {
-                throw new IllegalArgumentException("Product Status is not existed.");
-            } else {
-                product.setProductStatus(productStatus.getProductStatus());
-                productRepository.save(product);
-            }
+            product.updateProductStatus(ProductStatus.fromId(productStatus.getProductStatusId()));
+            productRepository.save(product);
         }
     }
 

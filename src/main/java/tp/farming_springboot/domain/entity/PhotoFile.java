@@ -43,7 +43,6 @@ public class PhotoFile {
 
     public void addProduct(Product product) {
         this.product = product;
-        product.addPhotoFile(this);
     }
 
     public void addProductToReceipt(Product product) {

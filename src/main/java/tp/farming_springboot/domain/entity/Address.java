@@ -30,7 +30,6 @@ public class Address {
         this.lon = lon;
     }
 
-
     public static Address of(Long user_id, String content, Double lat, Double lon) {
         return new Address(user_id, content, lat, lon);
     }

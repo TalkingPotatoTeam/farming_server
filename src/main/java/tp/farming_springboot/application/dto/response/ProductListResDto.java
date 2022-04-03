@@ -17,7 +17,7 @@ import java.util.Optional;
 public class ProductListResDto {
     private Long id;
     private String title;
-    private String price;
+    private Long price;
     private boolean certified;
     private PhotoFileDto photoFile; // 대표 사진 1개
     private LocalDateTime createdAt;

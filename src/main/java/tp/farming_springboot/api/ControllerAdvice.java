@@ -23,6 +23,7 @@ public class ControllerAdvice {
             UserExistsException.class,
             VerificationException.class,
             MethodArgumentNotValidException.class,
+            NullPointerException.class
     })
     public ApiResponse<?> handle(Exception e) {
         return ApiResponse.failure(ResultCode.BAD_REQUEST, e.getMessage());

@@ -23,7 +23,7 @@ public class FileService{
     private final S3UploaderService s3UploaderService;
     private final FileRepository fileRepository;
 
-    public PhotoFile photoFileCreate(MultipartFile file) throws IOException, NoSuchAlgorithmException {
+    public PhotoFile createPhoto(MultipartFile file) throws IOException, NoSuchAlgorithmException {
         String originalName = file.getOriginalFilename();
         checkFileExtensions(originalName);
         String hashFileName = new MD5Generator(originalName + LocalDateTime.now()).toString();
@@ -35,7 +35,7 @@ public class FileService{
     }
 
 
-    public List<PhotoFile> photoFileListCreate(List<MultipartFile> files, Product product) throws PhotoFileException, IOException, NoSuchAlgorithmException {
+    public List<PhotoFile> createPhotos(List<MultipartFile> files, Product product) throws PhotoFileException, IOException, NoSuchAlgorithmException {
         List<PhotoFile> photoFileList = new ArrayList<>();
 
         if(files.size() > 10) {
@@ -43,20 +43,21 @@ public class FileService{
         }
 
         for (MultipartFile file : files) {
-            PhotoFile photoFile = photoFileCreate(file);
+            PhotoFile photoFile = createPhoto(file);
             photoFile.addProduct(product);
             photoFileList.add(photoFile);
         }
 
         return photoFileList;
     }
+
     @Transactional
     public void clearFileFromProduct(Product product) {
         List<PhotoFile> photoFile = product.getPhotoFile();
         PhotoFile receipt = product.getReceipt();
         if (photoFile.size() > 0) {
             photoFile.forEach(f -> s3UploaderService.deleteS3(f.getHashFilename()));
-            product.deletePhotoFile();;
+            product.deletePhotoFile();
             fileRepository.deleteRelatedProductId(product.getId());
         }
 

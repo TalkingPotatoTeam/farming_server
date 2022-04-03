@@ -39,7 +39,7 @@ public class AuthenticateController {
 
     //renew tokens for free
     @GetMapping("/tokens")
-    public ResponseEntity<?> temp(@RequestBody UserAuthenDto logger){
+    public ResponseEntity<?> generateToken(@RequestBody UserAuthenDto logger){
         TokenDto tokenDto = authenticateService.getNewTokens(logger.getPhone());
         ApiResponse message = new ApiResponse(ResultCode.OK,"Generating token success.", tokenDto);
         return new ResponseEntity<>(message, HttpHeaderSetting(), HttpStatus.OK);

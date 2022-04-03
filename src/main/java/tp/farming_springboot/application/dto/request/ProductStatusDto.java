@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.Getter;
 
 @Data
-@Getter
 public class ProductStatusDto {
-    String productStatus;
+    private int productStatusId;
 }

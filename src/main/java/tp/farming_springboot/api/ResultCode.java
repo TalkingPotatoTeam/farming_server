@@ -10,8 +10,6 @@ public enum ResultCode {
     BAD_REQUEST(400, "요청에 오류가 있습니다."),
 
 
-
-
     PARAMETER_LACKED(4001, "파라미터에 오류가 있습니다."),
 
     /**
@@ -28,6 +26,12 @@ public enum ResultCode {
     TOKEN_EXPIRED(4012, "토큰 유효시간이 만료되었습니다."),
     UNMATCH(402, "UNMATCH"),
     NOT_FOUND(404, "NOT_FOUND"),
+
+    /**
+     * 게시글 관련 에러미시지
+     */
+    CATEGORY_NOT_FOUND(4021, "해당 카테고리를 찾을 수 없습니다."),
+
 
     INTERNAL_SERVER_ERROR(500, "내부 서버에 오류가 있습니다.");
 
