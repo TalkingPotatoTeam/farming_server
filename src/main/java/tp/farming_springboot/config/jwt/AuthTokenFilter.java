@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -34,23 +35,25 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                             "/auth/validate", //인증번호 입력할때
                             "/user/sudo", //임시
                             "/auth/tokens", //임시
-                            "/init" //디비 초기화용
+                            "/init", //디비 초기화용
+                            "/health-check",
+                            "/v2/api-docs"
                     ));
 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws IOException {
+            throws IOException, ServletException {
+
         try {
             String jwt = parseJwt(request);
             if (jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 jwtUtils.createAuthentication(username);
             }
-
             filterChain.doFilter(request, response);
         }
-        catch(BadCredentialsException e) {
+        catch (BadCredentialsException e) {
             request.setAttribute("exception", ResultCode.TOKEN_NOT_VALID);
             SecurityContextHolder.clearContext();
             jwtAuthEntryPoint.commence(request, response, e);
@@ -60,12 +63,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             request.setAttribute("exception", ResultCode.TOKEN_EXPIRED);
             SecurityContextHolder.clearContext();
             jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("토큰 유효시간이 만료되었습니다."));
-
-        } catch (Exception e) {
-            request.setAttribute("exception", ResultCode.INTERNAL_SERVER_ERROR);
-            SecurityContextHolder.clearContext();
-            jwtAuthEntryPoint.commence(request, response, new BadCredentialsException("토큰 검증 중 알 수 없는 에러가 발생했습니다."));
         }
+
 
     }
 
@@ -81,7 +80,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return EXCLUDE_URL.stream().anyMatch(exclude -> exclude.equalsIgnoreCase(request.getServletPath()));
+        return EXCLUDE_URL.stream().anyMatch(exclude -> {
+            if(exclude.equalsIgnoreCase(request.getServletPath()) || request.getServletPath().contains("swagger")) {
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
     private String parseJwt(HttpServletRequest request) {

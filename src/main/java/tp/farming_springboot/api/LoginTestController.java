@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 import tp.farming_springboot.domain.entity.User;
 import tp.farming_springboot.domain.repository.UserRepository;
 
@@ -23,6 +24,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/home")
 @RequiredArgsConstructor
+@ApiIgnore
 public class LoginTestController {
     private final UserRepository userRepository;
 

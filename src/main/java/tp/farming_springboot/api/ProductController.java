@@ -2,31 +2,27 @@ package tp.farming_springboot.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
 
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tp.farming_springboot.api.annotation.ApiPageable;
 import tp.farming_springboot.application.dto.request.ProductCreateDto;
 import tp.farming_springboot.application.dto.request.ProductFilterDto;
 import tp.farming_springboot.application.dto.request.ProductStatusDto;
-import tp.farming_springboot.application.dto.response.ProductDetailResDto;
-import tp.farming_springboot.application.dto.response.ProductListResDto;
 import tp.farming_springboot.domain.repository.CategoryRepository;
 import tp.farming_springboot.application.ProductService;
 import tp.farming_springboot.domain.exception.PhotoFileException;
 import tp.farming_springboot.domain.exception.UserNotAuthorizedException;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.List;
@@ -42,11 +38,15 @@ public class ProductController {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @GetMapping("/home")
+    @ApiOperation(value = "메인 홈 게시물 조회 API", authorizations = {@Authorization(value = "jwt")})
+    @ApiPageable
     public ApiResponse<?> home(@PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest){
         return ApiResponse.success(productService.findProductByPagination(pageRequest));
     }
 
     @GetMapping("/search")
+    @ApiOperation(value = "게시물 검색 API", authorizations = {@Authorization(value = "jwt")})
+    @ApiPageable
     public ApiResponse<?> searchByKeywordWithFilter(
             @RequestParam(required = false, defaultValue = "") String keyword,
             @PageableDefault(size=3, sort="id", direction= Sort.Direction.DESC) Pageable pageRequest,
@@ -56,6 +56,8 @@ public class ProductController {
     }
 
     @GetMapping("/search/category")
+    @ApiOperation(value = "카테고리로 게시물 검색 API", authorizations = {@Authorization(value = "jwt")})
+    @ApiPageable
     public ApiResponse<?> searchByCategory(
             @RequestParam String category,
             @PageableDefault(size=3, sort="id",direction= Sort.Direction.DESC) Pageable pageRequest) {
@@ -65,19 +67,21 @@ public class ProductController {
 
 
     @PostMapping("/receipt/{productId}")
+    @ApiOperation(value = "구매 인증 (영수증 등록) API", authorizations = {@Authorization(value = "jwt")})
     public ApiResponse registerReceipt(@PathVariable Long productId,
-                                  @RequestParam(value = "ReceiptFile") MultipartFile receiptFile) throws IOException, NoSuchAlgorithmException {
+                                       @RequestParam(value = "file") MultipartFile file) throws IOException, NoSuchAlgorithmException {
 
-        productService.registerReceipt(productId, receiptFile);
+        productService.registerReceipt(productId, file);
         return ApiResponse.success();
     }
 
 
     @PostMapping
+    @ApiOperation(value = "게시물 생성 API", authorizations = {@Authorization(value = "jwt")})
     public ApiResponse create(Authentication authentication,
-                         @RequestParam("prodDto") String prodStr,
-                         @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
-                         @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile) throws PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
+                              @RequestParam("prodDto") String prodStr,
+                              @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
+                              @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile) throws PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
 
 
         ProductCreateDto prodDto = objectMapper.readValue(prodStr, ProductCreateDto.class);
@@ -86,11 +90,13 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation(value = "게시물 ID로 조회 API", authorizations = {@Authorization(value = "jwt")})
     public ApiResponse<?> findByProductId(@PathVariable Long id) {
         return ApiResponse.success(productService.findById(id));
     }
 
     @GetMapping("/user/{id}")
+    @ApiOperation(value = "유저 ID로 게시물 조회 API", authorizations = {@Authorization(value = "jwt")})
     public ApiResponse<?> findByUserId(@PathVariable Long id) {
         return ApiResponse.success(productService.findByUserId(id));
     }
@@ -98,11 +104,12 @@ public class ProductController {
 
     // 게시물 id로 수정하기
     @PutMapping("/{id}")
+    @ApiOperation(value = "게시물 ID로 수정 API", authorizations = {@Authorization(value = "jwt")})
     public ApiResponse<?> update(Authentication authentication,
-                            @PathVariable Long id,
-                            @RequestParam("prodDto") String prodStr,
-                            @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
-                            @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile) throws UserNotAuthorizedException, PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
+                                 @PathVariable Long id,
+                                 @RequestParam("prodDto") String prodStr,
+                                 @RequestParam(value="PhotoFile", required=false) List<MultipartFile> files,
+                                 @RequestParam(value = "ReceiptFile", required = false) MultipartFile receiptFile) throws UserNotAuthorizedException, PhotoFileException, ParseException, IOException, NoSuchAlgorithmException {
 
         ProductCreateDto prodDto = objectMapper.readValue(prodStr, ProductCreateDto.class);
         productService.update(prodDto, authentication.getName(), id, receiptFile, files);
@@ -113,20 +120,23 @@ public class ProductController {
 
     //자동으로 사진도 삭제.
     @DeleteMapping("/{id}")
+    @ApiOperation(value = "게시물 삭제 API", authorizations = {@Authorization(value = "jwt")})
     public ApiResponse<?> delete(Authentication authentication, @PathVariable Long id) throws UserNotAuthorizedException {
         productService.delete(authentication.getName(), id);
         return ApiResponse.success();
     }
 
     @PutMapping(value="/status/{productId}")
+    @ApiOperation(value = "게시물 판매 상태 변경 API", authorizations = {@Authorization(value = "jwt")})
     public ApiResponse<?> changeStatusOfProduct(Authentication authentication, @PathVariable Long productId,
-                                                     @RequestBody ProductStatusDto productStatus) throws UserNotAuthorizedException {
+                                                @RequestBody ProductStatusDto productStatus) throws UserNotAuthorizedException {
 
         productService.changeStatusOfProduct(authentication.getName(), productId, productStatus);
         return ApiResponse.success();
     }
 
     @GetMapping("/categories")
+    @ApiOperation(value = "전체 게시물 카테고리 목록 조회 API", authorizations = {@Authorization(value = "jwt")})
     public ApiResponse showCategories(){
         return ApiResponse.success(categoryRepository.getCategories());
     }

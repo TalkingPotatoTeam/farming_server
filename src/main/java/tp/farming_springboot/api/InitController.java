@@ -3,11 +3,13 @@ package tp.farming_springboot.api;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 import tp.farming_springboot.domain.entity.Category;
 import tp.farming_springboot.domain.repository.CategoryRepository;
 
 @RestController
 @AllArgsConstructor
+@ApiIgnore
 public class InitController {
 
     private CategoryRepository categoryRepository;
