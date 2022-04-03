@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import tp.farming_springboot.domain.ReviewAnswer;
+import tp.farming_springboot.application.ReviewAnswer;
 
 import javax.persistence.*;
 

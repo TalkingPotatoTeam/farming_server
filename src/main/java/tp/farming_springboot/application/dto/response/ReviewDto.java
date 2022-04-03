@@ -3,7 +3,7 @@ package tp.farming_springboot.application.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import tp.farming_springboot.domain.ReviewAnswer;
+import tp.farming_springboot.application.ReviewAnswer;
 import tp.farming_springboot.domain.entity.Review;
 
 @Getter
