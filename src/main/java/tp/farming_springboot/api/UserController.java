@@ -22,6 +22,7 @@ import tp.farming_springboot.application.UserService;
 import tp.farming_springboot.domain.exception.AddressRemoveException;
 import tp.farming_springboot.domain.exception.UserExistsException;
 
+import javax.validation.Valid;
 import java.nio.charset.Charset;
 import java.util.*;
 

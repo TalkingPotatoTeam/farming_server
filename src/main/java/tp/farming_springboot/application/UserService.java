@@ -115,8 +115,14 @@ public class UserService implements UserDetailsService {
 
     @Transactional(rollbackOn = Exception.class)
     public TokenDto createUserForce(UserForceCreateDto userDto) {
+        Optional<User> userOptional = userRepository.findByPhone(userDto.getPhone());
+
+        if(userOptional.isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 유저입니다.");
+        }
+
         User user = new User(userDto.getPhone());
-        Address address = Address.of(user.getId(), userDto.getAddress(), 32.7, 32.8);
+        Address address = Address.of(user.getId(), "임시특별시 임시구 123번지", 32.7, 32.8);
 
         user.addAddress(address);
         user.updateCurrentAddress(address);

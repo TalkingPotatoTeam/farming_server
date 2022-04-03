@@ -18,16 +18,17 @@ public class ProductCreateDto {
     @NotBlank(message="Product content can't be blank.")
     private String content;
     @NotBlank(message="Product price can't be blank.")
-    private String price;
+    private Long price;
 
     private boolean certified;
     private List<PhotoFile> photoFile;
     private PhotoFile receipt;
+
     @NotBlank(message="Product category can't be blank.")
-    private String categoryName;
-    private Category category;
+    private Long categoryId;
+
     private String buyProductDate;
-    private String freshness;
+    private int freshnessId;
 
 }
 
